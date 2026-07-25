@@ -1,8 +1,10 @@
-# Next.js on Netlify
-# publish = ".next" は使わない（Next.js Runtime / OpenNext が担当）
+# Next.js Runtime（@netlify/plugin-nextjs / OpenNext）
+# 注意: publish = ".next" は「静的エクスポート」ではなく Runtime が要求する設定。
+# 空の publish / 誤った dir 指定だと Functions が生成されず 404 になる。
 
 [build]
   command = "npm run build"
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "22"
