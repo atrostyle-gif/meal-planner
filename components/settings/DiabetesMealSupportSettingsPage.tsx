@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { DiabetesReferenceGoalWizard } from "@/components/settings/DiabetesReferenceGoalWizard";
 import {
   loadDiabetesMealSupportSettings,
   saveDiabetesMealSupportSettings,
@@ -10,6 +11,11 @@ import {
   CARB_NOT_GLUCOSE_DISCLAIMER,
   DIABETES_SUPPORT_DISCLAIMER,
 } from "@/lib/diabetes-meal-support/report";
+import { REFERENCE_GOAL_CONFIG } from "@/lib/diabetes-meal-support/reference-goal-config";
+import {
+  goalSourceLabel,
+  resolveEffectiveCarbTargets,
+} from "@/lib/diabetes-meal-support/resolve-targets";
 import { useIsClient } from "@/lib/use-is-client";
 import type { DiabetesMealSupportSettings } from "@/types/diabetes-meal-support";
 
@@ -25,12 +31,19 @@ export function DiabetesMealSupportSettingsPage() {
   const isClient = useIsClient();
   const [message, setMessage] = useState<string | null>(null);
   const [form, setForm] = useState<DiabetesMealSupportSettings | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [tick, setTick] = useState(0);
 
   if (!isClient) {
     return <p className="text-sm text-on-surface-variant">読み込み中…</p>;
   }
 
+  void tick;
   const settings = form ?? loadDiabetesMealSupportSettings();
+  const effective = resolveEffectiveCarbTargets(settings);
+  const medicationWarning =
+    settings.usesInsulin === true ||
+    settings.usesHypoglycemiaRiskMedication === true;
 
   function update<K extends keyof DiabetesMealSupportSettings>(
     key: K,
@@ -50,6 +63,18 @@ export function DiabetesMealSupportSettingsPage() {
       limitSodium: settings.limitSodium,
       limitSaturatedFat: settings.limitSaturatedFat,
       preferredStaplePortionGrams: settings.preferredStaplePortionGrams,
+      goalSource: settings.goalSource ?? "manual",
+      usesInsulin: settings.usesInsulin,
+      usesHypoglycemiaRiskMedication: settings.usesHypoglycemiaRiskMedication,
+      referenceCaloriesMin: settings.referenceCaloriesMin,
+      referenceCaloriesMax: settings.referenceCaloriesMax,
+      referenceCarbsPerDayMin: settings.referenceCarbsPerDayMin,
+      referenceCarbsPerDayMax: settings.referenceCarbsPerDayMax,
+      referenceCarbsPerMealMin: settings.referenceCarbsPerMealMin,
+      referenceCarbsPerMealMax: settings.referenceCarbsPerMealMax,
+      bmi: settings.bmi,
+      bmiCategory: settings.bmiCategory,
+      questionnaireCompletedAt: settings.questionnaireCompletedAt,
     });
     setForm(saved);
     setMessage("保存しました");
@@ -73,13 +98,55 @@ export function DiabetesMealSupportSettingsPage() {
         <p className="mt-2">{CARB_NOT_GLUCOSE_DISCLAIMER}</p>
       </section>
 
+      {medicationWarning ? (
+        <section className="rounded-2xl bg-secondary-container/60 p-4 text-sm">
+          {REFERENCE_GOAL_CONFIG.disclaimers.medicationWarning}
+        </section>
+      ) : null}
+
+      {!showWizard ? (
+        <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
+          <h2 className="font-semibold">質問に答えて参考値を計算する</h2>
+          <p className="text-sm text-on-surface-variant">
+            身長・体重・活動量などから、献立作成に利用する参考値を計算します。約1分で完了します。
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowWizard(true)}
+            className="w-full rounded-2xl bg-primary px-4 py-3.5 text-base font-semibold text-on-primary"
+          >
+            質問に答えて参考値を計算する
+          </button>
+        </section>
+      ) : (
+        <DiabetesReferenceGoalWizard
+          onClose={() => setShowWizard(false)}
+          onApplied={() => {
+            setShowWizard(false);
+            setForm(null);
+            setTick((n) => n + 1);
+            setMessage("ウィザードの参考値を反映しました");
+          }}
+        />
+      )}
+
       <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
         <p className="text-sm font-medium text-on-surface">
           目標値は医師または管理栄養士から案内された内容を入力してください
         </p>
         <p className="text-xs text-on-surface-variant">
-          未入力の項目には、アプリ側で医学的な基準値を自動設定しません。
+          未入力の項目には、アプリ側で医学的な基準値を自動設定しません。手動入力もそのまま使えます。
         </p>
+        <p className="text-sm">
+          目標値の出所：{goalSourceLabel(effective.source === "none" ? null : effective.source)}
+        </p>
+        {effective.source !== "none" ? (
+          <p className="text-xs text-on-surface-variant">
+            有効な目安: 1食{" "}
+            {effective.mealMin ?? "—"}〜{effective.mealMax ?? "—"} g / 1日{" "}
+            {effective.day ?? "—"} g
+          </p>
+        ) : null}
 
         <label className="flex items-center gap-3 text-sm">
           <input

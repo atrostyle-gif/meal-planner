@@ -6,7 +6,45 @@ import {
 } from "@/lib/recipe-steps";
 import { resolveNutritionFields } from "@/lib/recipe-nutrition";
 import { createSampleRecipes } from "@/lib/sample-recipes";
-import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
+import {
+  hasStorageKey,
+  readStorage,
+  STORAGE_KEYS,
+  writeStorage,
+} from "@/lib/storage";
+
+/** サンプルを一度投入・初期化したか（欠落しても再投入しない） */
+export function areSampleRecipesInitialized(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.localStorage.getItem(STORAGE_KEYS.sampleRecipesInitialized) ===
+    "true"
+  );
+}
+
+/** ユーザーがサンプルを削除したか（同期 pull でも復活させない） */
+export function areSampleRecipesDismissed(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.localStorage.getItem(STORAGE_KEYS.sampleRecipesDismissed) === "true"
+  );
+}
+
+function markSampleRecipesInitialized(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(STORAGE_KEYS.sampleRecipesInitialized, "true");
+}
+
+function markSampleRecipesDismissed(): void {
+  if (typeof window === "undefined") return;
+  markSampleRecipesInitialized();
+  window.localStorage.setItem(STORAGE_KEYS.sampleRecipesDismissed, "true");
+}
+
+function clearSampleRecipesDismissed(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(STORAGE_KEYS.sampleRecipesDismissed);
+}
 import {
   DEFAULT_RECIPE_CATEGORY,
   DEFAULT_RECIPE_COURSE,
@@ -331,16 +369,33 @@ function persist(recipes: Recipe[]): void {
   notify();
 }
 
-/** 初回のみサンプルを投入し、以降は保存済み一覧を返す */
+/**
+ * レシピ一覧を返す。
+ * サンプル投入は「初回のみ」。
+ * 一度削除されたサンプルは、キー欠落やリロードでは再生成しない。
+ */
 export function loadRecipes(): Recipe[] {
   if (typeof window === "undefined") {
     return [];
   }
 
   if (!hasStorageKey(STORAGE_KEYS.recipes)) {
-    const samples = createSampleRecipes();
-    writeRecipes(samples);
-    return samples;
+    // 初回インストール時のみサンプルを投入する
+    if (!areSampleRecipesInitialized() && !areSampleRecipesDismissed()) {
+      const samples = createSampleRecipes();
+      writeRecipes(samples);
+      markSampleRecipesInitialized();
+      return samples;
+    }
+    // 既に初期化済み／削除済み → 空配列を保存してキーを確保（再シード防止）
+    markSampleRecipesInitialized();
+    writeRecipes([]);
+    return [];
+  }
+
+  // 既存データがある場合は初期化済みとみなす（後方互換）
+  if (!areSampleRecipesInitialized()) {
+    markSampleRecipesInitialized();
   }
 
   const raw = window.localStorage.getItem(STORAGE_KEYS.recipes);
@@ -475,17 +530,19 @@ export function removeSampleRecipes(): number {
   const recipes = loadRecipes();
   const next = recipes.filter((recipe) => !recipe.isSample);
   const removed = recipes.length - next.length;
-  if (removed > 0) {
-    persist(next);
-  }
+  // 削除＝ユーザー意思。自動再投入・同期 pull での復活を禁止する
+  markSampleRecipesDismissed();
+  persist(next);
   return removed;
 }
 
 /**
- * 検証用サンプルを投入し直す。
+ * 検証用サンプルを投入し直す（設定画面からの明示操作のみ）。
  * 既存のサンプルは削除し、ユーザー作成レシピは残す。
  */
 export function resetSampleRecipes(): number {
+  clearSampleRecipesDismissed();
+  markSampleRecipesInitialized();
   const userRecipes = loadRecipes().filter((recipe) => !recipe.isSample);
   const samples = createSampleRecipes();
   persist([...samples, ...userRecipes]);
@@ -514,10 +571,16 @@ export function updateRecipe(id: string, input: RecipeInput): Recipe | null {
 
 export function deleteRecipe(id: string): boolean {
   const recipes = loadRecipes();
+  const target = recipes.find((recipe) => recipe.id === id);
   const next = recipes.filter((recipe) => recipe.id !== id);
 
   if (next.length === recipes.length) {
     return false;
+  }
+
+  // サンプルを消して残りが無い／一括相当になったら、再シードと pull 復活を禁止
+  if (target?.isSample && !next.some((recipe) => recipe.isSample)) {
+    markSampleRecipesDismissed();
   }
 
   persist(next);

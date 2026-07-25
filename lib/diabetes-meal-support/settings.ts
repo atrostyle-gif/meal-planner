@@ -1,6 +1,7 @@
 import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
 import {
   DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
+  type DiabetesGoalSource,
   type DiabetesMealSupportSettings,
 } from "@/types/diabetes-meal-support";
 
@@ -17,9 +18,14 @@ function nullablePositiveNumber(value: unknown): number | null {
   return value;
 }
 
-function migrate(
-  value: unknown,
-): DiabetesMealSupportSettings {
+function migrateGoalSource(value: unknown): DiabetesGoalSource | null {
+  if (value === "manual" || value === "questionnaire" || value === "clinician") {
+    return value;
+  }
+  return null;
+}
+
+function migrate(value: unknown): DiabetesMealSupportSettings {
   const now = new Date().toISOString();
   if (typeof value !== "object" || value === null) {
     return { ...DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS, updatedAt: now };
@@ -37,6 +43,30 @@ function migrate(
     preferredStaplePortionGrams: nullablePositiveNumber(
       item.preferredStaplePortionGrams,
     ),
+    goalSource: migrateGoalSource(item.goalSource),
+    questionnaireCompletedAt:
+      typeof item.questionnaireCompletedAt === "string"
+        ? item.questionnaireCompletedAt
+        : null,
+    referenceCaloriesMin: nullablePositiveNumber(item.referenceCaloriesMin),
+    referenceCaloriesMax: nullablePositiveNumber(item.referenceCaloriesMax),
+    referenceCarbsPerDayMin: nullablePositiveNumber(
+      item.referenceCarbsPerDayMin,
+    ),
+    referenceCarbsPerDayMax: nullablePositiveNumber(
+      item.referenceCarbsPerDayMax,
+    ),
+    referenceCarbsPerMealMin: nullablePositiveNumber(
+      item.referenceCarbsPerMealMin,
+    ),
+    referenceCarbsPerMealMax: nullablePositiveNumber(
+      item.referenceCarbsPerMealMax,
+    ),
+    bmi: nullablePositiveNumber(item.bmi),
+    bmiCategory: typeof item.bmiCategory === "string" ? item.bmiCategory : null,
+    usesInsulin: item.usesInsulin === true,
+    usesHypoglycemiaRiskMedication:
+      item.usesHypoglycemiaRiskMedication === true,
     updatedAt: typeof item.updatedAt === "string" ? item.updatedAt : now,
   };
 }
@@ -81,23 +111,26 @@ export function saveDiabetesMealSupportSettings(
     updatedAt: new Date().toISOString(),
   };
   // 目標値は空欄＝null（医学的既定値で埋めない）
-  if ("targetCarbsPerMealMin" in patch) {
-    next.targetCarbsPerMealMin = nullablePositiveNumber(
-      patch.targetCarbsPerMealMin,
-    );
+  const numberKeys = [
+    "targetCarbsPerMealMin",
+    "targetCarbsPerMealMax",
+    "targetCarbsPerDay",
+    "preferredStaplePortionGrams",
+    "referenceCaloriesMin",
+    "referenceCaloriesMax",
+    "referenceCarbsPerDayMin",
+    "referenceCarbsPerDayMax",
+    "referenceCarbsPerMealMin",
+    "referenceCarbsPerMealMax",
+    "bmi",
+  ] as const;
+  for (const key of numberKeys) {
+    if (key in patch) {
+      next[key] = nullablePositiveNumber(patch[key]);
+    }
   }
-  if ("targetCarbsPerMealMax" in patch) {
-    next.targetCarbsPerMealMax = nullablePositiveNumber(
-      patch.targetCarbsPerMealMax,
-    );
-  }
-  if ("targetCarbsPerDay" in patch) {
-    next.targetCarbsPerDay = nullablePositiveNumber(patch.targetCarbsPerDay);
-  }
-  if ("preferredStaplePortionGrams" in patch) {
-    next.preferredStaplePortionGrams = nullablePositiveNumber(
-      patch.preferredStaplePortionGrams,
-    );
+  if ("goalSource" in patch) {
+    next.goalSource = migrateGoalSource(patch.goalSource);
   }
   write(next);
   return next;

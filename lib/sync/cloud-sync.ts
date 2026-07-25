@@ -23,7 +23,11 @@ import { replaceInventory } from "@/lib/inventory";
 import { loadLeftoverIngredients, replaceLeftoverIngredients } from "@/lib/leftover-ingredients";
 import { replaceMealPlans } from "@/lib/meal-plans";
 import { replacePantryStock } from "@/lib/pantry-stock";
-import { loadRecipes, replaceRecipes } from "@/lib/recipes";
+import {
+  areSampleRecipesDismissed,
+  loadRecipes,
+  replaceRecipes,
+} from "@/lib/recipes";
 import { replaceShoppingLists } from "@/lib/shopping-lists";
 import { loadInventory } from "@/lib/inventory";
 import { loadMealPlans } from "@/lib/meal-plans";
@@ -162,7 +166,10 @@ export async function pullCloudToLocal(
     if (cookingHistoryRes.error) throw cookingHistoryRes.error;
     if (leftoversRes.error) throw leftoversRes.error;
 
-    const recipes = (recipesRes.data ?? []).map(recipeFromRow);
+    // ユーザーがサンプルを削除済みなら、クラウドのサンプルで上書き復活させない
+    const recipes = (recipesRes.data ?? [])
+      .map(recipeFromRow)
+      .filter((recipe) => !(areSampleRecipesDismissed() && recipe.isSample));
     const mealPlans = (mealsRes.data ?? []).map(mealPlanFromRow);
     const shoppingLists = (shoppingRes.data ?? []).map(shoppingListFromRow);
     const inventory = (inventoryRes.data ?? []).map(inventoryFromRow);
@@ -256,6 +263,42 @@ export async function pushLocalToCloud(
         errors.push(`recipes: ${error.message}`);
       } else {
         recipes = localRecipes.length;
+      }
+    }
+
+    // 端末で消したサンプルがクラウドに残り、pull で復活するのを防ぐ
+    if (areSampleRecipesDismissed()) {
+      const { error } = await client
+        .from("recipes")
+        .delete()
+        .eq("household_id", householdId)
+        .eq("is_sample", true);
+      if (error) {
+        errors.push(`recipes(sample cleanup): ${error.message}`);
+      }
+    } else {
+      const localIds = new Set(localRecipes.map((recipe) => recipe.id));
+      const { data: cloudSamples, error: listError } = await client
+        .from("recipes")
+        .select("id")
+        .eq("household_id", householdId)
+        .eq("is_sample", true);
+      if (listError) {
+        errors.push(`recipes(sample list): ${listError.message}`);
+      } else {
+        const orphanIds = (cloudSamples ?? [])
+          .map((row) => row.id)
+          .filter((id) => !localIds.has(id));
+        if (orphanIds.length > 0) {
+          const { error } = await client
+            .from("recipes")
+            .delete()
+            .eq("household_id", householdId)
+            .in("id", orphanIds);
+          if (error) {
+            errors.push(`recipes(sample orphan): ${error.message}`);
+          }
+        }
       }
     }
   } catch (error) {

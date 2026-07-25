@@ -19,6 +19,10 @@ export const STORAGE_KEYS = {
   diabetesMealSupport: "meal-planner:diabetesMealSupport",
   cookingFeedbacks: "meal-planner:cookingFeedbacks",
   recipeVariants: "meal-planner:recipeVariants",
+  /** サンプルレシピを一度でも投入（または初期化判定）したか */
+  sampleRecipesInitialized: "meal-planner:sampleRecipesInitialized",
+  /** ユーザーがサンプルを削除したか（自動再投入・同期での復活を禁止） */
+  sampleRecipesDismissed: "meal-planner:sampleRecipesDismissed",
 } as const;
 
 /**

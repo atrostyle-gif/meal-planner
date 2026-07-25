@@ -4,6 +4,8 @@
  * 未設定の項目に医学的な既定値は適用しない。
  */
 
+export type DiabetesGoalSource = "manual" | "questionnaire" | "clinician";
+
 export type DiabetesMealSupportSettings = {
   /** 配慮モードの有効/無効 */
   diabetesMealSupportEnabled: boolean;
@@ -23,6 +25,21 @@ export type DiabetesMealSupportSettings = {
   limitSaturatedFat: boolean;
   /** 希望する主食量（g）。未設定は null。自動変更には使わず提案の参考 */
   preferredStaplePortionGrams: number | null;
+  /** 目標値の出所（後方互換のため省略可） */
+  goalSource?: DiabetesGoalSource | null;
+  questionnaireCompletedAt?: string | null;
+  referenceCaloriesMin?: number | null;
+  referenceCaloriesMax?: number | null;
+  referenceCarbsPerDayMin?: number | null;
+  referenceCarbsPerDayMax?: number | null;
+  referenceCarbsPerMealMin?: number | null;
+  referenceCarbsPerMealMax?: number | null;
+  bmi?: number | null;
+  bmiCategory?: string | null;
+  /** インスリン使用（安全表示用。診断ではない） */
+  usesInsulin?: boolean;
+  /** 低血糖リスクのある薬（安全表示用） */
+  usesHypoglycemiaRiskMedication?: boolean;
   updatedAt: string;
 };
 
@@ -39,6 +56,18 @@ export const DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS: Omit<
   limitSodium: false,
   limitSaturatedFat: false,
   preferredStaplePortionGrams: null,
+  goalSource: null,
+  questionnaireCompletedAt: null,
+  referenceCaloriesMin: null,
+  referenceCaloriesMax: null,
+  referenceCarbsPerDayMin: null,
+  referenceCarbsPerDayMax: null,
+  referenceCarbsPerMealMin: null,
+  referenceCarbsPerMealMax: null,
+  bmi: null,
+  bmiCategory: null,
+  usesInsulin: false,
+  usesHypoglycemiaRiskMedication: false,
 };
 
 /** レシピ栄養の根拠ステータス */

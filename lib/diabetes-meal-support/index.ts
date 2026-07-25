@@ -27,3 +27,16 @@ export {
   DIABETES_SUPPORT_DISCLAIMER,
   CARB_NOT_GLUCOSE_DISCLAIMER,
 } from "@/lib/diabetes-meal-support/report";
+export {
+  calculateBmi,
+  calculateReferenceWeight,
+  calculateReferenceCalories,
+  calculateReferenceCarbRange,
+  distributeCarbsAcrossMeals,
+  createReferenceGoalExplanation,
+  buildReferenceGoalResult,
+} from "@/lib/diabetes-meal-support/reference-goal";
+export {
+  resolveEffectiveCarbTargets,
+  goalSourceLabel,
+} from "@/lib/diabetes-meal-support/resolve-targets";

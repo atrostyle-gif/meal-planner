@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import {
   buildDiabetesMealSupportReport,
 } from "@/lib/diabetes-meal-support/report";
+import { REFERENCE_GOAL_CONFIG } from "@/lib/diabetes-meal-support/reference-goal-config";
+import { resolveEffectiveCarbTargets } from "@/lib/diabetes-meal-support/resolve-targets";
 import { loadDiabetesMealSupportSettings } from "@/lib/diabetes-meal-support/settings";
 import { WEEKDAY_LABELS, formatMonthDay, parseDate } from "@/lib/date";
 import type { MealPlan } from "@/types/meal-plan";
@@ -39,10 +41,14 @@ export function DiabetesMealSupportPanel({
 }: DiabetesMealSupportPanelProps) {
   const [open, setOpen] = useState(true);
   const settings = loadDiabetesMealSupportSettings();
+  const effective = resolveEffectiveCarbTargets(settings);
   const report = useMemo(
     () => buildDiabetesMealSupportReport(plan, recipes, settings),
     [plan, recipes, settings],
   );
+  const medicationWarning =
+    settings.usesInsulin === true ||
+    settings.usesHypoglycemiaRiskMedication === true;
 
   if (!settings.diabetesMealSupportEnabled) {
     return (
@@ -69,6 +75,9 @@ export function DiabetesMealSupportPanel({
           <p className="mt-1 text-xs opacity-90">
             栄養カバー率（週）: {report.weeklyTotals.nutritionCoverage}%
           </p>
+          <p className="mt-1 text-xs opacity-90">
+            目標値の出所：{effective.sourceLabel}
+          </p>
         </div>
         <button
           type="button"
@@ -81,6 +90,11 @@ export function DiabetesMealSupportPanel({
 
       <p className="text-xs leading-relaxed opacity-95">{report.disclaimer}</p>
       <p className="text-xs leading-relaxed opacity-95">{report.carbDisclaimer}</p>
+      {medicationWarning ? (
+        <p className="rounded-xl bg-white/60 p-3 text-xs text-on-surface">
+          {REFERENCE_GOAL_CONFIG.disclaimers.medicationWarning}
+        </p>
+      ) : null}
 
       {open ? (
         <>

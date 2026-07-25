@@ -5,6 +5,7 @@ import {
   resolveRecipeMealNutrition,
   recipeHasUsableNutrition,
 } from "@/lib/diabetes-meal-support/recipe-nutrition";
+import { resolveEffectiveCarbTargets } from "@/lib/diabetes-meal-support/resolve-targets";
 import type { DiabetesMealSupportSettings } from "@/types/diabetes-meal-support";
 import type { SelectionReason } from "@/types/weekly-meal-plan";
 import type { Recipe, RecipeCourse } from "@/types/recipe";
@@ -49,16 +50,16 @@ export function scoreDiabetesMealSupport(
     return { scoreDelta: -5, reasons, nutritionMissing: true };
   }
 
-  // 1食糖質目標（ユーザー設定がある場合のみ）
+  // 1食糖質目標（clinician > manual > questionnaire の有効目標）
+  const effective = resolveEffectiveCarbTargets(settings);
   if (
     ctx.evaluateAsMealCarbAnchor &&
     nutrition.carbohydratesG != null &&
-    (settings.targetCarbsPerMealMin != null ||
-      settings.targetCarbsPerMealMax != null)
+    (effective.mealMin != null || effective.mealMax != null)
   ) {
     const carbs = nutrition.carbohydratesG;
-    const min = settings.targetCarbsPerMealMin;
-    const max = settings.targetCarbsPerMealMax;
+    const min = effective.mealMin;
+    const max = effective.mealMax;
     const inRange =
       (min == null || carbs >= min) && (max == null || carbs <= max);
     if (inRange) {
@@ -74,8 +75,7 @@ export function scoreDiabetesMealSupport(
   } else if (
     ctx.evaluateAsMealCarbAnchor &&
     nutrition.carbohydratesG == null &&
-    (settings.targetCarbsPerMealMin != null ||
-      settings.targetCarbsPerMealMax != null)
+    (effective.mealMin != null || effective.mealMax != null)
   ) {
     reasons.push({ detail: "栄養情報不足（糖質を判定できない）" });
     scoreDelta -= 5;

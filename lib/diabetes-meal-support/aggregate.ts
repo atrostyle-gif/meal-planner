@@ -2,6 +2,7 @@ import {
   resolveRecipeMealNutrition,
   recipeHasUsableNutrition,
 } from "@/lib/diabetes-meal-support/recipe-nutrition";
+import { resolveEffectiveCarbTargets } from "@/lib/diabetes-meal-support/resolve-targets";
 import type {
   CarbTargetStatus,
   DailyNutritionTotals,
@@ -122,16 +123,18 @@ export function evaluateCarbTargetStatus(
 ): CarbTargetStatus {
   if (carbohydratesG === null) return "unknown";
 
+  const effective = resolveEffectiveCarbTargets(settings);
+
   if (scope === "meal") {
-    const min = settings.targetCarbsPerMealMin;
-    const max = settings.targetCarbsPerMealMax;
+    const min = effective.mealMin;
+    const max = effective.mealMax;
     if (min == null && max == null) return "no_target";
     if (max != null && carbohydratesG > max) return "over";
     if (min != null && carbohydratesG < min) return "under";
     return "in_range";
   }
 
-  const dayTarget = settings.targetCarbsPerDay;
+  const dayTarget = effective.day;
   if (dayTarget == null) {
     // 1日目標が無い場合、1食目標×想定食数は推測しない
     return "no_target";

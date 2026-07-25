@@ -26,8 +26,9 @@ function finalizeSample(sample: SampleDraft): Recipe {
 }
 
 /**
- * 初回起動時・resetSampleRecipes() で投入する検証用サンプルレシピ。
- * すべて isSample: true。removeSampleRecipes() で一括削除できる。
+ * 初回インストール時（sampleRecipesInitialized 未設定）と
+ * resetSampleRecipes() 明示操作でのみ投入する検証用サンプルレシピ。
+ * すべて isSample: true。削除後は自動再投入しない。
  */
 export function createSampleRecipes(now: string = new Date().toISOString()): Recipe[] {
   const samples: SampleDraft[] = [
