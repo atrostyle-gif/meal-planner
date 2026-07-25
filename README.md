@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 家族の献立（meal-planner）
 
-## Getting Started
+家族向けの献立・レシピ・買い物リストアプリです。
 
-First, run the development server:
+- Next.js（App Router） / TypeScript / Tailwind CSS
+- 既定は **localStorage**（ログイン不要）
+- 任意で **Supabase** による家族共有・ログイン
+
+## 起動
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 主な画面
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| パス | 内容 |
+|------|------|
+| `/today` | 今日の献立 |
+| `/meals` | 週間献立・余っている食材 |
+| `/recipes` | レシピ |
+| `/recipes/new` | レシピ追加（手入力 / URL / 写真） |
+| `/recipes/import/url` | URLから取り込み |
+| `/recipes/import/photo` | 写真から取り込み |
+| `/recipes/import/confirm` | 取り込み内容の確認・保存 |
+| `/recipes/[id]/cook` | 調理モード |
+| `/recipes/new` | 手入力・URL・写真からのレシピ登録 |
+| `/settings/pantry` | 常備品 |
+| `/shopping` | 買い物リスト |
+| `/settings` | 設定 |
+| `/settings/family-profiles` | 家族プロフィール（アレルギー・目標） |
+| `/settings/weekly-schedule` | 曜日ごとの料理担当・生活スケジュール |
+| `/settings/cooking-members` | 調理担当者の作りやすさ |
+| `/settings/lifestyle-setup` | 生活スケジュール初期設定 |
+| `/nutrition` | 栄養バランス |
+| `/login` | ログイン（Supabase 時） |
 
-## Learn More
+## 家族共有（任意）
 
-To learn more about Next.js, take a look at the following resources:
+1. `docs/SUPABASE_SETUP.md` に従いプロジェクトと SQL を設定
+2. `.env.local` に URL / anon key を設定
+3. 開発サーバー再起動
+4. `/login` → 家庭作成 → 招待コードで家族参加
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+関連ドキュメント:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `docs/SUPABASE_SETUP.md`
+- `docs/FAMILY_SHARING.md`
+- `docs/LOCAL_TO_SUPABASE_MIGRATION.md`
+- `docs/NUTRITION_ENGINE.md`
+- `docs/FOOD_MASTER.md`
+- `docs/FAMILY_HEALTH_PROFILES.md`
+- `docs/WEEKLY_LIFESTYLE_ENGINE.md`
+- `docs/COOKING_MEMBER_PROFILES.md`
+- `docs/MEAL_PLANNER_V4.md`
+- `docs/LEFTOVER_INGREDIENTS.md`
+- `docs/RECIPE_IMPORT.md`
+- `docs/RECIPE_URL_IMPORT.md`
+- `docs/RECIPE_PHOTO_IMPORT.md`
+- `PROJECT_SPEC.md` / `DATABASE.md` / `ROADMAP.md`
 
-## Deploy on Vercel
+## 環境変数（任意）
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| 変数 | 用途 |
+|------|------|
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 家族共有 |
+| `OPENAI_API_KEY` | レシピ写真・URL（AI）取り込み（サーバー側のみ） |
+| `OPENAI_RECIPE_IMPORT_MODEL` | URL取り込みモデル（未設定時 gpt-4o-mini） |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## スクリプト
+
+```bash
+npm run lint
+npm run build
+npm run test
+```

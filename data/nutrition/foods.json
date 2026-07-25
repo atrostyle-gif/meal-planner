@@ -1,0 +1,7063 @@
+[
+  {
+    "foodCode": "GR001",
+    "name": "うるち米（精白米）",
+    "aliases": [
+      "米",
+      "白米",
+      "ごはん",
+      "ご飯",
+      "炊飯米",
+      "白ごはん"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 168,
+      "protein": 2.5,
+      "fat": 0.3,
+      "carbohydrate": 37.1,
+      "dietaryFiber": 0.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR002",
+    "name": "玄米",
+    "aliases": [
+      "玄米ごはん",
+      "げんまい"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 165,
+      "protein": 2.8,
+      "fat": 1,
+      "carbohydrate": 35.6,
+      "dietaryFiber": 1.4,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR003",
+    "name": "もち米",
+    "aliases": [
+      "もちごめ",
+      "もち米"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 353,
+      "protein": 6.5,
+      "fat": 1,
+      "carbohydrate": 77.4,
+      "dietaryFiber": 0.8,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR004",
+    "name": "パン（食パン）",
+    "aliases": [
+      "食パン",
+      "パン",
+      "トースト"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 264,
+      "protein": 9.3,
+      "fat": 4.4,
+      "carbohydrate": 46.7,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 470,
+      "saltEquivalent": 1.2
+    },
+    "gramsPerUnit": 60,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR005",
+    "name": "うどん（ゆで）",
+    "aliases": [
+      "うどん",
+      "茹でうどん"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 105,
+      "protein": 2.6,
+      "fat": 0.4,
+      "carbohydrate": 21.6,
+      "dietaryFiber": 0.8,
+      "sugars": null,
+      "sodium": 90,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 250,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR006",
+    "name": "そば（ゆで）",
+    "aliases": [
+      "そば",
+      "蕎麦",
+      "茹でそば"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 114,
+      "protein": 4.8,
+      "fat": 0.6,
+      "carbohydrate": 22.1,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 250,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR007",
+    "name": "中華めん（ゆで）",
+    "aliases": [
+      "ラーメン",
+      "中華麺",
+      "中華めん"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 149,
+      "protein": 4.9,
+      "fat": 0.6,
+      "carbohydrate": 28.9,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 70,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR008",
+    "name": "スパゲッティ（ゆで）",
+    "aliases": [
+      "パスタ",
+      "スパゲティ",
+      "スパゲッティ"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 150,
+      "protein": 5.2,
+      "fat": 0.9,
+      "carbohydrate": 28.4,
+      "dietaryFiber": 1.6,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR009",
+    "name": "そうめん（ゆで）",
+    "aliases": [
+      "そうめん",
+      "素麺"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 127,
+      "protein": 3.5,
+      "fat": 0.4,
+      "carbohydrate": 26,
+      "dietaryFiber": 0.8,
+      "sugars": null,
+      "sodium": 60,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR010",
+    "name": "オートミール",
+    "aliases": [
+      "おおともーる",
+      "オーツ"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 380,
+      "protein": 13.7,
+      "fat": 5.7,
+      "carbohydrate": 69.1,
+      "dietaryFiber": 9.4,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR011",
+    "name": "小麦粉",
+    "aliases": [
+      "薄力粉",
+      "中力粉",
+      "強力粉",
+      "こむぎこ"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 368,
+      "protein": 8.3,
+      "fat": 1.5,
+      "carbohydrate": 75.8,
+      "dietaryFiber": 2.4,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 9,
+    "gramsPerTeaspoon": 3,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR012",
+    "name": "パン粉",
+    "aliases": [
+      "生パン粉",
+      "乾燥パン粉"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 373,
+      "protein": 12.4,
+      "fat": 4.8,
+      "carbohydrate": 67.5,
+      "dietaryFiber": 3.2,
+      "sugars": null,
+      "sodium": 700,
+      "saltEquivalent": 1.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 6,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR013",
+    "name": "片栗粉",
+    "aliases": [
+      "かたくり粉",
+      "でん粉"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 330,
+      "protein": 0.1,
+      "fat": 0.1,
+      "carbohydrate": 81.8,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 12,
+    "gramsPerTeaspoon": 4,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR014",
+    "name": "もち",
+    "aliases": [
+      "切り餅",
+      "おもち"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 235,
+      "protein": 4,
+      "fat": 0.6,
+      "carbohydrate": 50.3,
+      "dietaryFiber": 0.8,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "GR015",
+    "name": "春雨（ゆで）",
+    "aliases": [
+      "はるさめ",
+      "春雨"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 80,
+      "protein": 0.1,
+      "fat": 0.1,
+      "carbohydrate": 19.9,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 3,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PO001",
+    "name": "じゃがいも",
+    "aliases": [
+      "ジャガイモ",
+      "馬鈴薯",
+      "ばれいしょ"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 76,
+      "protein": 1.6,
+      "fat": 0.1,
+      "carbohydrate": 17.6,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PO002",
+    "name": "さつまいも",
+    "aliases": [
+      "サツマイモ",
+      "さつま芋"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 132,
+      "protein": 1.2,
+      "fat": 0.2,
+      "carbohydrate": 31.5,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PO003",
+    "name": "さといも",
+    "aliases": [
+      "里芋",
+      "サトイモ"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 58,
+      "protein": 1.5,
+      "fat": 0.1,
+      "carbohydrate": 13.1,
+      "dietaryFiber": 2.1,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 60,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PO004",
+    "name": "ながいも",
+    "aliases": [
+      "長芋",
+      "やまといも",
+      "山芋"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 65,
+      "protein": 2.2,
+      "fat": 0.3,
+      "carbohydrate": 13.9,
+      "dietaryFiber": 1,
+      "sugars": null,
+      "sodium": 3,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PO005",
+    "name": "こんにゃく",
+    "aliases": [
+      "コンニャク",
+      "板こんにゃく"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 5,
+      "protein": 0.1,
+      "fat": 0,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SW001",
+    "name": "上白糖",
+    "aliases": [
+      "砂糖",
+      "白砂糖",
+      "グラニュー糖",
+      "きび砂糖"
+    ],
+    "category": "砂糖類",
+    "per100g": {
+      "energy": 387,
+      "protein": 0,
+      "fat": 0,
+      "carbohydrate": 99.2,
+      "dietaryFiber": 0,
+      "sugars": 99.2,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 9,
+    "gramsPerTeaspoon": 3,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SW002",
+    "name": "はちみつ",
+    "aliases": [
+      "蜂蜜",
+      "ハチミツ"
+    ],
+    "category": "砂糖類",
+    "per100g": {
+      "energy": 294,
+      "protein": 0.3,
+      "fat": 0,
+      "carbohydrate": 79.7,
+      "dietaryFiber": 0,
+      "sugars": 79.7,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 21,
+    "gramsPerTeaspoon": 7,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SW003",
+    "name": "みりん",
+    "aliases": [
+      "本みりん",
+      "味醂"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 241,
+      "protein": 0.2,
+      "fat": 0,
+      "carbohydrate": 43.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE001",
+    "name": "大豆（ゆで）",
+    "aliases": [
+      "大豆",
+      "だいず"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 180,
+      "protein": 16,
+      "fat": 9,
+      "carbohydrate": 9.7,
+      "dietaryFiber": 7,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE002",
+    "name": "納豆",
+    "aliases": [
+      "糸引き納豆",
+      "なっとう"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 200,
+      "protein": 16.5,
+      "fat": 10,
+      "carbohydrate": 12.1,
+      "dietaryFiber": 6.7,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE003",
+    "name": "木綿豆腐",
+    "aliases": [
+      "豆腐",
+      "とうふ",
+      "もめんどうふ"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 73,
+      "protein": 6.6,
+      "fat": 4.2,
+      "carbohydrate": 1.6,
+      "dietaryFiber": 0.4,
+      "sugars": null,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 300,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE004",
+    "name": "絹ごし豆腐",
+    "aliases": [
+      "絹豆腐",
+      "きぬごし"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 56,
+      "protein": 4.9,
+      "fat": 3,
+      "carbohydrate": 2,
+      "dietaryFiber": 0.3,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 300,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE005",
+    "name": "厚揚げ",
+    "aliases": [
+      "あつあげ",
+      "生揚げ"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 151,
+      "protein": 10.7,
+      "fat": 11.3,
+      "carbohydrate": 0.5,
+      "dietaryFiber": 0.9,
+      "sugars": null,
+      "sodium": 8,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE006",
+    "name": "油揚げ",
+    "aliases": [
+      "あぶらあげ",
+      "薄い油揚げ"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 386,
+      "protein": 18.3,
+      "fat": 33.1,
+      "carbohydrate": 0.9,
+      "dietaryFiber": 1.1,
+      "sugars": null,
+      "sodium": 10,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE007",
+    "name": "がんもどき",
+    "aliases": [
+      "がんも"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 228,
+      "protein": 15.3,
+      "fat": 17.8,
+      "carbohydrate": 1.6,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 320,
+      "saltEquivalent": 0.8
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE008",
+    "name": "豆乳（無調整）",
+    "aliases": [
+      "豆乳",
+      "とうにゅう"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 46,
+      "protein": 3.6,
+      "fat": 2,
+      "carbohydrate": 2.9,
+      "dietaryFiber": 0.2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE009",
+    "name": "あずき（ゆで）",
+    "aliases": [
+      "小豆",
+      "あずき"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 143,
+      "protein": 8.6,
+      "fat": 0.6,
+      "carbohydrate": 25.5,
+      "dietaryFiber": 8.7,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "BE010",
+    "name": "きなこ",
+    "aliases": [
+      "黄な粉",
+      "きな粉"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 450,
+      "protein": 35.5,
+      "fat": 25.7,
+      "carbohydrate": 26.6,
+      "dietaryFiber": 16.9,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 6,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "NU001",
+    "name": "ごま（いり）",
+    "aliases": [
+      "いりごま",
+      "白ごま",
+      "黒ごま",
+      "ごま"
+    ],
+    "category": "種実類",
+    "per100g": {
+      "energy": 578,
+      "protein": 20.3,
+      "fat": 51.9,
+      "carbohydrate": 18.5,
+      "dietaryFiber": 10.5,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 9,
+    "gramsPerTeaspoon": 3,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "NU002",
+    "name": "ピーナッツ",
+    "aliases": [
+      "落花生落花生",
+      "ピーナッツバター"
+    ],
+    "category": "種実類",
+    "per100g": {
+      "energy": 562,
+      "protein": 25.4,
+      "fat": 47.5,
+      "carbohydrate": 18.8,
+      "dietaryFiber": 7.4,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG001",
+    "name": "玉ねぎ",
+    "aliases": [
+      "たまねぎ",
+      "玉ネギ",
+      "玉葱",
+      "オニオン"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 37,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 8.8,
+      "dietaryFiber": 1.6,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG002",
+    "name": "にんじん",
+    "aliases": [
+      "人参",
+      "ニンジン"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 39,
+      "protein": 0.7,
+      "fat": 0.2,
+      "carbohydrate": 9.1,
+      "dietaryFiber": 2.8,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG003",
+    "name": "キャベツ",
+    "aliases": [
+      "きゃべつ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 23,
+      "protein": 1.3,
+      "fat": 0.2,
+      "carbohydrate": 5.2,
+      "dietaryFiber": 1.8,
+      "sugars": null,
+      "sodium": 3,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 300,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG004",
+    "name": "白菜",
+    "aliases": [
+      "はくさい"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 0.8,
+      "fat": 0.1,
+      "carbohydrate": 3.2,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 300,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG005",
+    "name": "きゅうり",
+    "aliases": [
+      "キュウリ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 3,
+      "dietaryFiber": 1.1,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG006",
+    "name": "トマト",
+    "aliases": [
+      "とまと"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 19,
+      "protein": 0.7,
+      "fat": 0.1,
+      "carbohydrate": 4.7,
+      "dietaryFiber": 1,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG007",
+    "name": "ピーマン",
+    "aliases": [
+      "ぴーまん",
+      "青ピーマン"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 22,
+      "protein": 0.9,
+      "fat": 0.2,
+      "carbohydrate": 5.1,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 40,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG008",
+    "name": "なす",
+    "aliases": [
+      "茄子",
+      "ナス"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 22,
+      "protein": 1.1,
+      "fat": 0.1,
+      "carbohydrate": 5.1,
+      "dietaryFiber": 2.2,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG009",
+    "name": "大根",
+    "aliases": [
+      "だいこん",
+      "大根おろし"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 18,
+      "protein": 0.5,
+      "fat": 0.1,
+      "carbohydrate": 4.1,
+      "dietaryFiber": 1.4,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG010",
+    "name": "ごぼう",
+    "aliases": [
+      "牛蒡",
+      "ゴボウ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 65,
+      "protein": 1.8,
+      "fat": 0.1,
+      "carbohydrate": 15.4,
+      "dietaryFiber": 5.7,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG011",
+    "name": "れんこん",
+    "aliases": [
+      "蓮根",
+      "レンコン"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 66,
+      "protein": 1.9,
+      "fat": 0.1,
+      "carbohydrate": 15.5,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG012",
+    "name": "ほうれん草",
+    "aliases": [
+      "ホウレンソウ",
+      "ほうれんそう"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 20,
+      "protein": 2.2,
+      "fat": 0.4,
+      "carbohydrate": 3.1,
+      "dietaryFiber": 2.8,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG013",
+    "name": "小松菜",
+    "aliases": [
+      "こまつな"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 1.5,
+      "fat": 0.2,
+      "carbohydrate": 2.4,
+      "dietaryFiber": 1.9,
+      "sugars": null,
+      "sodium": 16,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG014",
+    "name": "レタス",
+    "aliases": [
+      "れたす",
+      "サニーレタス"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 12,
+      "protein": 0.6,
+      "fat": 0.1,
+      "carbohydrate": 2.8,
+      "dietaryFiber": 1.1,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG015",
+    "name": "もやし",
+    "aliases": [
+      "緑豆もやし",
+      "豆もやし"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 1.7,
+      "fat": 0.1,
+      "carbohydrate": 2.6,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG016",
+    "name": "ねぎ",
+    "aliases": [
+      "長ねぎ",
+      "白ねぎ",
+      "青ねぎ",
+      "ネギ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 28,
+      "protein": 1.4,
+      "fat": 0.1,
+      "carbohydrate": 6.5,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG017",
+    "name": "にら",
+    "aliases": [
+      "ニラ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 21,
+      "protein": 1.7,
+      "fat": 0.3,
+      "carbohydrate": 4,
+      "dietaryFiber": 2.7,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG018",
+    "name": "にんにく",
+    "aliases": [
+      "ニンニク"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 134,
+      "protein": 6,
+      "fat": 0.8,
+      "carbohydrate": 26.3,
+      "dietaryFiber": 5.7,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG019",
+    "name": "しょうが",
+    "aliases": [
+      "生姜",
+      "ジンジャー"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 0.9,
+      "fat": 0.3,
+      "carbohydrate": 6.6,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG020",
+    "name": "ブロッコリー",
+    "aliases": [
+      "ぶろっこりー"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 33,
+      "protein": 4.3,
+      "fat": 0.5,
+      "carbohydrate": 5.2,
+      "dietaryFiber": 4.4,
+      "sugars": null,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG021",
+    "name": "かぼちゃ",
+    "aliases": [
+      "南瓜",
+      "カボチャ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 91,
+      "protein": 1.6,
+      "fat": 0.1,
+      "carbohydrate": 21.3,
+      "dietaryFiber": 3.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG022",
+    "name": "とうもろこし",
+    "aliases": [
+      "コーン",
+      "スイートコーン"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 92,
+      "protein": 3.6,
+      "fat": 1.7,
+      "carbohydrate": 16.8,
+      "dietaryFiber": 3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG023",
+    "name": "アスパラガス",
+    "aliases": [
+      "アスパラ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 19,
+      "protein": 2.6,
+      "fat": 0.2,
+      "carbohydrate": 3.9,
+      "dietaryFiber": 1.8,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG024",
+    "name": "おくら",
+    "aliases": [
+      "オクラ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 2.1,
+      "fat": 0.2,
+      "carbohydrate": 6.6,
+      "dietaryFiber": 5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 15,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG025",
+    "name": "セロリ",
+    "aliases": [
+      "せろり"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 15,
+      "protein": 0.4,
+      "fat": 0.1,
+      "carbohydrate": 3.6,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 8,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG026",
+    "name": "パセリ",
+    "aliases": [
+      "ぱせり"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 44,
+      "protein": 2.2,
+      "fat": 0.3,
+      "carbohydrate": 9.3,
+      "dietaryFiber": 6.8,
+      "sugars": null,
+      "sodium": 7,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG027",
+    "name": "大葉",
+    "aliases": [
+      "しそ",
+      "青じそ",
+      "シソ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 37,
+      "protein": 3.9,
+      "fat": 0.1,
+      "carbohydrate": 7.3,
+      "dietaryFiber": 7.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 1,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG028",
+    "name": "みょうが",
+    "aliases": [
+      "茗荷"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 12,
+      "protein": 0.9,
+      "fat": 0.1,
+      "carbohydrate": 2.7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG029",
+    "name": "たけのこ",
+    "aliases": [
+      "竹の子",
+      "筍"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 26,
+      "protein": 3.6,
+      "fat": 0.2,
+      "carbohydrate": 4.3,
+      "dietaryFiber": 2.8,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG030",
+    "name": "カリフラワー",
+    "aliases": [
+      "かりふらわー"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 27,
+      "protein": 3,
+      "fat": 0.1,
+      "carbohydrate": 5.2,
+      "dietaryFiber": 2.9,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG031",
+    "name": "ズッキーニ",
+    "aliases": [
+      "ずっきーに"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 1.3,
+      "fat": 0.1,
+      "carbohydrate": 3,
+      "dietaryFiber": 1,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG032",
+    "name": "パプリカ",
+    "aliases": [
+      "赤パプリカ",
+      "黄パプリカ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.2,
+      "carbohydrate": 7.2,
+      "dietaryFiber": 1.8,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG033",
+    "name": "もやし（大豆）",
+    "aliases": [
+      "大豆もやし"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 37,
+      "protein": 3.7,
+      "fat": 1.5,
+      "carbohydrate": 3.4,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "VG034",
+    "name": "キャベツ（千切り）",
+    "aliases": [
+      "ざく切りキャベツ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 23,
+      "protein": 1.3,
+      "fat": 0.2,
+      "carbohydrate": 5.2,
+      "dietaryFiber": 1.8,
+      "sugars": null,
+      "sodium": 3,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "MU001",
+    "name": "しいたけ",
+    "aliases": [
+      "椎茸",
+      "生しいたけ"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 18,
+      "protein": 3,
+      "fat": 0.4,
+      "carbohydrate": 4.4,
+      "dietaryFiber": 3.8,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "MU002",
+    "name": "えのきたけ",
+    "aliases": [
+      "えのき",
+      "エノキ"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 22,
+      "protein": 2.7,
+      "fat": 0.2,
+      "carbohydrate": 7.6,
+      "dietaryFiber": 3.9,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "MU003",
+    "name": "しめじ",
+    "aliases": [
+      "ぶなしめじ"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 18,
+      "protein": 2.7,
+      "fat": 0.5,
+      "carbohydrate": 4.6,
+      "dietaryFiber": 3.7,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "MU004",
+    "name": "まいたけ",
+    "aliases": [
+      "舞茸"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 15,
+      "protein": 2,
+      "fat": 0.5,
+      "carbohydrate": 4.4,
+      "dietaryFiber": 3.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "MU005",
+    "name": "エリンギ",
+    "aliases": [
+      "えりんぎ"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 19,
+      "protein": 2.8,
+      "fat": 0.4,
+      "carbohydrate": 5.5,
+      "dietaryFiber": 4.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "MU006",
+    "name": "マッシュルーム",
+    "aliases": [
+      "まっしゅるーむ"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 11,
+      "protein": 2.9,
+      "fat": 0.3,
+      "carbohydrate": 2.3,
+      "dietaryFiber": 2.2,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 15,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SWA001",
+    "name": "わかめ（乾燥）",
+    "aliases": [
+      "わかめ",
+      "ワカメ"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 28,
+      "protein": 13.7,
+      "fat": 1.6,
+      "carbohydrate": 31.7,
+      "dietaryFiber": 27.1,
+      "sugars": null,
+      "sodium": 5400,
+      "saltEquivalent": 13.7
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SWA002",
+    "name": "わかめ（塩蔵・戻し）",
+    "aliases": [
+      "塩わかめ",
+      "生わかめ"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 16,
+      "protein": 1.9,
+      "fat": 0.2,
+      "carbohydrate": 5.6,
+      "dietaryFiber": 3.6,
+      "sugars": null,
+      "sodium": 610,
+      "saltEquivalent": 1.5
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SWA003",
+    "name": "のり（焼き）",
+    "aliases": [
+      "海苔",
+      "焼きのり",
+      "のり"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 188,
+      "protein": 41.4,
+      "fat": 3.7,
+      "carbohydrate": 38.7,
+      "dietaryFiber": 36,
+      "sugars": null,
+      "sodium": 2600,
+      "saltEquivalent": 6.6
+    },
+    "gramsPerUnit": 3,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SWA004",
+    "name": "昆布",
+    "aliases": [
+      "こんぶ",
+      "だし昆布"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 145,
+      "protein": 7.1,
+      "fat": 1.1,
+      "carbohydrate": 54.7,
+      "dietaryFiber": 27.1,
+      "sugars": null,
+      "sodium": 2300,
+      "saltEquivalent": 5.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SWA005",
+    "name": "ひじき（乾燥）",
+    "aliases": [
+      "ひじき"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 129,
+      "protein": 7.8,
+      "fat": 1.3,
+      "carbohydrate": 51.8,
+      "dietaryFiber": 43.3,
+      "sugars": null,
+      "sodium": 1400,
+      "saltEquivalent": 3.6
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FR001",
+    "name": "りんご",
+    "aliases": [
+      "リンゴ",
+      "林檎"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 61,
+      "protein": 0.2,
+      "fat": 0.2,
+      "carbohydrate": 16.2,
+      "dietaryFiber": 1.5,
+      "sugars": 13.1,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FR002",
+    "name": "バナナ",
+    "aliases": [
+      "ばなな"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 86,
+      "protein": 1.1,
+      "fat": 0.2,
+      "carbohydrate": 22.5,
+      "dietaryFiber": 1.1,
+      "sugars": 19.2,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FR003",
+    "name": "みかん",
+    "aliases": [
+      "ミカン",
+      "温州みかん"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 45,
+      "protein": 0.5,
+      "fat": 0.1,
+      "carbohydrate": 12,
+      "dietaryFiber": 0.5,
+      "sugars": 9.5,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FR004",
+    "name": "いちご",
+    "aliases": [
+      "イチゴ"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 34,
+      "protein": 0.9,
+      "fat": 0.1,
+      "carbohydrate": 8.5,
+      "dietaryFiber": 1.4,
+      "sugars": 6.1,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 15,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FR005",
+    "name": "レモン果汁",
+    "aliases": [
+      "レモン",
+      "れもん汁"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 19,
+      "protein": 0.4,
+      "fat": 0.2,
+      "carbohydrate": 8.6,
+      "dietaryFiber": 0.1,
+      "sugars": 1.2,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 15,
+    "gramsPerTeaspoon": 5,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME001",
+    "name": "豚ばら肉",
+    "aliases": [
+      "豚バラ",
+      "豚ばら",
+      "豚バラ肉",
+      "ばら肉"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 395,
+      "protein": 14.2,
+      "fat": 35.4,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 48,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME002",
+    "name": "豚こま切れ",
+    "aliases": [
+      "豚こま",
+      "豚肉こま",
+      "豚小間"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 253,
+      "protein": 17.7,
+      "fat": 19.2,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME003",
+    "name": "豚ロース",
+    "aliases": [
+      "豚ロースト肉",
+      "ロース豚"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 263,
+      "protein": 19.3,
+      "fat": 19.2,
+      "carbohydrate": 0.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 40,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME004",
+    "name": "豚ひき肉",
+    "aliases": [
+      "豚挽き肉",
+      "ひき肉（豚）"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 236,
+      "protein": 17.7,
+      "fat": 17.2,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 55,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME005",
+    "name": "鶏もも肉（皮つき）",
+    "aliases": [
+      "鶏もも",
+      "とりもも",
+      "鶏モモ肉"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 204,
+      "protein": 16.2,
+      "fat": 14.2,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 55,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME006",
+    "name": "鶏むね肉（皮なし）",
+    "aliases": [
+      "鶏むね",
+      "鶏胸肉",
+      "ささみ近傍むね"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 108,
+      "protein": 22.3,
+      "fat": 1.5,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 35,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME007",
+    "name": "鶏ささみ",
+    "aliases": [
+      "ささみ",
+      "ササミ"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 105,
+      "protein": 23,
+      "fat": 0.8,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 35,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 40,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME008",
+    "name": "鶏ひき肉",
+    "aliases": [
+      "鶏挽き肉",
+      "とりひき"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 180,
+      "protein": 19,
+      "fat": 11,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME009",
+    "name": "牛肉（肩ロース）",
+    "aliases": [
+      "牛肩ロース",
+      "牛ロース"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 371,
+      "protein": 14,
+      "fat": 32.9,
+      "carbohydrate": 0.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 45,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME010",
+    "name": "牛こま切れ",
+    "aliases": [
+      "牛こま",
+      "牛肉こま"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 259,
+      "protein": 17.8,
+      "fat": 19.5,
+      "carbohydrate": 0.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME011",
+    "name": "合いびき肉",
+    "aliases": [
+      "合挽き肉",
+      "あいびき"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 280,
+      "protein": 16.5,
+      "fat": 22.5,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 55,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME012",
+    "name": "ベーコン",
+    "aliases": [
+      "べーこん"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 405,
+      "protein": 12.9,
+      "fat": 39.1,
+      "carbohydrate": 0.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 800,
+      "saltEquivalent": 2
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME013",
+    "name": "ハム",
+    "aliases": [
+      "ロースハム",
+      "生ハム"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 196,
+      "protein": 16.5,
+      "fat": 13.8,
+      "carbohydrate": 1.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 1000,
+      "saltEquivalent": 2.5
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "ME014",
+    "name": "ウインナー",
+    "aliases": [
+      "ウィンナー",
+      "ソーセージ"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 321,
+      "protein": 13.2,
+      "fat": 29,
+      "carbohydrate": 3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 900,
+      "saltEquivalent": 2.3
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI001",
+    "name": "さば",
+    "aliases": [
+      "サバ",
+      "鯖"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 202,
+      "protein": 20.6,
+      "fat": 12.1,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 85,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI002",
+    "name": "鮭",
+    "aliases": [
+      "さけ",
+      "サーモン",
+      "秋鮭"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 133,
+      "protein": 22.3,
+      "fat": 4.1,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 60,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI003",
+    "name": "まぐろ（赤身）",
+    "aliases": [
+      "マグロ",
+      "鮪"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 125,
+      "protein": 26.4,
+      "fat": 1.4,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 45,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI004",
+    "name": "あじ",
+    "aliases": [
+      "アジ",
+      "真あじ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 126,
+      "protein": 20.7,
+      "fat": 4.5,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 90,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI005",
+    "name": "いわし",
+    "aliases": [
+      "イワシ",
+      "鰯"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 169,
+      "protein": 19.2,
+      "fat": 9.2,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 80,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI006",
+    "name": "さんま",
+    "aliases": [
+      "サンマ",
+      "秋刀魚"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 310,
+      "protein": 17.8,
+      "fat": 25.6,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 70,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI007",
+    "name": "たら",
+    "aliases": [
+      "タラ",
+      "真だら"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 77,
+      "protein": 17.6,
+      "fat": 0.2,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 100,
+      "saltEquivalent": 0.3
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI008",
+    "name": "かれい",
+    "aliases": [
+      "カレイ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 94,
+      "protein": 19.6,
+      "fat": 1.3,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 90,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI009",
+    "name": "ぶり",
+    "aliases": [
+      "ブリ",
+      "ハマチ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 257,
+      "protein": 21.4,
+      "fat": 17.6,
+      "carbohydrate": 0.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 55,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI010",
+    "name": "えび",
+    "aliases": [
+      "エビ",
+      "海老"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 82,
+      "protein": 18.4,
+      "fat": 0.3,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 200,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI011",
+    "name": "いか",
+    "aliases": [
+      "イカ",
+      "烏賊"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 88,
+      "protein": 17,
+      "fat": 1.2,
+      "carbohydrate": 0.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 220,
+      "saltEquivalent": 0.6
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI012",
+    "name": "たこ",
+    "aliases": [
+      "タコ",
+      "蛸"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 76,
+      "protein": 16.4,
+      "fat": 0.7,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 210,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI013",
+    "name": "ホタテ",
+    "aliases": [
+      "ほたて",
+      "帆立"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 72,
+      "protein": 13.5,
+      "fat": 0.9,
+      "carbohydrate": 1.5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 180,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 30,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI014",
+    "name": "しらす干し",
+    "aliases": [
+      "しらす",
+      "ちりめん"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 163,
+      "protein": 28,
+      "fat": 3.9,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 1600,
+      "saltEquivalent": 4.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "FI015",
+    "name": "ツナ缶（油漬け）",
+    "aliases": [
+      "ツナ",
+      "シーチキン",
+      "まぐろ缶"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 190,
+      "protein": 15.2,
+      "fat": 12.5,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 350,
+      "saltEquivalent": 0.9
+    },
+    "gramsPerUnit": 70,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EG001",
+    "name": "鶏卵",
+    "aliases": [
+      "卵",
+      "たまご",
+      "玉子",
+      "生卵"
+    ],
+    "category": "卵",
+    "per100g": {
+      "energy": 151,
+      "protein": 12.3,
+      "fat": 10.3,
+      "carbohydrate": 0.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 140,
+      "saltEquivalent": 0.4
+    },
+    "gramsPerUnit": 60,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EG002",
+    "name": "牛乳",
+    "aliases": [
+      "ぎゅうにゅう",
+      "ミルク"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 67,
+      "protein": 3.3,
+      "fat": 3.8,
+      "carbohydrate": 4.8,
+      "dietaryFiber": 0,
+      "sugars": 4.8,
+      "sodium": 41,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EG003",
+    "name": "ヨーグルト（無糖）",
+    "aliases": [
+      "プレーンヨーグルト",
+      "ヨーグルト"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 62,
+      "protein": 3.6,
+      "fat": 3,
+      "carbohydrate": 4.9,
+      "dietaryFiber": 0,
+      "sugars": 4.9,
+      "sodium": 48,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EG004",
+    "name": "プロセスチーズ",
+    "aliases": [
+      "チーズ",
+      "スライスチーズ"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 339,
+      "protein": 22.7,
+      "fat": 26,
+      "carbohydrate": 1.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 890,
+      "saltEquivalent": 2.3
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EG005",
+    "name": "バター",
+    "aliases": [
+      "有塩バター",
+      "無塩バター"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 713,
+      "protein": 0.5,
+      "fat": 81,
+      "carbohydrate": 0.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 290,
+      "saltEquivalent": 0.7
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 12,
+    "gramsPerTeaspoon": 4,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EG006",
+    "name": "生クリーム",
+    "aliases": [
+      "クリーム",
+      "ホイップ"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 433,
+      "protein": 2,
+      "fat": 45,
+      "carbohydrate": 3.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 30,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 15,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OI001",
+    "name": "サラダ油",
+    "aliases": [
+      "植物油",
+      "菜種油",
+      "キャノーラ油",
+      "油"
+    ],
+    "category": "油脂",
+    "per100g": {
+      "energy": 921,
+      "protein": 0,
+      "fat": 100,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 0,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 12,
+    "gramsPerTeaspoon": 4,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OI002",
+    "name": "オリーブオイル",
+    "aliases": [
+      "オリーブ油"
+    ],
+    "category": "油脂",
+    "per100g": {
+      "energy": 921,
+      "protein": 0,
+      "fat": 100,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 0,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 12,
+    "gramsPerTeaspoon": 4,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OI003",
+    "name": "ごま油",
+    "aliases": [
+      "ゴマ油"
+    ],
+    "category": "油脂",
+    "per100g": {
+      "energy": 921,
+      "protein": 0,
+      "fat": 100,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 0,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 12,
+    "gramsPerTeaspoon": 4,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OI004",
+    "name": "ラード",
+    "aliases": [
+      "豚脂"
+    ],
+    "category": "油脂",
+    "per100g": {
+      "energy": 941,
+      "protein": 0,
+      "fat": 100,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 0,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 12,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE001",
+    "name": "濃口しょうゆ",
+    "aliases": [
+      "しょうゆ",
+      "醤油",
+      "しょう油",
+      "濃口醤油",
+      "こいくち"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 71,
+      "protein": 7.7,
+      "fat": 0,
+      "carbohydrate": 10.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 5700,
+      "saltEquivalent": 14.5
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE002",
+    "name": "薄口しょうゆ",
+    "aliases": [
+      "うすくちしょうゆ",
+      "薄口醤油"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 54,
+      "protein": 5.3,
+      "fat": 0,
+      "carbohydrate": 7.9,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 6300,
+      "saltEquivalent": 16
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE003",
+    "name": "味噌（米みそ）",
+    "aliases": [
+      "みそ",
+      "味噌",
+      "赤みそ",
+      "合わせみそ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 186,
+      "protein": 9.7,
+      "fat": 6,
+      "carbohydrate": 23,
+      "dietaryFiber": 4,
+      "sugars": null,
+      "sodium": 4900,
+      "saltEquivalent": 12.4
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE004",
+    "name": "食塩",
+    "aliases": [
+      "塩",
+      "しお",
+      "テーブルソルト"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 0,
+      "protein": 0,
+      "fat": 0,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 39000,
+      "saltEquivalent": 99
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 15,
+    "gramsPerTeaspoon": 5,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE005",
+    "name": "酢",
+    "aliases": [
+      "穀物酢",
+      "米酢",
+      "食酢"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 25,
+      "protein": 0.1,
+      "fat": 0,
+      "carbohydrate": 2.4,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 40,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 15,
+    "gramsPerTeaspoon": 5,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE006",
+    "name": "ケチャップ",
+    "aliases": [
+      "トマトケチャップ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 119,
+      "protein": 1.6,
+      "fat": 0.2,
+      "carbohydrate": 27.4,
+      "dietaryFiber": 1,
+      "sugars": null,
+      "sodium": 1400,
+      "saltEquivalent": 3.6
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 17,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE007",
+    "name": "マヨネーズ",
+    "aliases": [
+      "マヨ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 703,
+      "protein": 1.4,
+      "fat": 75.3,
+      "carbohydrate": 3.9,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 700,
+      "saltEquivalent": 1.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 12,
+    "gramsPerTeaspoon": 4,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE008",
+    "name": "ソース（ウスター）",
+    "aliases": [
+      "ウスターソース",
+      "中濃ソース",
+      "とんかつソース"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 119,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 28,
+      "dietaryFiber": 0.8,
+      "sugars": null,
+      "sodium": 3100,
+      "saltEquivalent": 7.9
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE009",
+    "name": "めんつゆ（3倍濃縮）",
+    "aliases": [
+      "麺つゆ",
+      "つゆ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 97,
+      "protein": 3.5,
+      "fat": 0.1,
+      "carbohydrate": 20,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 4500,
+      "saltEquivalent": 11.4
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE010",
+    "name": "コンソメ（顆粒）",
+    "aliases": [
+      "コンソメ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 250,
+      "protein": 10,
+      "fat": 5,
+      "carbohydrate": 40,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 18000,
+      "saltEquivalent": 45
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": 3,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE011",
+    "name": "顆粒和風だし",
+    "aliases": [
+      "だしの素",
+      "和風だし",
+      "ほんだし"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 180,
+      "protein": 20,
+      "fat": 2,
+      "carbohydrate": 20,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 15000,
+      "saltEquivalent": 38
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": 2,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE012",
+    "name": "鶏がらスープの素",
+    "aliases": [
+      "ガラスープ",
+      "中華だし"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 220,
+      "protein": 10,
+      "fat": 5,
+      "carbohydrate": 35,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 16000,
+      "saltEquivalent": 40
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": 3,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE013",
+    "name": "砂糖（三温糖）",
+    "aliases": [
+      "三温糖"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 381,
+      "protein": 0,
+      "fat": 0,
+      "carbohydrate": 98.1,
+      "dietaryFiber": 0,
+      "sugars": 98.1,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 9,
+    "gramsPerTeaspoon": 3,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE014",
+    "name": "こしょう",
+    "aliases": [
+      "胡椒",
+      "黒こしょう",
+      "ペッパー"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 355,
+      "protein": 11,
+      "fat": 4,
+      "carbohydrate": 67,
+      "dietaryFiber": 15,
+      "sugars": null,
+      "sodium": 20,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": 2,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE015",
+    "name": "カレー粉",
+    "aliases": [
+      "カレーパウダー"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 416,
+      "protein": 13,
+      "fat": 12,
+      "carbohydrate": 58,
+      "dietaryFiber": 18,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 6,
+    "gramsPerTeaspoon": 2,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE016",
+    "name": "カレールウ",
+    "aliases": [
+      "ルー",
+      "カレールー"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 480,
+      "protein": 6,
+      "fat": 28,
+      "carbohydrate": 52,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2800,
+      "saltEquivalent": 7.1
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE017",
+    "name": "ポン酢",
+    "aliases": [
+      "ぽんず"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 40,
+      "protein": 1.5,
+      "fat": 0,
+      "carbohydrate": 8,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 2500,
+      "saltEquivalent": 6.4
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 15,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE018",
+    "name": "オイスターソース",
+    "aliases": [
+      "オイスター"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 97,
+      "protein": 5,
+      "fat": 0.2,
+      "carbohydrate": 18,
+      "dietaryFiber": 0.2,
+      "sugars": null,
+      "sodium": 4500,
+      "saltEquivalent": 11.4
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE019",
+    "name": "豆板醤",
+    "aliases": [
+      "とうばんじゃん"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 110,
+      "protein": 5,
+      "fat": 3,
+      "carbohydrate": 15,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 5000,
+      "saltEquivalent": 12.7
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": 6,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE020",
+    "name": "甜麺醤",
+    "aliases": [
+      "てんめんじゃん"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 220,
+      "protein": 4,
+      "fat": 2,
+      "carbohydrate": 48,
+      "dietaryFiber": 1,
+      "sugars": null,
+      "sodium": 3500,
+      "saltEquivalent": 8.9
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE021",
+    "name": "酒（料理酒）",
+    "aliases": [
+      "日本酒",
+      "清酒",
+      "料理酒"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 109,
+      "protein": 0.4,
+      "fat": 0,
+      "carbohydrate": 4.9,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 15,
+    "gramsPerTeaspoon": 5,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE022",
+    "name": "トマト缶",
+    "aliases": [
+      "カットトマト",
+      "ホールトマト",
+      "トマトピューレ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 20,
+      "protein": 0.9,
+      "fat": 0.1,
+      "carbohydrate": 4.2,
+      "dietaryFiber": 1,
+      "sugars": null,
+      "sodium": 180,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "SE023",
+    "name": "ウスターソース",
+    "aliases": [
+      "ウスター"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 119,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 28,
+      "dietaryFiber": 0.8,
+      "sugars": null,
+      "sodium": 3100,
+      "saltEquivalent": 7.9
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": 18,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OT001",
+    "name": "キムチ",
+    "aliases": [
+      "きむち"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 40,
+      "protein": 2.5,
+      "fat": 0.3,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 900,
+      "saltEquivalent": 2.3
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OT002",
+    "name": "かまぼこ",
+    "aliases": [
+      "蒲鉾"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 95,
+      "protein": 12,
+      "fat": 0.9,
+      "carbohydrate": 9.7,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 900,
+      "saltEquivalent": 2.3
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OT003",
+    "name": "ちくわ",
+    "aliases": [
+      "竹輪"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 121,
+      "protein": 12.2,
+      "fat": 2,
+      "carbohydrate": 13.5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 900,
+      "saltEquivalent": 2.3
+    },
+    "gramsPerUnit": 30,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OT004",
+    "name": "はんぺん",
+    "aliases": [
+      "半片"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 93,
+      "protein": 9.9,
+      "fat": 1,
+      "carbohydrate": 11.5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 800,
+      "saltEquivalent": 2
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "OT005",
+    "name": "冻りこんにゃく",
+    "aliases": [
+      "糸こんにゃく"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 5,
+      "protein": 0.1,
+      "fat": 0,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX200",
+    "name": "水菜",
+    "aliases": [
+      "みずな"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 23,
+      "protein": 2.2,
+      "fat": 0.1,
+      "carbohydrate": 4,
+      "dietaryFiber": 2.8,
+      "sugars": null,
+      "sodium": 28,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX201",
+    "name": "チンゲン菜",
+    "aliases": [
+      "青梗菜"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 9,
+      "protein": 0.6,
+      "fat": 0.1,
+      "carbohydrate": 1.8,
+      "dietaryFiber": 1.2,
+      "sugars": null,
+      "sodium": 10,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX202",
+    "name": "白菜キムチ用白菜",
+    "aliases": [
+      "キムチ用白菜"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 0.8,
+      "fat": 0.1,
+      "carbohydrate": 3.2,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX203",
+    "name": "かぶ",
+    "aliases": [
+      "蕪"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 20,
+      "protein": 0.6,
+      "fat": 0.1,
+      "carbohydrate": 4.6,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX204",
+    "name": "れんこん（薄切り）",
+    "aliases": [
+      "薄切りれんこん"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 66,
+      "protein": 1.9,
+      "fat": 0.1,
+      "carbohydrate": 15.5,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX205",
+    "name": "さつまいも（蒸かし）",
+    "aliases": [
+      "ふかしいも"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 132,
+      "protein": 1.2,
+      "fat": 0.2,
+      "carbohydrate": 31.5,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX206",
+    "name": "里芋（ゆで）",
+    "aliases": [
+      "ゆで里芋"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 58,
+      "protein": 1.5,
+      "fat": 0.1,
+      "carbohydrate": 13.1,
+      "dietaryFiber": 2.1,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 60,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX207",
+    "name": "干ししいたけ",
+    "aliases": [
+      "干し椎茸"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 212,
+      "protein": 19.3,
+      "fat": 3.7,
+      "carbohydrate": 63.4,
+      "dietaryFiber": 41,
+      "sugars": null,
+      "sodium": 10,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX208",
+    "name": "乾燥わかめ",
+    "aliases": [
+      "カットわかめ"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 28,
+      "protein": 13.7,
+      "fat": 1.6,
+      "carbohydrate": 31.7,
+      "dietaryFiber": 27.1,
+      "sugars": null,
+      "sodium": 5400,
+      "saltEquivalent": 13.7
+    },
+    "gramsPerUnit": 3,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX209",
+    "name": "かつお節",
+    "aliases": [
+      "削り節",
+      "鰹節"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 356,
+      "protein": 77.1,
+      "fat": 2.9,
+      "carbohydrate": 0.8,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 100,
+      "saltEquivalent": 0.3
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX210",
+    "name": "煮干し",
+    "aliases": [
+      "いりこ",
+      "にぼし"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 329,
+      "protein": 64.5,
+      "fat": 6.2,
+      "carbohydrate": 0.5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 1500,
+      "saltEquivalent": 3.8
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX211",
+    "name": "あさり",
+    "aliases": [
+      "アサリ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 30,
+      "protein": 6,
+      "fat": 0.4,
+      "carbohydrate": 1.5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 300,
+      "saltEquivalent": 0.8
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX212",
+    "name": "むきえび",
+    "aliases": [
+      "剥き海老"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 82,
+      "protein": 18.4,
+      "fat": 0.3,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 200,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX213",
+    "name": "鶏手羽元",
+    "aliases": [
+      "手羽元"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 197,
+      "protein": 17.5,
+      "fat": 12.8,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 70,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX214",
+    "name": "鶏手羽先",
+    "aliases": [
+      "手羽先"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 226,
+      "protein": 16.7,
+      "fat": 16.2,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 70,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 40,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX215",
+    "name": "豚ひれ肉",
+    "aliases": [
+      "豚ヒレ"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 115,
+      "protein": 22.2,
+      "fat": 1.9,
+      "carbohydrate": 0.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 40,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX216",
+    "name": "牛もも肉",
+    "aliases": [
+      "赤身牛肉"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 182,
+      "protein": 21.2,
+      "fat": 9.6,
+      "carbohydrate": 0.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 45,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX217",
+    "name": "ラム肉",
+    "aliases": [
+      "羊肉"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 223,
+      "protein": 20,
+      "fat": 14.5,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX218",
+    "name": "こんにゃく麺",
+    "aliases": [
+      "しらたき"
+    ],
+    "category": "いも",
+    "per100g": {
+      "energy": 5,
+      "protein": 0.1,
+      "fat": 0,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX219",
+    "name": "米粉",
+    "aliases": [
+      "上新粉"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 366,
+      "protein": 6,
+      "fat": 0.7,
+      "carbohydrate": 81,
+      "dietaryFiber": 0.6,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX220",
+    "name": "コーンスターチ",
+    "aliases": [
+      "とうもろこし澱粉"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 348,
+      "protein": 0.1,
+      "fat": 0.1,
+      "carbohydrate": 86,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX221",
+    "name": "ベーキングパウダー",
+    "aliases": [
+      "BP"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 160,
+      "protein": 0.1,
+      "fat": 0,
+      "carbohydrate": 40,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 10000,
+      "saltEquivalent": 25
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX222",
+    "name": "酒粕",
+    "aliases": [
+      "さけかす"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 227,
+      "protein": 14.9,
+      "fat": 1.5,
+      "carbohydrate": 23,
+      "dietaryFiber": 5,
+      "sugars": null,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX223",
+    "name": "みりん風調味料",
+    "aliases": [
+      "みりん風"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 220,
+      "protein": 0.2,
+      "fat": 0,
+      "carbohydrate": 50,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 20,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX224",
+    "name": "白だし",
+    "aliases": [
+      "しろだし"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 70,
+      "protein": 2,
+      "fat": 0.1,
+      "carbohydrate": 14,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 5000,
+      "saltEquivalent": 12.7
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX225",
+    "name": "ごまペースト",
+    "aliases": [
+      "ねりごま"
+    ],
+    "category": "種実類",
+    "per100g": {
+      "energy": 600,
+      "protein": 18,
+      "fat": 55,
+      "carbohydrate": 18,
+      "dietaryFiber": 8,
+      "sugars": null,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX226",
+    "name": "ピーナッツバター",
+    "aliases": [
+      "ピーナツバター"
+    ],
+    "category": "種実類",
+    "per100g": {
+      "energy": 634,
+      "protein": 25,
+      "fat": 52,
+      "carbohydrate": 18,
+      "dietaryFiber": 6,
+      "sugars": null,
+      "sodium": 350,
+      "saltEquivalent": 0.9
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX227",
+    "name": "高野豆腐",
+    "aliases": [
+      "こうやどうふ"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 529,
+      "protein": 50,
+      "fat": 33,
+      "carbohydrate": 5,
+      "dietaryFiber": 0.5,
+      "sugars": null,
+      "sodium": 10,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX228",
+    "name": "おから",
+    "aliases": [
+      "卯の花"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 111,
+      "protein": 6.1,
+      "fat": 3.6,
+      "carbohydrate": 13,
+      "dietaryFiber": 11.5,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "EX229",
+    "name": "豆乳ヨーグルト",
+    "aliases": [
+      "ソイヨーグルト"
+    ],
+    "category": "豆類",
+    "per100g": {
+      "energy": 50,
+      "protein": 3.5,
+      "fat": 2,
+      "carbohydrate": 4,
+      "dietaryFiber": 0.5,
+      "sugars": null,
+      "sodium": 10,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD801",
+    "name": "レタス（結球）",
+    "aliases": [
+      "玉レタス"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 12,
+      "protein": 0.6,
+      "fat": 0.1,
+      "carbohydrate": 2.8,
+      "dietaryFiber": 1.1,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD802",
+    "name": "サニーレタス",
+    "aliases": [
+      "リーフレタス"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 16,
+      "protein": 1,
+      "fat": 0.2,
+      "carbohydrate": 3.2,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD803",
+    "name": "水菜サラダ",
+    "aliases": [
+      "サラダ水菜"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 23,
+      "protein": 2.2,
+      "fat": 0.1,
+      "carbohydrate": 4,
+      "dietaryFiber": 2.8,
+      "sugars": null,
+      "sodium": 28,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD804",
+    "name": "かいわれ大根",
+    "aliases": [
+      "かいわれ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 21,
+      "protein": 2.1,
+      "fat": 0.3,
+      "carbohydrate": 3.3,
+      "dietaryFiber": 2.1,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD805",
+    "name": "スプラウト",
+    "aliases": [
+      "ブロッコリースプラウト"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 20,
+      "protein": 2,
+      "fat": 0.3,
+      "carbohydrate": 3,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 3,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD806",
+    "name": "ゴーヤ",
+    "aliases": [
+      "にがうり",
+      "苦瓜"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 17,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 3.9,
+      "dietaryFiber": 2.6,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD807",
+    "name": "冬瓜",
+    "aliases": [
+      "とうがん"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 16,
+      "protein": 0.5,
+      "fat": 0.1,
+      "carbohydrate": 3.8,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD808",
+    "name": "きゅうり（漬物用）",
+    "aliases": [
+      "きゅうり浅漬け"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 3,
+      "dietaryFiber": 1.1,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD809",
+    "name": "赤玉ねぎ",
+    "aliases": [
+      "紫玉ねぎ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 37,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 8.8,
+      "dietaryFiber": 1.6,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD810",
+    "name": "新玉ねぎ",
+    "aliases": [
+      "新たまねぎ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 35,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 8,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD811",
+    "name": "葉ねぎ",
+    "aliases": [
+      "小ねぎ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 28,
+      "protein": 1.4,
+      "fat": 0.1,
+      "carbohydrate": 6.5,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD812",
+    "name": "万能ねぎ",
+    "aliases": [
+      "カットねぎ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 28,
+      "protein": 1.4,
+      "fat": 0.1,
+      "carbohydrate": 6.5,
+      "dietaryFiber": 2.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD813",
+    "name": "みつば",
+    "aliases": [
+      "三つ葉"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 18,
+      "protein": 1.9,
+      "fat": 0.1,
+      "carbohydrate": 3.6,
+      "dietaryFiber": 2.6,
+      "sugars": null,
+      "sodium": 6,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD814",
+    "name": "せり",
+    "aliases": [
+      "芹"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 15,
+      "protein": 1.8,
+      "fat": 0.1,
+      "carbohydrate": 2.8,
+      "dietaryFiber": 2.2,
+      "sugars": null,
+      "sodium": 4,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 30,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD815",
+    "name": "ふき",
+    "aliases": [
+      "フキ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 11,
+      "protein": 0.3,
+      "fat": 0.1,
+      "carbohydrate": 2.5,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD816",
+    "name": "うど",
+    "aliases": [
+      "ウド"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 18,
+      "protein": 0.8,
+      "fat": 0.1,
+      "carbohydrate": 4,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD817",
+    "name": "たらの芽",
+    "aliases": [
+      "タラの芽"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 32,
+      "protein": 3.5,
+      "fat": 0.2,
+      "carbohydrate": 5.5,
+      "dietaryFiber": 3.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD818",
+    "name": "ぜんまい",
+    "aliases": [
+      "ゼンマイ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 24,
+      "protein": 1.4,
+      "fat": 0.1,
+      "carbohydrate": 5.5,
+      "dietaryFiber": 3.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD819",
+    "name": "わらび",
+    "aliases": [
+      "ワラビ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 18,
+      "protein": 1.6,
+      "fat": 0.1,
+      "carbohydrate": 4,
+      "dietaryFiber": 3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD820",
+    "name": "もやし（緑豆）",
+    "aliases": [
+      "緑豆モヤシ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 14,
+      "protein": 1.7,
+      "fat": 0.1,
+      "carbohydrate": 2.6,
+      "dietaryFiber": 1.3,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD821",
+    "name": "グリーンピース",
+    "aliases": [
+      "グリンピース"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 93,
+      "protein": 6.9,
+      "fat": 0.4,
+      "carbohydrate": 15.3,
+      "dietaryFiber": 7,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD822",
+    "name": "いんげん",
+    "aliases": [
+      "さやいんげん"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 23,
+      "protein": 1.8,
+      "fat": 0.1,
+      "carbohydrate": 5.1,
+      "dietaryFiber": 2.4,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD823",
+    "name": "スナップえんどう",
+    "aliases": [
+      "スナックえんどう"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 43,
+      "protein": 2.9,
+      "fat": 0.1,
+      "carbohydrate": 8.5,
+      "dietaryFiber": 2.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD824",
+    "name": "そらまめ",
+    "aliases": [
+      "ソラマメ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 108,
+      "protein": 10.5,
+      "fat": 0.2,
+      "carbohydrate": 15,
+      "dietaryFiber": 3.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 30,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD825",
+    "name": "枝豆",
+    "aliases": [
+      "えだまめ"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 135,
+      "protein": 11.7,
+      "fat": 6.2,
+      "carbohydrate": 8.8,
+      "dietaryFiber": 5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD826",
+    "name": "とうもろこし（缶詰）",
+    "aliases": [
+      "コーン缶"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 83,
+      "protein": 2.5,
+      "fat": 0.8,
+      "carbohydrate": 17,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 200,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD827",
+    "name": "トマト（ミニ）",
+    "aliases": [
+      "ミニトマト",
+      "プチトマト"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1.1,
+      "fat": 0.1,
+      "carbohydrate": 7.2,
+      "dietaryFiber": 1.4,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 15,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD828",
+    "name": "アボカド",
+    "aliases": [
+      "あぼかど"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 187,
+      "protein": 2.5,
+      "fat": 18.7,
+      "carbohydrate": 6.2,
+      "dietaryFiber": 5.3,
+      "sugars": null,
+      "sodium": 3,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD829",
+    "name": "キウイ",
+    "aliases": [
+      "キウイフルーツ"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 53,
+      "protein": 1,
+      "fat": 0.4,
+      "carbohydrate": 13.5,
+      "dietaryFiber": 2.5,
+      "sugars": 8.5,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD830",
+    "name": "ぶどう",
+    "aliases": [
+      "ブドウ"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 59,
+      "protein": 0.4,
+      "fat": 0.1,
+      "carbohydrate": 15.7,
+      "dietaryFiber": 0.5,
+      "sugars": 14,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD831",
+    "name": "もも",
+    "aliases": [
+      "桃"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 40,
+      "protein": 0.6,
+      "fat": 0.1,
+      "carbohydrate": 10.2,
+      "dietaryFiber": 1.1,
+      "sugars": 8,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD832",
+    "name": "なし",
+    "aliases": [
+      "梨"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 43,
+      "protein": 0.3,
+      "fat": 0.1,
+      "carbohydrate": 11.3,
+      "dietaryFiber": 0.9,
+      "sugars": 8.5,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD833",
+    "name": "すいか",
+    "aliases": [
+      "スイカ"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 37,
+      "protein": 0.6,
+      "fat": 0.1,
+      "carbohydrate": 9.5,
+      "dietaryFiber": 0.3,
+      "sugars": 8.5,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD834",
+    "name": "メロン",
+    "aliases": [
+      "めろん"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 42,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 10.4,
+      "dietaryFiber": 0.5,
+      "sugars": 8,
+      "sodium": 5,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD835",
+    "name": "グレープフルーツ",
+    "aliases": [
+      "ぐれーぷふるーつ"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 38,
+      "protein": 0.8,
+      "fat": 0.1,
+      "carbohydrate": 9.6,
+      "dietaryFiber": 0.6,
+      "sugars": 7,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD836",
+    "name": "オレンジ",
+    "aliases": [
+      "おれんじ"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 46,
+      "protein": 0.9,
+      "fat": 0.1,
+      "carbohydrate": 11.8,
+      "dietaryFiber": 1,
+      "sugars": 9,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD837",
+    "name": "柿",
+    "aliases": [
+      "かき"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 60,
+      "protein": 0.4,
+      "fat": 0.2,
+      "carbohydrate": 15.9,
+      "dietaryFiber": 1.6,
+      "sugars": 14,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 150,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD838",
+    "name": "いちじく",
+    "aliases": [
+      "イチジク"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 54,
+      "protein": 0.6,
+      "fat": 0.1,
+      "carbohydrate": 14.3,
+      "dietaryFiber": 1.9,
+      "sugars": 12,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD839",
+    "name": "ドライフルーツミックス",
+    "aliases": [
+      "干しぶどう",
+      "レーズン"
+    ],
+    "category": "果物",
+    "per100g": {
+      "energy": 300,
+      "protein": 2.7,
+      "fat": 0.2,
+      "carbohydrate": 79,
+      "dietaryFiber": 3.5,
+      "sugars": 70,
+      "sodium": 10,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD840",
+    "name": "わかめスープ用わかめ",
+    "aliases": [
+      "スープわかめ"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 16,
+      "protein": 1.9,
+      "fat": 0.2,
+      "carbohydrate": 5.6,
+      "dietaryFiber": 3.6,
+      "sugars": null,
+      "sodium": 610,
+      "saltEquivalent": 1.5
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD841",
+    "name": "もずく",
+    "aliases": [
+      "モズク"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 6,
+      "protein": 0.2,
+      "fat": 0.1,
+      "carbohydrate": 2.7,
+      "dietaryFiber": 1.4,
+      "sugars": null,
+      "sodium": 180,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD842",
+    "name": "ところてん",
+    "aliases": [
+      "心太"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 2,
+      "protein": 0.2,
+      "fat": 0,
+      "carbohydrate": 0.6,
+      "dietaryFiber": 0.5,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD843",
+    "name": "寒天",
+    "aliases": [
+      "かんてん"
+    ],
+    "category": "海藻",
+    "per100g": {
+      "energy": 3,
+      "protein": 0.2,
+      "fat": 0,
+      "carbohydrate": 0.7,
+      "dietaryFiber": 0.7,
+      "sugars": null,
+      "sodium": 20,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 2,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD844",
+    "name": "えのき茸炒め用",
+    "aliases": [
+      "カットえのき"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 22,
+      "protein": 2.7,
+      "fat": 0.2,
+      "carbohydrate": 7.6,
+      "dietaryFiber": 3.9,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD845",
+    "name": "なめこ",
+    "aliases": [
+      "ナメコ"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 11,
+      "protein": 1.5,
+      "fat": 0.2,
+      "carbohydrate": 3.5,
+      "dietaryFiber": 2.5,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD846",
+    "name": "ひらたけ",
+    "aliases": [
+      "平茸"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 20,
+      "protein": 3.3,
+      "fat": 0.3,
+      "carbohydrate": 5,
+      "dietaryFiber": 3.5,
+      "sugars": null,
+      "sodium": 1,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD847",
+    "name": "きくらげ（乾燥）",
+    "aliases": [
+      "キクラゲ"
+    ],
+    "category": "きのこ",
+    "per100g": {
+      "energy": 41,
+      "protein": 7.9,
+      "fat": 0.5,
+      "carbohydrate": 71,
+      "dietaryFiber": 57,
+      "sugars": null,
+      "sodium": 20,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD848",
+    "name": "豚スペアリブ",
+    "aliases": [
+      "スペアリブ"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 350,
+      "protein": 16,
+      "fat": 30,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD849",
+    "name": "豚肩ロース",
+    "aliases": [
+      "豚カタロース"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 253,
+      "protein": 17.1,
+      "fat": 19.5,
+      "carbohydrate": 0.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 45,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD850",
+    "name": "鶏レバー",
+    "aliases": [
+      "レバー"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 111,
+      "protein": 18.9,
+      "fat": 3.4,
+      "carbohydrate": 0.6,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 70,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD851",
+    "name": "砂肝",
+    "aliases": [
+      "ずり"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 94,
+      "protein": 18.3,
+      "fat": 1.8,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD852",
+    "name": "牛すじ",
+    "aliases": [
+      "牛筋"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 150,
+      "protein": 25,
+      "fat": 5,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD853",
+    "name": "鴨肉",
+    "aliases": [
+      "かも肉"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 250,
+      "protein": 18,
+      "fat": 19,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 55,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD854",
+    "name": "合鴨",
+    "aliases": [
+      "あいがも"
+    ],
+    "category": "肉",
+    "per100g": {
+      "energy": 230,
+      "protein": 18,
+      "fat": 17,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 55,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD855",
+    "name": "ツナ水煮缶",
+    "aliases": [
+      "まぐろ水煮"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 90,
+      "protein": 20,
+      "fat": 0.8,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 300,
+      "saltEquivalent": 0.8
+    },
+    "gramsPerUnit": 70,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD856",
+    "name": "さば缶（水煮）",
+    "aliases": [
+      "サバ缶"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 160,
+      "protein": 20,
+      "fat": 8,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 350,
+      "saltEquivalent": 0.9
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD857",
+    "name": "さば缶（味噌煮）",
+    "aliases": [
+      "サバ味噌煮缶"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 190,
+      "protein": 18,
+      "fat": 10,
+      "carbohydrate": 5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 600,
+      "saltEquivalent": 1.5
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD858",
+    "name": "いわし缶",
+    "aliases": [
+      "イワシ缶"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 180,
+      "protein": 18,
+      "fat": 10,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 400,
+      "saltEquivalent": 1
+    },
+    "gramsPerUnit": 70,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD859",
+    "name": "ししゃも",
+    "aliases": [
+      "シシャモ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 166,
+      "protein": 19,
+      "fat": 9,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 90,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD860",
+    "name": "めざし",
+    "aliases": [
+      "目刺し"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 280,
+      "protein": 20,
+      "fat": 20,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 400,
+      "saltEquivalent": 1
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD861",
+    "name": "あん肝",
+    "aliases": [
+      "アン肝"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 450,
+      "protein": 7,
+      "fat": 45,
+      "carbohydrate": 1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 100,
+      "saltEquivalent": 0.3
+    },
+    "gramsPerUnit": 30,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD862",
+    "name": "いくら",
+    "aliases": [
+      "イクラ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 272,
+      "protein": 32,
+      "fat": 15,
+      "carbohydrate": 0.2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 1200,
+      "saltEquivalent": 3
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD863",
+    "name": "たらこ",
+    "aliases": [
+      "タラコ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 140,
+      "protein": 24,
+      "fat": 4,
+      "carbohydrate": 0.5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 1200,
+      "saltEquivalent": 3
+    },
+    "gramsPerUnit": 40,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD864",
+    "name": "明太子",
+    "aliases": [
+      "めんたいこ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 140,
+      "protein": 20,
+      "fat": 4,
+      "carbohydrate": 3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 1800,
+      "saltEquivalent": 4.6
+    },
+    "gramsPerUnit": 40,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD865",
+    "name": "数の子",
+    "aliases": [
+      "かずのこ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 80,
+      "protein": 15,
+      "fat": 1,
+      "carbohydrate": 2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 2000,
+      "saltEquivalent": 5.1
+    },
+    "gramsPerUnit": 30,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD866",
+    "name": "うに",
+    "aliases": [
+      "ウニ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 120,
+      "protein": 16,
+      "fat": 4,
+      "carbohydrate": 3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 200,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD867",
+    "name": "あんこう",
+    "aliases": [
+      "アンコウ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 80,
+      "protein": 16,
+      "fat": 1,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 90,
+      "saltEquivalent": 0.2
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD868",
+    "name": "かれい（干物）",
+    "aliases": [
+      "干しかれい"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 150,
+      "protein": 25,
+      "fat": 5,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 600,
+      "saltEquivalent": 1.5
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD869",
+    "name": "あじの開き",
+    "aliases": [
+      "干しあじ"
+    ],
+    "category": "魚介",
+    "per100g": {
+      "energy": 180,
+      "protein": 22,
+      "fat": 9,
+      "carbohydrate": 0.1,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 700,
+      "saltEquivalent": 1.8
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD870",
+    "name": "低脂肪牛乳",
+    "aliases": [
+      "低脂肪ミルク"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 46,
+      "protein": 3.8,
+      "fat": 1.5,
+      "carbohydrate": 5,
+      "dietaryFiber": 0,
+      "sugars": 5,
+      "sodium": 45,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD871",
+    "name": "スキムミルク",
+    "aliases": [
+      "脱脂粉乳"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 359,
+      "protein": 34,
+      "fat": 1,
+      "carbohydrate": 53,
+      "dietaryFiber": 0,
+      "sugars": 53,
+      "sodium": 450,
+      "saltEquivalent": 1.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD872",
+    "name": "カッテージチーズ",
+    "aliases": [
+      "cottage cheese"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 100,
+      "protein": 13,
+      "fat": 4,
+      "carbohydrate": 2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 350,
+      "saltEquivalent": 0.9
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD873",
+    "name": "クリームチーズ",
+    "aliases": [
+      "cream cheese"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 340,
+      "protein": 6,
+      "fat": 33,
+      "carbohydrate": 3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 350,
+      "saltEquivalent": 0.9
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD874",
+    "name": "モッツァレラ",
+    "aliases": [
+      "モツァレラ"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 280,
+      "protein": 22,
+      "fat": 20,
+      "carbohydrate": 2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 400,
+      "saltEquivalent": 1
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD875",
+    "name": "パルメザンチーズ",
+    "aliases": [
+      "粉チーズ"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 470,
+      "protein": 40,
+      "fat": 30,
+      "carbohydrate": 2,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 1500,
+      "saltEquivalent": 3.8
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD876",
+    "name": "練乳",
+    "aliases": [
+      "コンデンスミルク"
+    ],
+    "category": "乳",
+    "per100g": {
+      "energy": 330,
+      "protein": 8,
+      "fat": 8,
+      "carbohydrate": 55,
+      "dietaryFiber": 0,
+      "sugars": 55,
+      "sodium": 100,
+      "saltEquivalent": 0.3
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD877",
+    "name": "マヨネーズ（低カロリー）",
+    "aliases": [
+      "カロリーハーフマヨ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 350,
+      "protein": 1,
+      "fat": 35,
+      "carbohydrate": 6,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 700,
+      "saltEquivalent": 1.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD878",
+    "name": "ドレッシング（和風）",
+    "aliases": [
+      "和風ドレッシング"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 200,
+      "protein": 1,
+      "fat": 15,
+      "carbohydrate": 15,
+      "dietaryFiber": 0.2,
+      "sugars": null,
+      "sodium": 1500,
+      "saltEquivalent": 3.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD879",
+    "name": "ドレッシング（ごま）",
+    "aliases": [
+      "ごまだれ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 350,
+      "protein": 3,
+      "fat": 30,
+      "carbohydrate": 15,
+      "dietaryFiber": 1,
+      "sugars": null,
+      "sodium": 1200,
+      "saltEquivalent": 3
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD880",
+    "name": "焼き肉のたれ",
+    "aliases": [
+      "焼肉のたれ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 150,
+      "protein": 3,
+      "fat": 1,
+      "carbohydrate": 32,
+      "dietaryFiber": 0.5,
+      "sugars": null,
+      "sodium": 2500,
+      "saltEquivalent": 6.4
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD881",
+    "name": "すき焼きのたれ",
+    "aliases": [
+      "すきやきのたれ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 140,
+      "protein": 3,
+      "fat": 0.5,
+      "carbohydrate": 30,
+      "dietaryFiber": 0.3,
+      "sugars": null,
+      "sodium": 2800,
+      "saltEquivalent": 7.1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD882",
+    "name": "ナンプラー",
+    "aliases": [
+      "魚醤"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 50,
+      "protein": 8,
+      "fat": 0,
+      "carbohydrate": 5,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 7000,
+      "saltEquivalent": 17.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD883",
+    "name": "チリソース",
+    "aliases": [
+      "スイートチリソース"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 120,
+      "protein": 0.5,
+      "fat": 0.2,
+      "carbohydrate": 28,
+      "dietaryFiber": 0.5,
+      "sugars": null,
+      "sodium": 1000,
+      "saltEquivalent": 2.5
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD884",
+    "name": "練りがらし",
+    "aliases": [
+      "からし",
+      "和からし"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 120,
+      "protein": 5,
+      "fat": 5,
+      "carbohydrate": 12,
+      "dietaryFiber": 3,
+      "sugars": null,
+      "sodium": 1500,
+      "saltEquivalent": 3.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD885",
+    "name": "わさび",
+    "aliases": [
+      "練りわさび"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 110,
+      "protein": 5,
+      "fat": 2,
+      "carbohydrate": 20,
+      "dietaryFiber": 4,
+      "sugars": null,
+      "sodium": 800,
+      "saltEquivalent": 2
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD886",
+    "name": "カレー（レトルト）",
+    "aliases": [
+      "レトルトカレー"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 110,
+      "protein": 3,
+      "fat": 5,
+      "carbohydrate": 14,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 600,
+      "saltEquivalent": 1.5
+    },
+    "gramsPerUnit": 200,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD887",
+    "name": "シチュールウ",
+    "aliases": [
+      "ハッシュドルウ"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 480,
+      "protein": 5,
+      "fat": 28,
+      "carbohydrate": 52,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2500,
+      "saltEquivalent": 6.4
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD888",
+    "name": "ホワイトソース",
+    "aliases": [
+      "ベシャメル"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 120,
+      "protein": 3,
+      "fat": 8,
+      "carbohydrate": 10,
+      "dietaryFiber": 0.2,
+      "sugars": null,
+      "sodium": 400,
+      "saltEquivalent": 1
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD889",
+    "name": "ピザソース",
+    "aliases": [
+      "トマトソース"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 40,
+      "protein": 1.5,
+      "fat": 0.5,
+      "carbohydrate": 8,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 500,
+      "saltEquivalent": 1.3
+    },
+    "gramsPerUnit": 50,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD890",
+    "name": "缶詰コーンクリーム",
+    "aliases": [
+      "クリームコーン"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 90,
+      "protein": 1.5,
+      "fat": 2,
+      "carbohydrate": 17,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 250,
+      "saltEquivalent": 0.6
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD891",
+    "name": "インスタント味噌汁",
+    "aliases": [
+      "味噌汁の素"
+    ],
+    "category": "加工品",
+    "per100g": {
+      "energy": 180,
+      "protein": 8,
+      "fat": 5,
+      "carbohydrate": 25,
+      "dietaryFiber": 3,
+      "sugars": null,
+      "sodium": 5000,
+      "saltEquivalent": 12.7
+    },
+    "gramsPerUnit": 15,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD892",
+    "name": "即席ラーメン麺",
+    "aliases": [
+      "袋麺"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 450,
+      "protein": 10,
+      "fat": 18,
+      "carbohydrate": 60,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 200,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": 80,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD893",
+    "name": "春巻きの皮",
+    "aliases": [
+      "はるまきの皮"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 280,
+      "protein": 7,
+      "fat": 1,
+      "carbohydrate": 60,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 400,
+      "saltEquivalent": 1
+    },
+    "gramsPerUnit": 20,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD894",
+    "name": "ぎょうざの皮",
+    "aliases": [
+      "餃子の皮"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 270,
+      "protein": 8,
+      "fat": 1.5,
+      "carbohydrate": 55,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 350,
+      "saltEquivalent": 0.9
+    },
+    "gramsPerUnit": 15,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD895",
+    "name": "ワンタンの皮",
+    "aliases": [
+      "雲呑の皮"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 280,
+      "protein": 8,
+      "fat": 1,
+      "carbohydrate": 58,
+      "dietaryFiber": 1.5,
+      "sugars": null,
+      "sodium": 350,
+      "saltEquivalent": 0.9
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD896",
+    "name": "麩",
+    "aliases": [
+      "車麩",
+      "生麩"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 370,
+      "protein": 25,
+      "fat": 2,
+      "carbohydrate": 60,
+      "dietaryFiber": 3,
+      "sugars": null,
+      "sodium": 20,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 10,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD897",
+    "name": "くず粉",
+    "aliases": [
+      "葛粉"
+    ],
+    "category": "穀類",
+    "per100g": {
+      "energy": 330,
+      "protein": 0.1,
+      "fat": 0.1,
+      "carbohydrate": 82,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD898",
+    "name": "ゼラチン",
+    "aliases": [
+      "粉ゼラチン"
+    ],
+    "category": "その他",
+    "per100g": {
+      "energy": 340,
+      "protein": 85,
+      "fat": 0.1,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 5,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD899",
+    "name": "寒天粉",
+    "aliases": [
+      "粉寒天"
+    ],
+    "category": "その他",
+    "per100g": {
+      "energy": 160,
+      "protein": 2,
+      "fat": 0.1,
+      "carbohydrate": 75,
+      "dietaryFiber": 75,
+      "sugars": null,
+      "sodium": 50,
+      "saltEquivalent": 0.1
+    },
+    "gramsPerUnit": 2,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD900",
+    "name": "かつおだし（液体）",
+    "aliases": [
+      "かつおだし"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 5,
+      "protein": 0.8,
+      "fat": 0,
+      "carbohydrate": 0.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 300,
+      "saltEquivalent": 0.8
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD901",
+    "name": "昆布だし",
+    "aliases": [
+      "こんぶだし"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 3,
+      "protein": 0.2,
+      "fat": 0,
+      "carbohydrate": 0.5,
+      "dietaryFiber": 0.1,
+      "sugars": null,
+      "sodium": 200,
+      "saltEquivalent": 0.5
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD902",
+    "name": "煮干しだし",
+    "aliases": [
+      "いりこだし"
+    ],
+    "category": "調味料",
+    "per100g": {
+      "energy": 8,
+      "protein": 1.5,
+      "fat": 0.2,
+      "carbohydrate": 0.3,
+      "dietaryFiber": 0,
+      "sugars": null,
+      "sodium": 400,
+      "saltEquivalent": 1
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD903",
+    "name": "水",
+    "aliases": [
+      "お水",
+      "水道水"
+    ],
+    "category": "その他",
+    "per100g": {
+      "energy": 0,
+      "protein": 0,
+      "fat": 0,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": 0,
+      "sodium": 0,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "AD904",
+    "name": "氷",
+    "aliases": [
+      "こおり"
+    ],
+    "category": "その他",
+    "per100g": {
+      "energy": 0,
+      "protein": 0,
+      "fat": 0,
+      "carbohydrate": 0,
+      "dietaryFiber": 0,
+      "sugars": 0,
+      "sodium": 0,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": null,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD905",
+    "name": "大根（カット286）",
+    "aliases": [
+      "大根カット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD906",
+    "name": "白菜（カット287）",
+    "aliases": [
+      "白菜カット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD907",
+    "name": "にんじん（カット288）",
+    "aliases": [
+      "にんじんカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD908",
+    "name": "玉ねぎ（カット289）",
+    "aliases": [
+      "玉ねぎカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD909",
+    "name": "じゃがいも（カット290）",
+    "aliases": [
+      "じゃがいもカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD910",
+    "name": "キャベツ（カット291）",
+    "aliases": [
+      "キャベツカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD911",
+    "name": "大根（カット292）",
+    "aliases": [
+      "大根カット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD912",
+    "name": "白菜（カット293）",
+    "aliases": [
+      "白菜カット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD913",
+    "name": "にんじん（カット294）",
+    "aliases": [
+      "にんじんカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD914",
+    "name": "玉ねぎ（カット295）",
+    "aliases": [
+      "玉ねぎカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD915",
+    "name": "じゃがいも（カット296）",
+    "aliases": [
+      "じゃがいもカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD916",
+    "name": "キャベツ（カット297）",
+    "aliases": [
+      "キャベツカット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD917",
+    "name": "大根（カット298）",
+    "aliases": [
+      "大根カット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  },
+  {
+    "foodCode": "PD918",
+    "name": "白菜（カット299）",
+    "aliases": [
+      "白菜カット"
+    ],
+    "category": "野菜",
+    "per100g": {
+      "energy": 30,
+      "protein": 1,
+      "fat": 0.1,
+      "carbohydrate": 7,
+      "dietaryFiber": 2,
+      "sugars": null,
+      "sodium": 2,
+      "saltEquivalent": 0
+    },
+    "gramsPerUnit": 100,
+    "gramsPerTablespoon": null,
+    "gramsPerTeaspoon": null,
+    "source": "meal-planner-household-v1",
+    "sourceVersion": "v1"
+  }
+]

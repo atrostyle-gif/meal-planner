@@ -1,5 +1,82 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+
+# # 家族用献立アプリ開発ルール
+
+## 目的
+
+このアプリは家族向けの献立管理アプリである。
+
+使いやすさを最優先とし、
+
+機能を増やしすぎない。
+
+## 技術
+
+- Next.js
+
+- TypeScript
+
+- Tailwind CSS
+
+- App Router
+
+## コーディングルール
+
+- anyは禁止
+
+- TypeScript型を必ず定義する
+
+- コンポーネントは小さく分割する
+
+- コメントは日本語
+
+- UIは日本語
+
+## 実装方針
+
+まずMVPを完成させる。
+
+MVPでは
+
+- レシピ管理
+
+- 一週間献立
+
+- 手動登録
+
+- 固定献立
+
+のみ実装する。
+
+まだ実装しない
+
+- AI
+
+- Supabase
+
+- OpenAI API
+
+- 冷蔵庫管理
+
+- 買い物リスト
+
+- ログイン
+
+## UI
+
+シンプル
+
+スマホでも見やすい
+
+余白を多めに使う
+
+Material Design風
+
+## 必ず守ること
+
+勝手に機能を追加しない。
+
+変更するときは理由を説明する。
+
+実装後は変更したファイル一覧を表示する。
+

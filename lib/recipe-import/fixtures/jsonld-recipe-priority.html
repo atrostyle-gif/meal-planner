@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>JSON-LD優先テスト</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Recipe",
+        "name": "JSON-LDのカレー",
+        "recipeIngredient": ["玉ねぎ 1個", "カレールー 1箱"],
+        "recipeInstructions": ["切る", "煮込む"]
+      }
+    </script>
+  </head>
+  <body>
+    <h1>HTML側の別タイトル</h1>
+    <h2>材料</h2>
+    <ul>
+      <li>この材料は使わないでください 999g</li>
+    </ul>
+  </body>
+</html>
