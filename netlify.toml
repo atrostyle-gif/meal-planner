@@ -1,6 +1,5 @@
-# Next.js on Netlify: Runtime（OpenNext adapter）を自動利用する
-# publish = ".next" は指定しない（静的 publish ではなく Runtime が担当）
-# @netlify/plugin-nextjs のピン留めもしない（自動更新を受ける）
+# Next.js on Netlify
+# publish = ".next" は使わない（Next.js Runtime / OpenNext が担当）
 
 [build]
   command = "npm run build"
@@ -8,3 +7,6 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
