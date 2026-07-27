@@ -41,6 +41,18 @@ import { loadWeeklyCookingSchedules, replaceWeeklyCookingSchedules } from "@/lib
 import { loadCookingMemberProfiles, replaceCookingMemberProfiles } from "@/lib/cooking-member-profiles";
 import { loadDailyCookingOverrides, replaceDailyCookingOverrides } from "@/lib/daily-cooking-overrides";
 import { loadCookingHistory, replaceCookingHistory } from "@/lib/cooking-history";
+import {
+  pullFoodExpenseDomain,
+  pushFoodExpenseDomain,
+} from "@/lib/food-expense/sync";
+import {
+  pullRecipeLearningDomain,
+  pushRecipeLearningDomain,
+} from "@/lib/recipe-learning/sync";
+import {
+  pullReceiptDomain,
+  pushReceiptDomain,
+} from "@/lib/receipt/sync";
 import { getLastSyncableLocalWriteAt } from "@/lib/storage";
 import type { Database } from "@/lib/supabase/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -206,6 +218,9 @@ export async function pullCloudToLocal(
     replaceDailyCookingOverrides(dailyCookingOverrides);
     replaceCookingHistory(cookingHistory);
     replaceLeftoverIngredients(leftovers);
+    await pullReceiptDomain(client, householdId);
+    await pullFoodExpenseDomain(client, householdId);
+    await pullRecipeLearningDomain(client, householdId);
 
     return {
       recipes: recipes.length,
@@ -491,6 +506,33 @@ export async function pushLocalToCloud(
     errors.push(`leftover_ingredients: ${error instanceof Error ? error.message : "失敗"}`);
   }
 
+  try {
+    const receiptSync = await pushReceiptDomain(client, householdId);
+    errors.push(...receiptSync.errors);
+  } catch (error) {
+    errors.push(
+      `receipt_domain: ${error instanceof Error ? error.message : "失敗"}`,
+    );
+  }
+
+  try {
+    const expenseSync = await pushFoodExpenseDomain(client, householdId);
+    errors.push(...expenseSync.errors);
+  } catch (error) {
+    errors.push(
+      `food_expense_domain: ${error instanceof Error ? error.message : "失敗"}`,
+    );
+  }
+
+  try {
+    const learningSync = await pushRecipeLearningDomain(client, householdId);
+    errors.push(...learningSync.errors);
+  } catch (error) {
+    errors.push(
+      `recipe_learning_domain: ${error instanceof Error ? error.message : "失敗"}`,
+    );
+  }
+
   return {
     recipes, mealPlans, shoppingLists, inventory, pantry, familyMemberProfiles,
     householdNutritionPreferences, dailyConditions, foodAliasMappings,
@@ -505,7 +547,18 @@ export type MigrationMarker = {
   migratedAt: string;
 };
 
+/** 初回コピー／破棄の完了状態（家庭ごと） */
+export type MigrationState = {
+  householdId: string;
+  /** true なら初回コピーダイアログを二度と出さない */
+  migrationCompleted: boolean;
+  choice?: "copied" | "discarded";
+  completedAt?: string;
+};
+
 const MIGRATION_KEY = "meal-planner:cloudMigration";
+const MIGRATION_STATE_KEY = "meal-planner:migrationState";
+const LAST_SYNCED_AT_KEY = "meal-planner:lastSyncedAt";
 
 export function getMigrationMarker(): MigrationMarker | null {
   if (typeof window === "undefined") {
@@ -523,14 +576,160 @@ export function getMigrationMarker(): MigrationMarker | null {
 }
 
 export function setMigrationMarker(householdId: string): void {
+  markMigrationCompleted(householdId, "copied");
+}
+
+export function getMigrationState(householdId: string): MigrationState | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const raw = window.localStorage.getItem(MIGRATION_STATE_KEY);
+    if (raw) {
+      const state = JSON.parse(raw) as MigrationState;
+      if (state.householdId === householdId) {
+        return state;
+      }
+    }
+  } catch {
+    // fall through
+  }
+  // 旧マーカーがあれば完了済みとして扱う（後方互換）
+  const legacy = getMigrationMarker();
+  if (legacy?.householdId === householdId) {
+    return {
+      householdId,
+      migrationCompleted: true,
+      choice: "copied",
+      completedAt: legacy.migratedAt,
+    };
+  }
+  return null;
+}
+
+export function isMigrationCompleted(householdId: string): boolean {
+  return getMigrationState(householdId)?.migrationCompleted === true;
+}
+
+export function markMigrationCompleted(
+  householdId: string,
+  choice: "copied" | "discarded",
+): void {
   if (typeof window === "undefined") {
     return;
   }
-  const marker: MigrationMarker = {
+  const state: MigrationState = {
     householdId,
-    migratedAt: new Date().toISOString(),
+    migrationCompleted: true,
+    choice,
+    completedAt: new Date().toISOString(),
   };
-  window.localStorage.setItem(MIGRATION_KEY, JSON.stringify(marker));
+  window.localStorage.setItem(MIGRATION_STATE_KEY, JSON.stringify(state));
+  if (choice === "copied") {
+    const marker: MigrationMarker = {
+      householdId,
+      migratedAt: state.completedAt ?? new Date().toISOString(),
+    };
+    window.localStorage.setItem(MIGRATION_KEY, JSON.stringify(marker));
+  }
+}
+
+/** 初回コピーダイアログを出すべきか */
+export function shouldShowInitialMigrationPrompt(householdId: string): boolean {
+  if (isMigrationCompleted(householdId)) {
+    return false;
+  }
+  return hasLocalDataToMigrate();
+}
+
+/**
+ * 共有するローカルデータが無い場合は、ダイアログなしで完了扱いにする。
+ * （以降の自動同期をブロックしないため）
+ */
+export function ensureMigrationGate(householdId: string): void {
+  if (isMigrationCompleted(householdId)) {
+    return;
+  }
+  if (!hasLocalDataToMigrate()) {
+    markMigrationCompleted(householdId, "discarded");
+  }
+}
+
+export function getLastSyncedAt(householdId: string): number {
+  if (typeof window === "undefined") {
+    return 0;
+  }
+  try {
+    const raw = window.localStorage.getItem(LAST_SYNCED_AT_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw) as { householdId?: string; at?: number };
+    if (parsed.householdId !== householdId || typeof parsed.at !== "number") {
+      return 0;
+    }
+    return parsed.at;
+  } catch {
+    return 0;
+  }
+}
+
+export function setLastSyncedAt(householdId: string, at = Date.now()): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.localStorage.setItem(
+    LAST_SYNCED_AT_KEY,
+    JSON.stringify({ householdId, at }),
+  );
+}
+
+export type SyncConflictInfo = {
+  householdId: string;
+  localWriteAt: number;
+  cloudWriteAt: number;
+  lastSyncedAt: number;
+};
+
+/**
+ * 最終同期以降に端末とクラウドの両方に更新があり、
+ * 自動解決できない双方向更新かをざっくり判定する。
+ */
+export async function detectUnresolvedSyncConflict(
+  client: Client,
+  householdId: string,
+): Promise<SyncConflictInfo | null> {
+  const lastSyncedAt = getLastSyncedAt(householdId);
+  const localWriteAt = getLastSyncableLocalWriteAt();
+
+  // 初回同期前、または端末に未同期の変更が無い場合は競合にしない
+  if (lastSyncedAt === 0 || localWriteAt <= lastSyncedAt) {
+    return null;
+  }
+
+  const { data, error } = await client
+    .from("recipes")
+    .select("updated_at")
+    .eq("household_id", householdId)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    return null;
+  }
+
+  const cloudWriteAt = data?.[0]?.updated_at
+    ? Date.parse(data[0].updated_at)
+    : 0;
+
+  if (!Number.isFinite(cloudWriteAt) || cloudWriteAt <= lastSyncedAt) {
+    return null;
+  }
+
+  return {
+    householdId,
+    localWriteAt,
+    cloudWriteAt,
+    lastSyncedAt,
+  };
 }
 
 export function hasLocalDataToMigrate(): boolean {

@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -15,15 +16,20 @@ import { getAppDataMode, type AppDataMode } from "@/lib/supabase/env";
 import { toUserFacingError } from "@/lib/supabase/errors";
 import { LOCAL_DATA_CHANGED_EVENT, STORAGE_KEYS } from "@/lib/storage";
 import {
-  getMigrationMarker,
-  hasLocalDataToMigrate,
+  detectUnresolvedSyncConflict,
+  ensureMigrationGate,
   isLocalPushSuppressed,
+  isMigrationCompleted,
+  markMigrationCompleted,
   pullCloudToLocal,
   pushLocalToCloud,
+  setLastSyncedAt,
   setMigrationMarker,
+  shouldShowInitialMigrationPrompt,
   shouldSkipCloudPull,
   type PullResult,
   type PushResult,
+  type SyncConflictInfo,
 } from "@/lib/sync/cloud-sync";
 import type {
   Household,
@@ -53,8 +59,13 @@ type FamilySessionContextValue = {
   refreshFamily: () => Promise<void>;
   pullLatest: () => Promise<PullResult | null>;
   migrateLocalToCloud: () => Promise<PushResult | null>;
+  /** 初回参加時のみ true（local データあり & migrationCompleted=false） */
   needsMigrationPrompt: boolean;
-  dismissMigrationPrompt: () => void;
+  /** 端末データを破棄して共有データを使う */
+  discardLocalMigration: () => Promise<void>;
+  syncConflict: SyncConflictInfo | null;
+  resolveSyncConflict: (choice: "local" | "cloud") => Promise<void>;
+  dismissSyncConflict: () => void;
 };
 
 const FamilySessionContext = createContext<FamilySessionContextValue | null>(
@@ -72,8 +83,23 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
   const [syncing, setSyncing] = useState(false);
   const [lastSyncError, setLastSyncError] = useState<string | null>(null);
   const [lastPulledAt, setLastPulledAt] = useState<string | null>(null);
-  const [migrationDismissed, setMigrationDismissed] = useState(false);
   const [needsMigrationPrompt, setNeedsMigrationPrompt] = useState(false);
+  const [syncConflict, setSyncConflict] = useState<SyncConflictInfo | null>(
+    null,
+  );
+  const syncingCountRef = useRef(0);
+
+  const beginSync = useCallback(() => {
+    syncingCountRef.current += 1;
+    setSyncing(true);
+  }, []);
+
+  const endSync = useCallback(() => {
+    syncingCountRef.current = Math.max(0, syncingCountRef.current - 1);
+    if (syncingCountRef.current === 0) {
+      setSyncing(false);
+    }
+  }, []);
 
   const refreshFamily = useCallback(async () => {
     if (mode !== "supabase") {
@@ -92,30 +118,54 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
     setMembers(nextMembers);
   }, [mode]);
 
-  const pullLatest = useCallback(async () => {
-    if (mode !== "supabase" || !household) {
-      return null;
-    }
-    if (shouldSkipCloudPull()) {
-      return null;
-    }
-    const client = getSupabaseBrowserClient();
-    if (!client) {
-      return null;
-    }
-    setSyncing(true);
-    setLastSyncError(null);
-    try {
-      const result = await pullCloudToLocal(client, household.id);
-      setLastPulledAt(new Date().toISOString());
-      return result;
-    } catch (error) {
-      setLastSyncError(toUserFacingError(error));
-      return null;
-    } finally {
-      setSyncing(false);
-    }
-  }, [household, mode]);
+  const pullLatest = useCallback(
+    async (options?: { force?: boolean; skipConflictCheck?: boolean }) => {
+      if (mode !== "supabase" || !household) {
+        return null;
+      }
+      if (!options?.force && shouldSkipCloudPull()) {
+        return null;
+      }
+      // 初回コピー未完了中は、共有データで上書きしない
+      if (!isMigrationCompleted(household.id) && shouldShowInitialMigrationPrompt(household.id)) {
+        return null;
+      }
+      const client = getSupabaseBrowserClient();
+      if (!client) {
+        return null;
+      }
+
+      if (!options?.skipConflictCheck && syncConflict === null) {
+        try {
+          const conflict = await detectUnresolvedSyncConflict(
+            client,
+            household.id,
+          );
+          if (conflict) {
+            setSyncConflict(conflict);
+            return null;
+          }
+        } catch {
+          // 競合判定失敗時は通常 pull を続行
+        }
+      }
+
+      beginSync();
+      setLastSyncError(null);
+      try {
+        const result = await pullCloudToLocal(client, household.id);
+        setLastPulledAt(new Date().toISOString());
+        setLastSyncedAt(household.id);
+        return result;
+      } catch (error) {
+        setLastSyncError(toUserFacingError(error));
+        return null;
+      } finally {
+        endSync();
+      }
+    },
+    [household, mode, syncConflict, beginSync, endSync],
+  );
 
   // 初回のみ: mode 判定と session 取得（render 中に browser API / env 差分を出さない）
   useEffect(() => {
@@ -190,38 +240,33 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
     });
   }, [ready, mode, session, refreshFamily]);
 
-  // localStorage 参照は render ではなく effect で行い、SSR 差分を防ぐ
+  // 初回コピーダイアログ: local データあり & migrationCompleted=false のみ
   useEffect(() => {
-    if (
-      !ready ||
-      mode !== "supabase" ||
-      !household ||
-      migrationDismissed
-    ) {
+    if (!ready || mode !== "supabase" || !household) {
       queueMicrotask(() => setNeedsMigrationPrompt(false));
       return;
     }
     queueMicrotask(() => {
-      setNeedsMigrationPrompt(
-        hasLocalDataToMigrate() &&
-          getMigrationMarker()?.householdId !== household.id,
-      );
+      ensureMigrationGate(household.id);
+      setNeedsMigrationPrompt(shouldShowInitialMigrationPrompt(household.id));
     });
-  }, [ready, mode, household, migrationDismissed]);
+  }, [ready, mode, household]);
 
-  // 初回・家庭ID変更時のみクラウドから取得（pullLatest の参照変化では再実行しない）
+  // 初回・家庭ID変更時: 自動同期（初回コピー待ち中はスキップ）
   useEffect(() => {
     if (!household?.id || mode !== "supabase") {
+      return;
+    }
+    if (shouldShowInitialMigrationPrompt(household.id)) {
       return;
     }
     if (shouldSkipCloudPull()) {
       return;
     }
     const handle = window.setTimeout(() => {
-      void pullLatest();
+      void pullLatest({ skipConflictCheck: false });
     }, 0);
     return () => window.clearTimeout(handle);
-    // household.id のみ。オブジェクト参照や pullLatest 再生成での不要な再 pull を防ぐ
     // eslint-disable-next-line react-hooks/exhaustive-deps -- household.id
   }, [household?.id, mode]);
 
@@ -231,6 +276,9 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
       return;
     }
     const onFocus = () => {
+      if (shouldShowInitialMigrationPrompt(household.id)) {
+        return;
+      }
       if (shouldSkipCloudPull()) {
         return;
       }
@@ -245,6 +293,10 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
     if (mode !== "supabase" || !household || !session?.user) {
       return;
     }
+    if (!isMigrationCompleted(household.id)) {
+      // 初回コピー完了前は自動 push しない（破棄／コピーの選択を尊重）
+      return;
+    }
     const client = getSupabaseBrowserClient();
     if (!client) {
       return;
@@ -255,6 +307,9 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
       if (isLocalPushSuppressed()) {
         return;
       }
+      if (syncConflict !== null) {
+        return;
+      }
       if (timer !== null) {
         window.clearTimeout(timer);
       }
@@ -262,17 +317,26 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         event instanceof CustomEvent
           ? (event.detail as { key?: string } | undefined)
           : undefined;
-      // 献立クリアなどがすぐクラウドへ届くよう、mealPlans は短めに待つ
       const delay = detail?.key === STORAGE_KEYS.mealPlans ? 200 : 1200;
       timer = window.setTimeout(() => {
-        if (isLocalPushSuppressed()) {
+        if (isLocalPushSuppressed() || syncConflict !== null) {
           return;
         }
-        void pushLocalToCloud(client, household.id, session.user.id).catch(
-          (error) => {
+        beginSync();
+        void pushLocalToCloud(client, household.id, session.user.id)
+          .then((result) => {
+            if (result.errors.length > 0) {
+              setLastSyncError(result.errors.join(" / "));
+            } else {
+              setLastSyncedAt(household.id);
+            }
+          })
+          .catch((error) => {
             setLastSyncError(toUserFacingError(error));
-          },
-        );
+          })
+          .finally(() => {
+            endSync();
+          });
       }, delay);
     };
 
@@ -285,7 +349,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         window.clearTimeout(timer);
       }
     };
-  }, [household, mode, session]);
+  }, [household, mode, session, syncConflict, beginSync, endSync]);
 
   const value = useMemo<FamilySessionContextValue>(() => {
     return {
@@ -300,7 +364,8 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
       lastSyncError,
       lastPulledAt,
       needsMigrationPrompt,
-      dismissMigrationPrompt: () => setMigrationDismissed(true),
+      syncConflict,
+      dismissSyncConflict: () => setSyncConflict(null),
       async signIn(email, password) {
         const client = getSupabaseBrowserClient();
         if (!client) {
@@ -339,6 +404,8 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         setHousehold(null);
         setMembers([]);
+        setNeedsMigrationPrompt(false);
+        setSyncConflict(null);
       },
       async createHousehold(name, displayName) {
         const client = getSupabaseBrowserClient();
@@ -376,7 +443,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         if (!client) {
           return null;
         }
-        setSyncing(true);
+        beginSync();
         setLastSyncError(null);
         try {
           const result = await pushLocalToCloud(
@@ -386,8 +453,11 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
           );
           if (result.errors.length === 0) {
             setMigrationMarker(household.id);
+            markMigrationCompleted(household.id, "copied");
+            setNeedsMigrationPrompt(false);
             await pullCloudToLocal(client, household.id);
             setLastPulledAt(new Date().toISOString());
+            setLastSyncedAt(household.id);
           } else {
             setLastSyncError(result.errors.join(" / "));
           }
@@ -396,7 +466,66 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
           setLastSyncError(toUserFacingError(error));
           return null;
         } finally {
-          setSyncing(false);
+          endSync();
+        }
+      },
+      async discardLocalMigration() {
+        if (!household) {
+          return;
+        }
+        const client = getSupabaseBrowserClient();
+        if (!client) {
+          return;
+        }
+        markMigrationCompleted(household.id, "discarded");
+        setNeedsMigrationPrompt(false);
+        beginSync();
+        setLastSyncError(null);
+        try {
+          await pullCloudToLocal(client, household.id);
+          setLastPulledAt(new Date().toISOString());
+          setLastSyncedAt(household.id);
+        } catch (error) {
+          setLastSyncError(toUserFacingError(error));
+        } finally {
+          endSync();
+        }
+      },
+      async resolveSyncConflict(choice) {
+        if (!household || !session?.user) {
+          return;
+        }
+        const client = getSupabaseBrowserClient();
+        if (!client) {
+          return;
+        }
+        const conflict = syncConflict;
+        setSyncConflict(null);
+        beginSync();
+        setLastSyncError(null);
+        try {
+          if (choice === "local") {
+            const result = await pushLocalToCloud(
+              client,
+              household.id,
+              session.user.id,
+            );
+            if (result.errors.length > 0) {
+              setLastSyncError(result.errors.join(" / "));
+              if (conflict) setSyncConflict(conflict);
+              return;
+            }
+            await pullCloudToLocal(client, household.id);
+          } else {
+            await pullCloudToLocal(client, household.id);
+          }
+          setLastPulledAt(new Date().toISOString());
+          setLastSyncedAt(household.id);
+        } catch (error) {
+          setLastSyncError(toUserFacingError(error));
+          if (conflict) setSyncConflict(conflict);
+        } finally {
+          endSync();
         }
       },
     };
@@ -411,8 +540,11 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
     lastSyncError,
     lastPulledAt,
     needsMigrationPrompt,
+    syncConflict,
     refreshFamily,
     pullLatest,
+    beginSync,
+    endSync,
   ]);
 
   return (

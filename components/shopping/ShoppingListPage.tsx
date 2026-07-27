@@ -1,14 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { CompactMenu } from "@/components/meals/CompactMenu";
 import { ShoppingItemForm } from "@/components/shopping/ShoppingItemForm";
 import { ShoppingListItemRow } from "@/components/shopping/ShoppingListItemRow";
 import { getWeekStart, shiftWeek } from "@/lib/date";
+import { calculateWeekBudgetSummary } from "@/lib/food-budget/week-cost";
 import { getOrCreateMealPlan } from "@/lib/meal-plans";
 import { setPantryStockStatus } from "@/lib/pantry-stock";
 import { groupShoppingItemsByCategory } from "@/lib/shopping/group-by-category";
+import { normalizeIngredientName } from "@/lib/shopping/normalize-ingredient-name";
 import {
   addManualShoppingItem,
   createOrRegenerateShoppingList,
@@ -19,18 +21,66 @@ import {
   updateShoppingItem,
   updateShoppingItemListKind,
 } from "@/lib/shopping-lists";
+import {
+  assignStoresForShopping,
+  groupAssignmentsByStore,
+} from "@/lib/stores/store-assign";
+import { getStoreRepository } from "@/lib/stores/store-repository";
+import { useFoodBudgetSettings, useIngredientPrices } from "@/lib/use-food-budget";
+import { useInventory } from "@/lib/use-inventory";
 import { useIsClient } from "@/lib/use-is-client";
 import { useRecipes } from "@/lib/use-recipes";
 import { useShoppingList } from "@/lib/use-shopping-lists";
 import { isPantryIngredientType, type StockStatus } from "@/types/ingredient-meta";
 import type { ShoppingListItem } from "@/types/shopping-list";
 
-function formatDateTime(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return iso;
-  }
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+function formatYenOptional(value: number | null): string {
+  if (value == null) return "価格未登録";
+  return `約${Math.round(value).toLocaleString("ja-JP")}円`;
+}
+
+function StoreGroupedPreview({
+  items,
+  weekStart,
+  prices,
+}: {
+  items: ShoppingListItem[];
+  weekStart: string;
+  prices: ReturnType<typeof useIngredientPrices>;
+}) {
+  const repo = getStoreRepository();
+  const stores = repo.list();
+  const weekPlan = repo.getWeekPlan(weekStart);
+  const assignments = assignStoresForShopping({
+    ingredientNames: items.map((item) => item.ingredientName),
+    stores,
+    weekPlan,
+    priceRecords: prices,
+  });
+  const groups = groupAssignmentsByStore(assignments);
+  return (
+    <div className="mt-3 space-y-3">
+      {groups.map((group) => (
+        <div key={group.storeName}>
+          <p className="text-sm font-semibold">{group.storeName}</p>
+          <ul className="mt-1 space-y-1 text-sm text-on-surface-variant">
+            {group.items.map((item) => (
+              <li key={item.ingredientName}>
+                {item.ingredientName}{" "}
+                {formatYenOptional(item.estimatedPriceYen)}
+                {item.isReferenceOnly ? "（参考）" : ""}
+              </li>
+            ))}
+          </ul>
+          {group.items[0]?.reasons[0] ? (
+            <p className="mt-1 text-xs text-on-surface-variant">
+              {group.items[0].reasons[0]}
+            </p>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 type SectionProps = {
@@ -91,13 +141,37 @@ export function ShoppingListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const recipes = useRecipes();
+  const inventory = useInventory();
+  const settings = useFoodBudgetSettings();
+  const prices = useIngredientPrices();
   const weekFromQuery = searchParams.get("week");
   const [weekStart, setWeekStart] = useState(
     () => weekFromQuery ?? getWeekStart(),
   );
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"ingredient" | "store">("ingredient");
+  const [storeOpen, setStoreOpen] = useState(false);
   const list = useShoppingList(weekStart);
+
+  const costByName = useMemo(() => {
+    if (!isClient) return new Map();
+    const plan = getOrCreateMealPlan(weekStart);
+    const summary = calculateWeekBudgetSummary({
+      mealPlan: plan,
+      recipes,
+      inventory,
+      priceRecords: prices,
+      settings,
+      weeklyFoodBudgetYenOverride:
+        plan.weeklyFoodBudgetYen !== undefined
+          ? plan.weeklyFoodBudgetYen
+          : settings.weeklyFoodBudgetYen,
+    });
+    return new Map(
+      summary.lines.map((line) => [line.normalizedIngredientName, line]),
+    );
+  }, [isClient, weekStart, recipes, inventory, prices, settings]);
 
   if (!isClient) {
     return <p className="text-sm text-on-surface-variant">読み込み中…</p>;
@@ -219,6 +293,9 @@ export function ShoppingListPage() {
       <ShoppingListItemRow
         key={item.id}
         item={item}
+        costLine={
+          costByName.get(normalizeIngredientName(item.ingredientName)) ?? null
+        }
         onToggle={() => {
           toggleShoppingItemChecked(weekStart, item.id);
           setMessage(null);
@@ -267,60 +344,86 @@ export function ShoppingListPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <header className="space-y-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">買い物リスト</h1>
-          <p className="mt-1 text-sm text-on-surface-variant">
-            献立の材料をまとめてチェックしましょう
-          </p>
-        </div>
-
         <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={() => updateWeek(shiftWeek(weekStart, -1))}
-            className="rounded-xl px-3 py-2 text-sm font-medium text-primary"
-          >
-            ← 前の週
-          </button>
-          <p className="text-sm font-medium">
-            {weekStart.split("-").join("/")} 週
-          </p>
-          <button
-            type="button"
-            onClick={() => updateWeek(shiftWeek(weekStart, 1))}
-            className="rounded-xl px-3 py-2 text-sm font-medium text-primary"
-          >
-            次の週 →
-          </button>
-        </div>
-
-        <Link
-          href={`/meals`}
-          className="inline-block text-sm font-medium text-primary"
-        >
-          献立画面を開く
-        </Link>
-
-        <button
-          type="button"
-          onClick={handleGenerate}
-          className="w-full rounded-2xl bg-primary px-4 py-3.5 text-base font-semibold text-on-primary shadow-sm"
-        >
-          {list
-            ? "献立から買い物リストを再生成"
-            : "今週の献立から買い物リストを作成"}
-        </button>
-
-        {list ? (
-          <div className="rounded-2xl bg-surface-container px-4 py-3 text-sm text-on-surface-variant">
-            <p>生成・更新: {formatDateTime(list.updatedAt)}</p>
-            <p className="mt-1">
-              未購入 {uncheckedCount}件　／　購入済み {checkedCount}件
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">🛒 買い物</h1>
+            <p className="text-sm text-on-surface-variant">
+              {weekStart.split("-").join("/")} 週
+              {list ? ` · 未購入 ${uncheckedCount}` : ""}
             </p>
           </div>
-        ) : null}
+          <CompactMenu
+            label="その他"
+            trigger={<span className="text-sm font-medium">その他</span>}
+            items={[
+              {
+                id: "prev",
+                label: "前の週",
+                onClick: () => updateWeek(shiftWeek(weekStart, -1)),
+              },
+              {
+                id: "next",
+                label: "次の週",
+                onClick: () => updateWeek(shiftWeek(weekStart, 1)),
+              },
+              {
+                id: "meals",
+                label: "献立を開く",
+                onClick: () => router.push("/meals"),
+              },
+              {
+                id: "regen",
+                label: list ? "リストを再生成" : "リストを作成",
+                onClick: handleGenerate,
+              },
+              {
+                id: "remove-checked",
+                label: "購入済みを削除",
+                onClick: handleRemoveChecked,
+                disabled: checkedCount === 0,
+                danger: true,
+              },
+              {
+                id: "view",
+                label: viewMode === "ingredient" ? "店舗別表示" : "食材別表示",
+                onClick: () =>
+                  setViewMode((mode) =>
+                    mode === "ingredient" ? "store" : "ingredient",
+                  ),
+              },
+              {
+                id: "pantry",
+                label: "常備品",
+                onClick: () => router.push("/settings/pantry"),
+              },
+              {
+                id: "receipt",
+                label: "レシート取込",
+                onClick: () => router.push("/receipts/import"),
+              },
+            ]}
+          />
+        </div>
+
+        {!list ? (
+          <button
+            type="button"
+            onClick={handleGenerate}
+            className="w-full rounded-2xl bg-primary px-4 py-3.5 text-base font-semibold text-on-primary shadow-sm"
+          >
+            献立からリストを作成
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAdding((current) => !current)}
+            className="w-full rounded-2xl bg-secondary-container px-4 py-3 text-sm font-semibold text-on-secondary-container"
+          >
+            {adding ? "追加を閉じる" : "＋ 項目を追加"}
+          </button>
+        )}
 
         {message ? (
           <p className="text-sm text-on-surface-variant" role="status">
@@ -330,39 +433,33 @@ export function ShoppingListPage() {
       </header>
 
       {!list ? (
-        <div className="rounded-2xl bg-surface-container px-5 py-10 text-center">
-          <p className="font-medium text-on-surface">
-            まだ買い物リストがありません
-          </p>
-          <p className="mt-2 text-sm text-on-surface-variant">
-            上のボタンから、この週の献立をもとに作成できます。
-          </p>
+        <div className="rounded-2xl bg-surface-container px-5 py-8 text-center">
+          <p className="font-medium">リストがありません</p>
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setAdding((current) => !current)}
-              className="rounded-xl bg-secondary-container px-4 py-2.5 text-sm font-semibold text-on-secondary-container"
-            >
-              {adding ? "追加を閉じる" : "項目を追加"}
-            </button>
-            <button
-              type="button"
-              onClick={handleRemoveChecked}
-              disabled={checkedCount === 0}
-              className="rounded-xl px-4 py-2.5 text-sm font-medium text-error ring-1 ring-error/40 disabled:opacity-40"
-            >
-              購入済みを削除
-            </button>
-            <Link
-              href="/settings/pantry"
-              className="rounded-xl px-4 py-2.5 text-sm font-medium text-primary ring-1 ring-outline-variant"
-            >
-              常備品を管理
-            </Link>
-          </div>
+          {viewMode === "store" && parts.buy.length > 0 ? (
+            <section className="rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
+              <button
+                type="button"
+                onClick={() => setStoreOpen((v) => !v)}
+                className="w-full text-left text-sm font-semibold"
+              >
+                店舗別の目安 {storeOpen ? "▲" : "▼"}
+              </button>
+              {storeOpen ? (
+                <StoreGroupedPreview
+                  items={parts.buy}
+                  weekStart={weekStart}
+                  prices={prices}
+                />
+              ) : (
+                <p className="mt-1 text-xs text-on-surface-variant">
+                  タップで店舗ごとの買い物目安を表示
+                </p>
+              )}
+            </section>
+          ) : null}
 
           {adding ? (
             <section className="rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">

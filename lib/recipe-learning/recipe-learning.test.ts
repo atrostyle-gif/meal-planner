@@ -345,6 +345,8 @@ describe("料理フィードバック・我が家版学習", () => {
       historyId: history.id,
       recipeId: "r-repo",
       householdId: "local",
+      cookedAt: now,
+      createdBy: "u1",
       overallRating: 4,
       tasteSalt: "just",
       tasteSweet: "just",
@@ -352,8 +354,13 @@ describe("料理フィードバック・我が家版学習", () => {
       texture: "just",
       timeFeeling: "just",
       wantAgain: true,
+      cookingTimeActualMinutes: 20,
+      servingsActual: 2,
       improvementTags: ["other_easy"],
       memberRatings: [{ memberId: "u1", rating: 4 }],
+      adjustments: [],
+      seasoningAdjustments: [],
+      photoDataUrl: null,
       memo: "ok",
       createdAt: now,
       updatedAt: now,
@@ -381,6 +388,85 @@ describe("料理フィードバック・我が家版学習", () => {
     expect(loadRecipes().length).toBe(0);
   });
 
+  it("改善履歴・また作る率・写真なしでも保存できる", () => {
+    const parent = recipeFixture({ id: "r-adj", name: "肉じゃが" });
+    replaceRecipes([parent]);
+    const { feedback } = recordCookingWithFeedback({
+      recipeId: parent.id,
+      householdId: "local",
+      createdBy: "me",
+      servings: 2,
+      cookingTimeActual: 30,
+      overallRating: 5,
+      wantAgain: true,
+      improvementTags: ["ing_onion_more", "sweet_half_sugar"],
+      memo: "",
+      adjustments: [
+        {
+          ingredientName: "玉ねぎ",
+          adjustmentType: "increase",
+          beforeValue: "1個",
+          afterValue: "1.5個",
+          memo: null,
+        },
+      ],
+      seasoningAdjustments: [
+        {
+          seasoning: "砂糖",
+          beforeAmount: "大さじ2",
+          afterAmount: "大さじ1",
+          reason: "少し甘かった",
+        },
+      ],
+      photoDataUrl: null,
+      memberRatings: [
+        { memberId: "wife", memberName: "妻", rating: 5 },
+        { memberId: "me", memberName: "自分", rating: 5 },
+      ],
+    });
+    expect(feedback.photoDataUrl).toBeNull();
+    expect(feedback.adjustments[0]?.afterValue).toBe("1.5個");
+    expect(feedback.seasoningAdjustments[0]?.seasoning).toBe("砂糖");
+    const stats = computeRecipeLearningStats(parent.id);
+    expect(stats.wantAgainRate).toBe(1);
+    expect(stats.recentImprovementLabels.length).toBeGreaterThan(0);
+    expect(stats.popularMemberIds).toContain("wife");
+  });
+
+  it("家族同期Repository: Feedback の replaceAll 相当が動く", () => {
+    const now = new Date().toISOString();
+    replaceCookingFeedbacks([
+      {
+        id: "sync-1",
+        historyId: "h-sync",
+        recipeId: "r-sync",
+        householdId: "local",
+        cookedAt: now,
+        createdBy: null,
+        overallRating: 4,
+        tasteSalt: null,
+        tasteSweet: null,
+        tasteSpicy: null,
+        texture: null,
+        timeFeeling: null,
+        wantAgain: true,
+        cookingTimeActualMinutes: null,
+        servingsActual: null,
+        improvementTags: ["want_again"],
+        memberRatings: [],
+        adjustments: [],
+        seasoningAdjustments: [],
+        photoDataUrl: null,
+        memo: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ]);
+    expect(loadCookingFeedbacks()).toHaveLength(1);
+    replaceCookingFeedbacks([]);
+    expect(loadCookingFeedbacks()).toHaveLength(0);
+  });
+
   it("MockProvider は OpenAI を呼ばず改善案を返す", async () => {
     const provider = new MockRecipeImprovementProvider();
     const parent = recipeFixture({ id: "r-ai", name: "テスト鍋" });
@@ -392,6 +478,8 @@ describe("料理フィードバック・我が家版学習", () => {
           historyId: "h1",
           recipeId: parent.id,
           householdId: "local",
+          cookedAt: "2026-01-01T00:00:00.000Z",
+          createdBy: null,
           overallRating: 4,
           tasteSalt: "thick",
           tasteSweet: null,
@@ -399,8 +487,13 @@ describe("料理フィードバック・我が家版学習", () => {
           texture: null,
           timeFeeling: null,
           wantAgain: true,
+          cookingTimeActualMinutes: null,
+          servingsActual: null,
           improvementTags: ["taste_bit_thick", "ing_onion_add", "salt_reduce"],
           memberRatings: [],
+          adjustments: [],
+          seasoningAdjustments: [],
+          photoDataUrl: null,
           memo: null,
           createdAt: "2026-01-01T00:00:00.000Z",
           updatedAt: "2026-01-01T00:00:00.000Z",

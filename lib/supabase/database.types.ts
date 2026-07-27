@@ -355,6 +355,60 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["cooking_history"]["Insert"]>;
         Relationships: [];
       };
+      stores: {
+        Row: { id: string; household_id: string; name: string; normalized_name: string; aliases: Json; store_type: string; is_primary: boolean; prefers_bulk_purchase: boolean; default_pack_size_multiplier: number; store_brand_name: string | null; store_branch_name: string | null; notes: string; created_at: string; updated_at: string; };
+        Insert: { id?: string; household_id: string; name: string; normalized_name?: string; aliases?: Json; store_type?: string; is_primary?: boolean; prefers_bulk_purchase?: boolean; default_pack_size_multiplier?: number; store_brand_name?: string | null; store_branch_name?: string | null; notes?: string; created_at?: string; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["stores"]["Insert"]>;
+        Relationships: [];
+      };
+      receipts: {
+        Row: { id: string; household_id: string; store_id: string | null; store_name: string; purchased_at: string | null; total_amount_yen: number | null; receipt_fingerprint: string; keep_image: boolean; confidence: number | null; warnings: Json; raw_text: string | null; created_at: string; updated_at: string; };
+        Insert: { id?: string; household_id: string; store_id?: string | null; store_name: string; purchased_at?: string | null; total_amount_yen?: number | null; receipt_fingerprint: string; keep_image?: boolean; confidence?: number | null; warnings?: Json; raw_text?: string | null; created_at?: string; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["receipts"]["Insert"]>;
+        Relationships: [];
+      };
+      receipt_items: {
+        Row: { id: string; household_id: string; receipt_id: string; raw_product_name: string; normalized_ingredient_name: string; ingredient_name: string; quantity: number | null; unit: string | null; package_count: number | null; package_quantity: number | null; package_unit: string | null; grams_equivalent: number | null; unit_price_yen: number | null; total_price_yen: number | null; discount_yen: number | null; tax_included: boolean | null; confidence: number | null; price_record_id: string | null; };
+        Insert: { id?: string; household_id: string; receipt_id: string; raw_product_name: string; normalized_ingredient_name?: string; ingredient_name?: string; quantity?: number | null; unit?: string | null; package_count?: number | null; package_quantity?: number | null; package_unit?: string | null; grams_equivalent?: number | null; unit_price_yen?: number | null; total_price_yen?: number | null; discount_yen?: number | null; tax_included?: boolean | null; confidence?: number | null; price_record_id?: string | null; };
+        Update: Partial<Database["public"]["Tables"]["receipt_items"]["Insert"]>;
+        Relationships: [];
+      };
+      store_product_mappings: {
+        Row: { id: string; household_id: string; store_id: string | null; store_name: string; raw_product_name: string; normalized_raw_product_name: string; normalized_ingredient_name: string; food_code: string | null; match_source: string; confirmation_count: number; correction_count: number; confidence: number; first_seen_at: string; last_seen_at: string; created_by: string | null; created_at: string; updated_at: string; };
+        Insert: { id?: string; household_id: string; store_id?: string | null; store_name: string; raw_product_name: string; normalized_raw_product_name?: string; normalized_ingredient_name: string; food_code?: string | null; match_source?: string; confirmation_count?: number; correction_count?: number; confidence?: number; first_seen_at?: string; last_seen_at?: string; created_by?: string | null; created_at?: string; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["store_product_mappings"]["Insert"]>;
+        Relationships: [];
+      };
+      ingredient_prices: {
+        Row: { id: string; household_id: string; ingredient_name: string; normalized_ingredient_name: string; food_code: string | null; store_id: string | null; store_name: string; store_brand_name: string | null; store_branch_name: string | null; purchase_price_yen: number; original_price_yen: number | null; package_quantity: number; package_count: number | null; package_unit: string; grams_equivalent: number | null; unit_count_equivalent: number | null; price_per_100g: number | null; price_per_unit: number | null; purchased_at: string; is_sale_price: boolean; memo: string; source: string; receipt_id: string | null; raw_product_name: string | null; discount_yen: number | null; confidence: number | null; created_at: string; updated_at: string; };
+        Insert: { id?: string; household_id: string; ingredient_name: string; normalized_ingredient_name?: string; food_code?: string | null; store_id?: string | null; store_name: string; store_brand_name?: string | null; store_branch_name?: string | null; purchase_price_yen: number; original_price_yen?: number | null; package_quantity?: number; package_count?: number | null; package_unit?: string; grams_equivalent?: number | null; unit_count_equivalent?: number | null; price_per_100g?: number | null; price_per_unit?: number | null; purchased_at?: string; is_sale_price?: boolean; memo?: string; source?: string; receipt_id?: string | null; raw_product_name?: string | null; discount_yen?: number | null; confidence?: number | null; created_at?: string; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["ingredient_prices"]["Insert"]>;
+        Relationships: [];
+      };
+      food_expense_transactions: {
+        Row: { id: string; household_id: string; receipt_id: string | null; store_id: string | null; store_name: string; purchased_at: string; subtotal_yen: number | null; discount_yen: number | null; tax_yen: number | null; total_amount_yen: number; payment_method: string; category_breakdown: Json; source: string; detail_completeness: string; memo: string; created_by: string | null; created_at: string; updated_at: string; };
+        Insert: { id?: string; household_id: string; receipt_id?: string | null; store_id?: string | null; store_name?: string; purchased_at?: string; subtotal_yen?: number | null; discount_yen?: number | null; tax_yen?: number | null; total_amount_yen: number; payment_method?: string; category_breakdown?: Json; source?: string; detail_completeness?: string; memo?: string; created_by?: string | null; created_at?: string; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["food_expense_transactions"]["Insert"]>;
+        Relationships: [];
+      };
+      food_budget_settings: {
+        Row: { household_id: string; settings_json: Json; updated_at: string; };
+        Insert: { household_id: string; settings_json?: Json; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["food_budget_settings"]["Insert"]>;
+        Relationships: [];
+      };
+      cooking_feedbacks: {
+        Row: { id: string; household_id: string; history_id: string; recipe_id: string; cooked_at: string; created_by: string | null; overall_rating: number | null; want_again: boolean | null; cooking_time_actual_minutes: number | null; servings_actual: number | null; improvement_tags: Json; member_ratings: Json; adjustments: Json; seasoning_adjustments: Json; photo_data_url: string | null; memo: string | null; taste_salt: string | null; taste_sweet: string | null; taste_spicy: string | null; texture: string | null; time_feeling: string | null; created_at: string; updated_at: string; };
+        Insert: { id?: string; household_id: string; history_id: string; recipe_id: string; cooked_at?: string; created_by?: string | null; overall_rating?: number | null; want_again?: boolean | null; cooking_time_actual_minutes?: number | null; servings_actual?: number | null; improvement_tags?: Json; member_ratings?: Json; adjustments?: Json; seasoning_adjustments?: Json; photo_data_url?: string | null; memo?: string | null; taste_salt?: string | null; taste_sweet?: string | null; taste_spicy?: string | null; texture?: string | null; time_feeling?: string | null; created_at?: string; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["cooking_feedbacks"]["Insert"]>;
+        Relationships: [];
+      };
+      recipe_variants: {
+        Row: { id: string; household_id: string; parent_recipe_id: string; variant_recipe_id: string; title: string; summary: string; changes: Json; source_history_ids: Json; source_feedback_ids: Json; created_at: string; updated_at: string; };
+        Insert: { id?: string; household_id: string; parent_recipe_id: string; variant_recipe_id: string; title: string; summary?: string; changes?: Json; source_history_ids?: Json; source_feedback_ids?: Json; created_at?: string; updated_at?: string; };
+        Update: Partial<Database["public"]["Tables"]["recipe_variants"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

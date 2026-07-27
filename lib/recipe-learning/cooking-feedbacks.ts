@@ -1,12 +1,15 @@
 import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
-import type {
-  CookingFeedback,
-  FamilyMemberRating,
-  TasteSaltLevel,
-  TasteSweetLevel,
-  TasteSpicyLevel,
-  TextureLevel,
-  TimeFeelingLevel,
+import {
+  isRecipeAdjustmentType,
+  type CookingFeedback,
+  type FamilyMemberRating,
+  type RecipeAdjustment,
+  type SeasoningAdjustment,
+  type TasteSaltLevel,
+  type TasteSweetLevel,
+  type TasteSpicyLevel,
+  type TextureLevel,
+  type TimeFeelingLevel,
 } from "@/types/recipe-learning";
 
 type Listener = () => void;
@@ -47,6 +50,33 @@ function migrateMemberRating(value: unknown): FamilyMemberRating | null {
   };
 }
 
+function migrateAdjustment(value: unknown): RecipeAdjustment | null {
+  if (typeof value !== "object" || value === null) return null;
+  const item = value as Record<string, unknown>;
+  if (typeof item.ingredientName !== "string") return null;
+  if (!isRecipeAdjustmentType(item.adjustmentType)) return null;
+  return {
+    ingredientName: item.ingredientName,
+    adjustmentType: item.adjustmentType,
+    beforeValue: typeof item.beforeValue === "string" ? item.beforeValue : null,
+    afterValue: typeof item.afterValue === "string" ? item.afterValue : null,
+    memo: typeof item.memo === "string" ? item.memo : null,
+  };
+}
+
+function migrateSeasoning(value: unknown): SeasoningAdjustment | null {
+  if (typeof value !== "object" || value === null) return null;
+  const item = value as Record<string, unknown>;
+  if (typeof item.seasoning !== "string") return null;
+  return {
+    seasoning: item.seasoning,
+    beforeAmount:
+      typeof item.beforeAmount === "string" ? item.beforeAmount : null,
+    afterAmount: typeof item.afterAmount === "string" ? item.afterAmount : null,
+    reason: typeof item.reason === "string" ? item.reason : null,
+  };
+}
+
 function migrate(value: unknown): CookingFeedback | null {
   if (typeof value !== "object" || value === null) return null;
   const item = value as Record<string, unknown>;
@@ -63,19 +93,51 @@ function migrate(value: unknown): CookingFeedback | null {
     item.overallRating <= 5
       ? Math.round(item.overallRating)
       : null;
+  const now = new Date().toISOString();
+  const createdAt =
+    typeof item.createdAt === "string" ? item.createdAt : now;
+  const memo =
+    typeof item.memo === "string"
+      ? item.memo.slice(0, 500)
+      : typeof item.notes === "string"
+        ? item.notes.slice(0, 500)
+        : null;
+  const wantAgain =
+    typeof item.wantAgain === "boolean"
+      ? item.wantAgain
+      : typeof item.wouldCookAgain === "boolean"
+        ? item.wouldCookAgain
+        : null;
+
   return {
     id: item.id,
     historyId: item.historyId,
     recipeId: item.recipeId,
     householdId:
       typeof item.householdId === "string" ? item.householdId : "local",
+    cookedAt:
+      typeof item.cookedAt === "string" ? item.cookedAt : createdAt,
+    createdBy:
+      typeof item.createdBy === "string" ? item.createdBy : null,
     overallRating: overall,
     tasteSalt: isTasteSalt(item.tasteSalt) ? item.tasteSalt : null,
     tasteSweet: isTasteSweet(item.tasteSweet) ? item.tasteSweet : null,
     tasteSpicy: isTasteSpicy(item.tasteSpicy) ? item.tasteSpicy : null,
     texture: isTexture(item.texture) ? item.texture : null,
     timeFeeling: isTimeFeeling(item.timeFeeling) ? item.timeFeeling : null,
-    wantAgain: typeof item.wantAgain === "boolean" ? item.wantAgain : null,
+    wantAgain,
+    cookingTimeActualMinutes:
+      typeof item.cookingTimeActualMinutes === "number"
+        ? item.cookingTimeActualMinutes
+        : typeof item.cookingTimeActual === "number"
+          ? item.cookingTimeActual
+          : null,
+    servingsActual:
+      typeof item.servingsActual === "number"
+        ? item.servingsActual
+        : typeof item.servings === "number"
+          ? item.servings
+          : null,
     improvementTags: Array.isArray(item.improvementTags)
       ? item.improvementTags.filter((t): t is string => typeof t === "string")
       : [],
@@ -83,19 +145,27 @@ function migrate(value: unknown): CookingFeedback | null {
       ? item.memberRatings
           .map(migrateMemberRating)
           .filter((r): r is FamilyMemberRating => r !== null)
+      : Array.isArray(item.familyRatings)
+        ? item.familyRatings
+            .map(migrateMemberRating)
+            .filter((r): r is FamilyMemberRating => r !== null)
+        : [],
+    adjustments: Array.isArray(item.adjustments)
+      ? item.adjustments
+          .map(migrateAdjustment)
+          .filter((r): r is RecipeAdjustment => r !== null)
       : [],
-    memo:
-      typeof item.memo === "string"
-        ? item.memo.slice(0, 500)
-        : null,
-    createdAt:
-      typeof item.createdAt === "string"
-        ? item.createdAt
-        : new Date().toISOString(),
+    seasoningAdjustments: Array.isArray(item.seasoningAdjustments)
+      ? item.seasoningAdjustments
+          .map(migrateSeasoning)
+          .filter((r): r is SeasoningAdjustment => r !== null)
+      : [],
+    photoDataUrl:
+      typeof item.photoDataUrl === "string" ? item.photoDataUrl : null,
+    memo,
+    createdAt,
     updatedAt:
-      typeof item.updatedAt === "string"
-        ? item.updatedAt
-        : new Date().toISOString(),
+      typeof item.updatedAt === "string" ? item.updatedAt : now,
   };
 }
 
@@ -143,7 +213,7 @@ export function saveCookingFeedback(
 export function getFeedbacksForRecipe(recipeId: string): CookingFeedback[] {
   return loadCookingFeedbacks()
     .filter((item) => item.recipeId === recipeId)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    .sort((a, b) => b.cookedAt.localeCompare(a.cookedAt));
 }
 
 export function subscribeCookingFeedbacks(listener: Listener): () => void {

@@ -36,7 +36,7 @@ export function FamilySettingsPage() {
   if (mode === "local") {
     return (
       <div className="space-y-3">
-        <h1 className="text-2xl font-bold">家族設定</h1>
+        <h1 className="text-2xl font-bold">家族共有</h1>
         <p className="text-sm text-on-surface-variant">
           家族共有は Supabase 設定後に利用できます。
         </p>
@@ -53,7 +53,7 @@ export function FamilySettingsPage() {
         <Link href="/settings" className="text-sm text-primary">
           ← 設定
         </Link>
-        <h1 className="text-2xl font-bold">家族設定</h1>
+        <h1 className="text-2xl font-bold">家族共有</h1>
         <p className="text-sm text-on-surface-variant">
           {household?.name ?? "未所属"}
         </p>

@@ -45,7 +45,7 @@ export function CookingMembersPage() {
     save({ ...profile, [key]: values.includes(recipeId) ? values.filter((id) => id !== recipeId) : [...values, recipeId] });
   }
   return <div className="space-y-6">
-    <header className="space-y-2"><Link href="/settings" className="text-sm text-primary">← 設定</Link><h1 className="text-2xl font-bold">調理する人の設定</h1><p className="text-sm text-on-surface-variant">家族ごとの得意なこと・作りやすい料理を設定します。</p></header>
+    <header className="space-y-2"><Link href="/settings" className="text-sm text-primary">← 設定</Link><h1 className="text-2xl font-bold">調理担当</h1><p className="text-sm text-on-surface-variant">家族ごとの得意なこと・作りやすい料理を設定します。</p></header>
     {members.length === 0 ? <p className="rounded-2xl bg-surface-container p-4 text-sm">先に家族プロフィールを登録してください。</p> : members.map((member) => {
       const profile = getProfile(member.id);
       return <section key={member.id} className="space-y-4 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">

@@ -151,7 +151,7 @@ export type Recipe = {
   /** 野菜量（g / 1人分目安） */
   vegetables: number | null;
   /**
-   * 拡張栄養情報（糖尿病配慮・詳細集計用）。
+   * 拡張栄養情報（健康・体重管理サポート／詳細集計用）。
    * すべて nullable。根拠のない 0 埋めはしない。
    */
   nutritionStatus?: NutritionStatus | null;

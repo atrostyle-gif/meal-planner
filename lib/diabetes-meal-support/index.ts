@@ -17,16 +17,20 @@ export {
   weeklyNutritionTotals,
   evaluateCarbTargetStatus,
 } from "@/lib/diabetes-meal-support/aggregate";
-export { scoreDiabetesMealSupport } from "@/lib/diabetes-meal-support/score";
+export {
+  scoreHealthMealSupport,
+  scoreDiabetesMealSupport,
+} from "@/lib/diabetes-meal-support/score";
+export {
+  DIABETES_SUPPORT_DISCLAIMER,
+  CARB_NOT_GLUCOSE_DISCLAIMER,
+  HEALTH_WEIGHT_SUPPORT_INTRO,
+  buildDiabetesMealSupportReport,
+} from "@/lib/diabetes-meal-support/report";
 export {
   buildDiabetesImprovementSuggestions,
   assertSuggestionsAreProposalsOnly,
 } from "@/lib/diabetes-meal-support/suggestions";
-export {
-  buildDiabetesMealSupportReport,
-  DIABETES_SUPPORT_DISCLAIMER,
-  CARB_NOT_GLUCOSE_DISCLAIMER,
-} from "@/lib/diabetes-meal-support/report";
 export {
   calculateBmi,
   calculateReferenceWeight,

@@ -1,4 +1,10 @@
 import { getWeekDates } from "@/lib/date";
+import { scoreBudgetSupport } from "@/lib/food-budget/score";
+import {
+  getActiveStoreProfile,
+  loadFoodBudgetSettings,
+} from "@/lib/food-budget/settings";
+import { loadIngredientPrices } from "@/lib/food-budget/prices";
 import {
   getGenreKey,
   getMainIngredientKey,
@@ -10,6 +16,8 @@ import {
   scoreRecipeForSlot,
   type ScoreContext,
 } from "@/lib/weekly-auto-plan/score";
+import type { FoodBudgetSettings } from "@/types/food-budget";
+import type { IngredientPriceRecord } from "@/types/ingredient-price";
 import type { InventoryItem } from "@/types/inventory";
 import type { DayMeal, MealDishItem, MealPlan } from "@/types/meal-plan";
 import type { Recipe } from "@/types/recipe";
@@ -29,6 +37,9 @@ export type GenerateWeeklyPlanInput = {
   /** 乱数を固定したい場合（テスト用） */
   random?: () => number;
   diabetesSettings?: import("@/types/diabetes-meal-support").DiabetesMealSupportSettings;
+  foodBudgetSettings?: FoodBudgetSettings;
+  priceRecords?: IngredientPriceRecord[];
+  weeklyFoodBudgetYen?: number | null;
 };
 
 export type GenerateWeeklyPlanResult = {
@@ -92,16 +103,45 @@ function shouldRegenerateSlot(
   scope: WeeklyAutoScope,
 ): boolean {
   if (day.locked) return false;
-  const existing = findSlot(day, course, scope.type === "slot" ? scope.slotId : undefined);
-  if (existing && isSlotLocked(existing, day)) return false;
 
-  if (scope.type === "week") return true;
-  if (scope.type === "day") return day.date === scope.date;
+  if (scope.type === "week") {
+    const existing = findSlot(day, course);
+    if (existing && isSlotLocked(existing, day)) return false;
+    return true;
+  }
+
+  if (scope.type === "day") {
+    if (day.date !== scope.date) return false;
+    const existing = findSlot(day, course);
+    if (existing && isSlotLocked(existing, day)) return false;
+    return true;
+  }
+
   if (scope.type === "slot") {
     if (day.date !== scope.date) return false;
-    if (scope.slotId) return existing?.id === scope.slotId;
-    return scope.course === course;
+    if (scope.course !== course) return false;
+
+    // removeRegeneratedSlots のあとでも、空きコースなら埋め直す
+    const existingById = scope.slotId
+      ? day.items.find((item) => item.id === scope.slotId)
+      : undefined;
+    const existingByCourse = findSlot(day, course);
+
+    if (existingById && isSlotLocked(existingById, day)) return false;
+    if (existingByCourse && isSlotLocked(existingByCourse, day)) return false;
+
+    if (scope.slotId) {
+      // 指定枠がまだ残っている → 再生成対象
+      if (existingById) return true;
+      // 枠は消えたが同コースが埋まっている → 触らない
+      if (existingByCourse?.recipeId) return false;
+      // 空き → 埋める
+      return true;
+    }
+
+    return true;
   }
+
   return false;
 }
 
@@ -138,6 +178,7 @@ function buildContextForDay(
     | import("@/types/diabetes-meal-support").DiabetesMealSupportSettings
     | undefined,
   targetCourse: import("@/types/recipe").RecipeCourse,
+  budgetContext: ScoreContext["budgetContext"],
 ): ScoreContext {
   const recipeMap = new Map(recipes.map((r) => [r.id, r]));
   const prev = dayIndex > 0 ? days[dayIndex - 1] : null;
@@ -180,6 +221,7 @@ function buildContextForDay(
     dayCoursesSoFar,
     previousDayRecipes,
     targetCourse,
+    budgetContext,
   };
 }
 
@@ -194,6 +236,17 @@ export function generateWeeklyMealPlan(
   const inventory = input.inventory ?? [];
   const recentRecipeIds = new Set(input.recentRecipeIds ?? []);
   const warnings: string[] = [];
+  const foodBudgetSettings =
+    input.foodBudgetSettings ?? loadFoodBudgetSettings();
+  const priceRecords = input.priceRecords ?? loadIngredientPrices();
+  const store = getActiveStoreProfile(foodBudgetSettings);
+  const weeklyFoodBudgetYen =
+    input.weeklyFoodBudgetYen !== undefined
+      ? input.weeklyFoodBudgetYen
+      : foodBudgetSettings.weeklyFoodBudgetYen;
+  const recipeMap = new Map(input.recipes.map((r) => [r.id, r]));
+  const selectedRecipes: Recipe[] = [];
+  let runningPurchaseCostYen = 0;
 
   let days = normalizeDays(input.weekStart, input.days).map((day) => ({
     ...day,
@@ -204,7 +257,23 @@ export function generateWeeklyMealPlan(
   const usedRecipeIds = new Set<string>();
   for (const day of days) {
     for (const item of day.items) {
-      if (item.recipeId) usedRecipeIds.add(item.recipeId);
+      if (item.recipeId) {
+        usedRecipeIds.add(item.recipeId);
+        const lockedRecipe = recipeMap.get(item.recipeId);
+        if (lockedRecipe) {
+          selectedRecipes.push(lockedRecipe);
+          const budgetPart = scoreBudgetSupport(lockedRecipe, {
+            settings: foodBudgetSettings,
+            store,
+            priceRecords,
+            inventory,
+            selectedRecipes: selectedRecipes.slice(0, -1),
+            weeklyFoodBudgetYen,
+            runningPurchaseCostYen,
+          });
+          runningPurchaseCostYen += budgetPart.addedPurchaseCostYen;
+        }
+      }
     }
   }
 
@@ -228,6 +297,16 @@ export function generateWeeklyMealPlan(
         continue;
       }
 
+      const budgetContext = {
+        settings: foodBudgetSettings,
+        store,
+        priceRecords,
+        inventory,
+        selectedRecipes: [...selectedRecipes],
+        weeklyFoodBudgetYen,
+        runningPurchaseCostYen,
+      };
+
       const ctx = buildContextForDay(
         // 途中経過を反映するため、当日までの仮 days を渡す
         days.map((d, i) => (i === dayIndex ? { ...d, items: nextItems } : d)),
@@ -239,6 +318,7 @@ export function generateWeeklyMealPlan(
         nextItems.map((item) => item.course),
         input.diabetesSettings,
         course,
+        budgetContext,
       );
 
       const candidates = input.recipes
@@ -253,6 +333,9 @@ export function generateWeeklyMealPlan(
       }
 
       usedRecipeIds.add(best.recipe.id);
+      const added = scoreBudgetSupport(best.recipe, budgetContext);
+      runningPurchaseCostYen += added.addedPurchaseCostYen;
+      selectedRecipes.push(best.recipe);
       nextItems.push({
         id: createId(),
         recipeId: best.recipe.id,

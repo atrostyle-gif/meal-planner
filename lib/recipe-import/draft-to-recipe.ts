@@ -1,7 +1,9 @@
 import { findFoodMaster } from "@/lib/food-master/match";
 import { loadFoodAliasMappings, loadFoodMasters } from "@/lib/food-master/store";
 import { normalizeIngredientName } from "@/lib/food-master/normalize";
+import { parseAmountString } from "@/lib/ingredient";
 import { applyAutomaticNutritionToRecipeInput } from "@/lib/nutrition/recipe-nutrition";
+import { parseIngredientLine } from "@/lib/recipe-import/parse-ingredient";
 import {
   DEFAULT_INGREDIENT_TYPE,
   DEFAULT_RECIPE_CATEGORY,
@@ -90,6 +92,63 @@ function enrichIngredientName(name: string): {
   };
 }
 
+/** quantity 欠落時に quantityText / 原文から復元する */
+function resolveDraftQuantity(item: {
+  quantity?: number | null;
+  quantityText?: string | null;
+  unit?: string | null;
+  rawText?: string | null;
+  name: string;
+}): { quantity: number | null; unit: string } {
+  const unit = item.unit?.trim() || "";
+  const quantityText = item.quantityText?.trim() || "";
+
+  if (
+    item.quantity !== null &&
+    item.quantity !== undefined &&
+    Number.isFinite(item.quantity)
+  ) {
+    return {
+      quantity: item.quantity,
+      unit: unit || quantityText,
+    };
+  }
+
+  // 「1/3」+「束」→「1/3束」
+  if (quantityText !== "") {
+    const combined =
+      unit !== "" && !quantityText.includes(unit)
+        ? `${quantityText}${unit}`
+        : quantityText;
+    const parsed = parseAmountString(combined);
+    if (parsed && parsed.quantity !== null) {
+      return parsed;
+    }
+  }
+
+  if (unit !== "") {
+    const fromUnit = parseAmountString(unit);
+    if (fromUnit && fromUnit.quantity !== null) {
+      return fromUnit;
+    }
+  }
+
+  if (item.rawText && item.rawText.trim() !== "" && item.rawText !== item.name) {
+    const parsed = parseIngredientLine(item.rawText);
+    if (parsed.quantity !== null) {
+      return {
+        quantity: parsed.quantity,
+        unit: parsed.unit?.trim() || unit || quantityText,
+      };
+    }
+  }
+
+  return {
+    quantity: null,
+    unit: unit || quantityText,
+  };
+}
+
 /** RecipeDraft → 既存 RecipeInput（未保存） */
 export function recipeDraftToRecipeInput(draft: RecipeDraft): RecipeInput {
   const category =
@@ -102,10 +161,11 @@ export function recipeDraftToRecipeInput(draft: RecipeDraft): RecipeInput {
     .filter((item) => item.name.trim() !== "")
     .map((item) => {
       const enriched = enrichIngredientName(item.name.trim());
+      const resolved = resolveDraftQuantity(item);
       return {
         name: enriched.name,
-        quantity: item.quantity ?? null,
-        unit: item.unit?.trim() || item.quantityText?.trim() || "",
+        quantity: resolved.quantity,
+        unit: resolved.unit,
         note: [
           item.groupName ? `【${item.groupName}】` : null,
           item.alias ? `別名: ${item.alias}` : null,

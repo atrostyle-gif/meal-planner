@@ -76,11 +76,15 @@ export function RecipeList() {
               </p>
             </div>
           ) : (
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {filteredRecipes.map(({ recipe, reasons }) => (
-                <li key={recipe.id} className="space-y-1">
+                <li key={recipe.id}>
                   <RecipeCard recipe={recipe} />
-                  {filtering && reasons.length > 0 ? <p className="px-2 text-xs text-on-surface-variant">選定理由: {reasons.join(" / ")}</p> : null}
+                  {filtering && reasons.length > 0 ? (
+                    <p className="mt-1 px-2 text-xs text-on-surface-variant">
+                      選定理由: {reasons.join(" / ")}
+                    </p>
+                  ) : null}
                 </li>
               ))}
             </ul>

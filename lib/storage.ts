@@ -17,6 +17,24 @@ export const STORAGE_KEYS = {
   cookingHistory: "meal-planner:cookingHistory",
   leftoverIngredients: "meal-planner:leftoverIngredients",
   diabetesMealSupport: "meal-planner:diabetesMealSupport",
+  /** 食費予算・買い物先（端末ローカル） */
+  foodBudgetSettings: "meal-planner:foodBudgetSettings",
+  /** 食材価格履歴（家族同期対象） */
+  ingredientPrices: "meal-planner:ingredientPrices",
+  /** 登録店舗（家族同期対象） */
+  stores: "meal-planner:stores",
+  /** 週ごとの買い物先予定 */
+  weekStorePlans: "meal-planner:weekStorePlans",
+  /** レシート本体（家族同期対象） */
+  receipts: "meal-planner:receipts",
+  /** レシート明細（家族同期対象） */
+  receiptItems: "meal-planner:receiptItems",
+  /** 店舗商品名マッピング（家族同期対象） */
+  storeProductMappings: "meal-planner:storeProductMappings",
+  /** 店舗名統合履歴（端末ローカル学習） */
+  storeMergeHistory: "meal-planner:storeMergeHistory",
+  /** 食費取引・家計簿（家族同期対象） */
+  foodExpenseTransactions: "meal-planner:foodExpenseTransactions",
   cookingFeedbacks: "meal-planner:cookingFeedbacks",
   recipeVariants: "meal-planner:recipeVariants",
   /** サンプルレシピを一度でも投入（または初期化判定）したか */
@@ -64,6 +82,15 @@ const SYNCABLE_STORAGE_KEYS = new Set<string>([
   STORAGE_KEYS.dailyCookingOverrides,
   STORAGE_KEYS.cookingHistory,
   STORAGE_KEYS.leftoverIngredients,
+  STORAGE_KEYS.ingredientPrices,
+  STORAGE_KEYS.stores,
+  STORAGE_KEYS.receipts,
+  STORAGE_KEYS.receiptItems,
+  STORAGE_KEYS.storeProductMappings,
+  STORAGE_KEYS.foodExpenseTransactions,
+  STORAGE_KEYS.foodBudgetSettings,
+  STORAGE_KEYS.cookingFeedbacks,
+  STORAGE_KEYS.recipeVariants,
 ]);
 
 let lastSyncableLocalWriteAt = 0;

@@ -48,11 +48,14 @@ export function recordCookingWithFeedback(
   });
 
   const now = new Date().toISOString();
+  const cookedAt = input.cookedAt ?? history.cookedAt ?? now;
   const feedback: CookingFeedback = {
     id: crypto.randomUUID(),
     historyId: history.id,
     recipeId: input.recipeId,
     householdId: input.householdId,
+    cookedAt,
+    createdBy: input.createdBy,
     overallRating: input.overallRating,
     tasteSalt: input.tasteSalt ?? null,
     tasteSweet: input.tasteSweet ?? null,
@@ -60,8 +63,13 @@ export function recordCookingWithFeedback(
     texture: input.texture ?? null,
     timeFeeling: input.timeFeeling ?? null,
     wantAgain: input.wantAgain,
+    cookingTimeActualMinutes: input.cookingTimeActual,
+    servingsActual: input.servings,
     improvementTags: tags,
     memberRatings: input.memberRatings ?? [],
+    adjustments: input.adjustments ?? [],
+    seasoningAdjustments: input.seasoningAdjustments ?? [],
+    photoDataUrl: input.photoDataUrl ?? null,
     memo: memo || null,
     createdAt: now,
     updatedAt: now,

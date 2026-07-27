@@ -1,7 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useFamilySession } from "@/components/providers/FamilySessionProvider";
+import { DiabetesHealthSection } from "@/components/settings/DiabetesMealSupportSettingsPage";
+import { LifestyleSetupWizard } from "@/components/settings/LifestyleSetupWizard";
+import { FirstVisitTip, HelpButton } from "@/components/ui/FirstVisitTip";
+import {
+  deleteFamilyMemberProfile,
+  getFamilyMemberProfilesServerSnapshot,
+  getFamilyMemberProfilesSnapshot,
+  loadFamilyMemberProfiles,
+  saveFamilyMemberProfile,
+  subscribeFamilyMemberProfiles,
+} from "@/lib/family-member-profiles";
 import {
   AGE_GROUPS,
   COMMON_ALLERGENS,
@@ -16,16 +29,6 @@ import {
   type ProfileActivityLevel,
   type ProfileSex,
 } from "@/types/family-member-profile";
-import {
-  deleteFamilyMemberProfile,
-  loadFamilyMemberProfiles,
-  saveFamilyMemberProfile,
-  subscribeFamilyMemberProfiles,
-  getFamilyMemberProfilesSnapshot,
-  getFamilyMemberProfilesServerSnapshot,
-} from "@/lib/family-member-profiles";
-import { useSyncExternalStore } from "react";
-import { useFamilySession } from "@/components/providers/FamilySessionProvider";
 
 function useProfiles(): FamilyMemberProfile[] {
   return useSyncExternalStore(
@@ -50,18 +53,36 @@ function emptyDraft(householdId: string): Parameters<typeof saveFamilyMemberProf
   };
 }
 
+const SECTION_IDS = ["members", "health", "lifestyle"] as const;
+
 export function FamilyProfilesPage() {
   const profiles = useProfiles();
   const { household } = useFamilySession();
+  const searchParams = useSearchParams();
   const householdId = household?.id ?? "local";
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(() => emptyDraft(householdId));
   const [message, setMessage] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   const editing = useMemo(
     () => profiles.find((p) => p.id === editingId) ?? null,
     [profiles, editingId],
   );
+
+  // 旧URL・セクション指定からのスクロール（リンク切れ防止）
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (!section || !(SECTION_IDS as readonly string[]).includes(section)) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      document
+        .getElementById(section)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [searchParams]);
 
   function startCreate(): void {
     setEditingId(null);
@@ -101,32 +122,59 @@ export function FamilyProfilesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <header className="space-y-2">
         <p>
           <Link href="/settings" className="text-sm text-primary">
             ← 設定
           </Link>
         </p>
-        <h1 className="text-2xl font-bold tracking-tight">家族プロフィール</h1>
-        <p className="text-sm text-on-surface-variant">
-          献立作成の参考情報です。未入力でもアプリは利用できます。
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="text-2xl font-bold tracking-tight">家族・プロフィール</h1>
+          <HelpButton onClick={() => setShowHelp(true)} />
+        </div>
       </header>
 
-      <section className="rounded-2xl bg-surface-container px-4 py-3 text-xs text-on-surface-variant">
-        <p className="font-medium text-on-surface">ご注意</p>
-        <ul className="mt-1 space-y-0.5">
-          <li>・栄養値や目標は家庭での献立補助用の参考です</li>
-          <li>・医療上の判断・治療目的には使用しないでください</li>
-          <li>・アレルギーは必ず食品の原材料表示も確認してください</li>
-          <li>・自動判定は安全を保証するものではありません</li>
-        </ul>
-      </section>
+      <nav
+        aria-label="このページ内のセクション"
+        className="flex flex-wrap gap-2"
+      >
+        <a
+          href="#members"
+          className="rounded-full bg-surface-container px-3 py-1.5 text-xs font-medium ring-1 ring-outline-variant"
+        >
+          メンバー
+        </a>
+        <a
+          href="#health"
+          className="rounded-full bg-surface-container px-3 py-1.5 text-xs font-medium ring-1 ring-outline-variant"
+        >
+          健康
+        </a>
+        <a
+          href="#lifestyle"
+          className="rounded-full bg-surface-container px-3 py-1.5 text-xs font-medium ring-1 ring-outline-variant"
+        >
+          生活スタイル
+        </a>
+      </nav>
 
-      <section className="space-y-2">
+      <FirstVisitTip
+        storageKey="meal-planner:familyProfilesHelpSeen"
+        title="ご注意"
+        forceOpen={showHelp}
+        onForceClose={() => setShowHelp(false)}
+      >
+        <ul className="space-y-0.5">
+          <li>・栄養値や目標は献立補助用の参考です</li>
+          <li>・医療判断・治療目的には使いません</li>
+          <li>・アレルギーは原材料表示も確認してください</li>
+        </ul>
+      </FirstVisitTip>
+
+      <section id="members" className="scroll-mt-4 space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-on-surface-variant">メンバー</h2>
+          <h2 className="text-lg font-semibold tracking-tight">メンバー</h2>
           <button
             type="button"
             onClick={startCreate}
@@ -412,6 +460,20 @@ export function FamilyProfilesPage() {
           {message}
         </p>
       ) : null}
+
+      <section
+        id="health"
+        className="scroll-mt-4 space-y-4 border-t border-outline-variant pt-8"
+      >
+        <DiabetesHealthSection embedded />
+      </section>
+
+      <section
+        id="lifestyle"
+        className="scroll-mt-4 space-y-4 border-t border-outline-variant pt-8"
+      >
+        <LifestyleSetupWizard embedded />
+      </section>
     </div>
   );
 }

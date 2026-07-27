@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { DiabetesReferenceGoalWizard } from "@/components/settings/DiabetesReferenceGoalWizard";
+import { FirstVisitTip, HelpButton } from "@/components/ui/FirstVisitTip";
 import {
   loadDiabetesMealSupportSettings,
   saveDiabetesMealSupportSettings,
@@ -10,6 +10,7 @@ import {
 import {
   CARB_NOT_GLUCOSE_DISCLAIMER,
   DIABETES_SUPPORT_DISCLAIMER,
+  HEALTH_WEIGHT_SUPPORT_INTRO,
 } from "@/lib/diabetes-meal-support/report";
 import { REFERENCE_GOAL_CONFIG } from "@/lib/diabetes-meal-support/reference-goal-config";
 import {
@@ -19,6 +20,8 @@ import {
 import { useIsClient } from "@/lib/use-is-client";
 import type { DiabetesMealSupportSettings } from "@/types/diabetes-meal-support";
 
+const HEALTH_HELP_KEY = "meal-planner:healthSettingsHelpSeen";
+
 function parseOptionalNumber(text: string): number | null {
   const trimmed = text.trim();
   if (trimmed === "") return null;
@@ -27,12 +30,21 @@ function parseOptionalNumber(text: string): number | null {
   return value;
 }
 
-export function DiabetesMealSupportSettingsPage() {
+type DiabetesHealthSectionProps = {
+  /** 家族プロフィール内セクションとして埋め込む */
+  embedded?: boolean;
+};
+
+/** 健康・体重管理サポート設定。家族プロフィール内のセクションとしても使う */
+export function DiabetesHealthSection({
+  embedded = false,
+}: DiabetesHealthSectionProps) {
   const isClient = useIsClient();
   const [message, setMessage] = useState<string | null>(null);
   const [form, setForm] = useState<DiabetesMealSupportSettings | null>(null);
   const [showWizard, setShowWizard] = useState(false);
   const [tick, setTick] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
 
   if (!isClient) {
     return <p className="text-sm text-on-surface-variant">読み込み中…</p>;
@@ -81,41 +93,45 @@ export function DiabetesMealSupportSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <Link href="/settings" className="text-sm text-primary">
-        ← 設定へ
-      </Link>
-
-      <header className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">健康・栄養設定</h1>
-        <p className="text-sm text-on-surface-variant">
-          糖尿病配慮の食事支援（診断・治療ではありません）
-        </p>
+    <div className="space-y-4">
+      <header className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          {embedded ? (
+            <h2 className="text-lg font-semibold tracking-tight">⭐ 健康</h2>
+          ) : (
+            <h1 className="text-2xl font-bold tracking-tight">⭐ 健康・体重管理</h1>
+          )}
+        </div>
+        <HelpButton
+          label="説明・免責を見る"
+          onClick={() => setShowHelp(true)}
+        />
       </header>
 
-      <section className="space-y-2 rounded-2xl bg-error-container/40 p-4 text-sm text-on-surface">
-        <p>{DIABETES_SUPPORT_DISCLAIMER}</p>
+      <FirstVisitTip
+        storageKey={HEALTH_HELP_KEY}
+        title="ご注意"
+        forceOpen={showHelp}
+        onForceClose={() => setShowHelp(false)}
+      >
+        <p>{HEALTH_WEIGHT_SUPPORT_INTRO}</p>
+        <p className="mt-2">{DIABETES_SUPPORT_DISCLAIMER}</p>
         <p className="mt-2">{CARB_NOT_GLUCOSE_DISCLAIMER}</p>
-      </section>
-
-      {medicationWarning ? (
-        <section className="rounded-2xl bg-secondary-container/60 p-4 text-sm">
-          {REFERENCE_GOAL_CONFIG.disclaimers.medicationWarning}
-        </section>
-      ) : null}
+        {medicationWarning ? (
+          <p className="mt-2">
+            {REFERENCE_GOAL_CONFIG.disclaimers.medicationWarning}
+          </p>
+        ) : null}
+      </FirstVisitTip>
 
       {!showWizard ? (
         <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-          <h2 className="font-semibold">質問に答えて参考値を計算する</h2>
-          <p className="text-sm text-on-surface-variant">
-            身長・体重・活動量などから、献立作成に利用する参考値を計算します。約1分で完了します。
-          </p>
           <button
             type="button"
             onClick={() => setShowWizard(true)}
             className="w-full rounded-2xl bg-primary px-4 py-3.5 text-base font-semibold text-on-primary"
           >
-            質問に答えて参考値を計算する
+            質問に答えて参考値を計算
           </button>
         </section>
       ) : (
@@ -131,14 +147,8 @@ export function DiabetesMealSupportSettingsPage() {
       )}
 
       <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-        <p className="text-sm font-medium text-on-surface">
-          目標値は医師または管理栄養士から案内された内容を入力してください
-        </p>
-        <p className="text-xs text-on-surface-variant">
-          未入力の項目には、アプリ側で医学的な基準値を自動設定しません。手動入力もそのまま使えます。
-        </p>
         <p className="text-sm">
-          目標値の出所：{goalSourceLabel(effective.source === "none" ? null : effective.source)}
+          出所：{goalSourceLabel(effective.source === "none" ? null : effective.source)}
         </p>
         {effective.source !== "none" ? (
           <p className="text-xs text-on-surface-variant">
@@ -157,11 +167,15 @@ export function DiabetesMealSupportSettingsPage() {
             }
             className="h-5 w-5"
           />
-          糖尿病配慮モードを使う
+          健康的な体重管理サポートを使う
         </label>
 
+        <p className="pt-1 text-xs font-medium text-on-surface-variant">
+          糖質の目安（補助・極端な制限はしません）
+        </p>
+
         <label className="block space-y-1 text-sm">
-          <span>1食の糖質目標（下限 g）</span>
+          <span>1食の糖質目安（下限 g）</span>
           <input
             type="number"
             inputMode="decimal"
@@ -179,7 +193,7 @@ export function DiabetesMealSupportSettingsPage() {
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span>1食の糖質目標（上限 g）</span>
+          <span>1食の糖質目安（上限 g）</span>
           <input
             type="number"
             inputMode="decimal"
@@ -197,7 +211,7 @@ export function DiabetesMealSupportSettingsPage() {
         </label>
 
         <label className="block space-y-1 text-sm">
-          <span>1日の糖質目標（g）</span>
+          <span>1日の糖質目安（g）</span>
           <input
             type="number"
             inputMode="decimal"
@@ -283,4 +297,9 @@ export function DiabetesMealSupportSettingsPage() {
       </section>
     </div>
   );
+}
+
+/** @deprecated 独立ページは廃止。リダイレクト用に残す */
+export function DiabetesMealSupportSettingsPage() {
+  return <DiabetesHealthSection />;
 }

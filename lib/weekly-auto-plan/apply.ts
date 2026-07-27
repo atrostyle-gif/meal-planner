@@ -5,10 +5,12 @@ import {
   type GenerateWeeklyPlanResult,
 } from "@/lib/weekly-auto-plan/generate";
 import { loadDiabetesMealSupportSettings } from "@/lib/diabetes-meal-support/settings";
+import { loadFoodBudgetSettings } from "@/lib/food-budget/settings";
 import type { InventoryItem } from "@/types/inventory";
 import type { Recipe } from "@/types/recipe";
 import type { WeeklyAutoScope, WeeklyMealPlan } from "@/types/weekly-meal-plan";
 import type { DiabetesMealSupportSettings } from "@/types/diabetes-meal-support";
+import type { FoodBudgetSettings } from "@/types/food-budget";
 
 export type ApplyWeeklyAutoPlanInput = {
   weekStart: string;
@@ -16,6 +18,7 @@ export type ApplyWeeklyAutoPlanInput = {
   inventory?: InventoryItem[];
   scope?: WeeklyAutoScope;
   diabetesSettings?: DiabetesMealSupportSettings;
+  foodBudgetSettings?: FoodBudgetSettings;
 };
 
 /**
@@ -31,6 +34,8 @@ export function applyWeeklyAutoPlan(
   );
   const diabetesSettings =
     input.diabetesSettings ?? loadDiabetesMealSupportSettings();
+  const foodBudgetSettings =
+    input.foodBudgetSettings ?? loadFoodBudgetSettings();
   const generated = generateWeeklyMealPlan({
     weekStart: input.weekStart,
     days: plan.days,
@@ -39,6 +44,11 @@ export function applyWeeklyAutoPlan(
     recentRecipeIds,
     scope: input.scope,
     diabetesSettings,
+    foodBudgetSettings,
+    weeklyFoodBudgetYen:
+      plan.weeklyFoodBudgetYen !== undefined
+        ? plan.weeklyFoodBudgetYen
+        : foodBudgetSettings.weeklyFoodBudgetYen,
   });
   const saved = replaceWeekDays(input.weekStart, generated.days);
   return { ...generated, plan: saved };

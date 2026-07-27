@@ -11,6 +11,8 @@ import {
   useFamilySession,
 } from "@/components/providers/FamilySessionProvider";
 import { MigrationPrompt } from "@/components/providers/MigrationPrompt";
+import { SyncConflictDialog } from "@/components/providers/SyncConflictDialog";
+import { SyncStatusBanner } from "@/components/providers/SyncStatusBanner";
 
 const HIDE_CHROME = ["/login", "/setup-household"];
 
@@ -50,6 +52,8 @@ function AppShellFrame({ children }: { children: ReactNode }) {
       >
         {!hideChrome ? <ModeBadge /> : null}
         {!hideChrome ? <MigrationPrompt /> : null}
+        {!hideChrome ? <SyncConflictDialog /> : null}
+        {!hideChrome ? <SyncStatusBanner /> : null}
         {children}
       </main>
       {!hideChrome ? <BottomNav /> : null}

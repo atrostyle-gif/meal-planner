@@ -1,7 +1,10 @@
 import { loadCookingHistory } from "@/lib/cooking-history";
 import { getFeedbacksForRecipe } from "@/lib/recipe-learning/cooking-feedbacks";
 import { loadRecipes, replaceRecipes } from "@/lib/recipes";
-import type { RecipeLearningStats } from "@/types/recipe-learning";
+import {
+  getImprovementTagById,
+  type RecipeLearningStats,
+} from "@/types/recipe-learning";
 import type { Recipe } from "@/types/recipe";
 
 /**
@@ -62,22 +65,84 @@ export function computeRecipeLearningStats(
   ];
 
   const improvementCount = feedbacks.reduce(
-    (sum, feedback) => sum + feedback.improvementTags.length,
+    (sum, feedback) =>
+      sum +
+      feedback.improvementTags.length +
+      feedback.adjustments.length +
+      feedback.seasoningAdjustments.length,
     0,
   );
 
+  const wantAgainRate =
+    wantAgainYes + wantAgainNo > 0
+      ? Math.round((wantAgainYes / (wantAgainYes + wantAgainNo)) * 100) / 100
+      : null;
+
   // 家族人気: 平均評価とまた作りたい比率から 0〜5
   let familyFavoriteScore: number | null = null;
-  if (averageRating != null || wantAgainYes + wantAgainNo > 0) {
-    const wantRatio =
-      wantAgainYes + wantAgainNo > 0
-        ? wantAgainYes / (wantAgainYes + wantAgainNo)
-        : 0.5;
+  if (averageRating != null || wantAgainRate != null) {
+    const wantRatio = wantAgainRate ?? 0.5;
     const base = averageRating ?? 3;
     familyFavoriteScore =
       Math.round(Math.min(5, Math.max(0, base * 0.7 + wantRatio * 5 * 0.3)) * 10) /
       10;
   }
+
+  const tagCounts = new Map<string, number>();
+  for (const feedback of feedbacks) {
+    for (const tagId of feedback.improvementTags) {
+      tagCounts.set(tagId, (tagCounts.get(tagId) ?? 0) + 1);
+    }
+  }
+  const popularTagIds = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([id]) => id);
+
+  const recentImprovementLabels: string[] = [];
+  for (const feedback of feedbacks.slice(0, 5)) {
+    for (const tagId of feedback.improvementTags) {
+      const label = getImprovementTagById(tagId)?.label ?? tagId;
+      if (!recentImprovementLabels.includes(label)) {
+        recentImprovementLabels.push(label);
+      }
+    }
+    for (const adj of feedback.adjustments) {
+      const label = `${adj.ingredientName}${
+        adj.afterValue ? ` ${adj.afterValue}` : ""
+      }`.trim();
+      if (label && !recentImprovementLabels.includes(label)) {
+        recentImprovementLabels.push(label);
+      }
+    }
+    for (const sea of feedback.seasoningAdjustments) {
+      const label = `${sea.seasoning}${
+        sea.afterAmount ? ` ${sea.afterAmount}` : ""
+      }`.trim();
+      if (label && !recentImprovementLabels.includes(label)) {
+        recentImprovementLabels.push(label);
+      }
+    }
+    if (recentImprovementLabels.length >= 6) break;
+  }
+
+  const memberScore = new Map<string, { sum: number; count: number }>();
+  for (const feedback of feedbacks) {
+    for (const member of feedback.memberRatings) {
+      const prev = memberScore.get(member.memberId) ?? { sum: 0, count: 0 };
+      prev.sum += member.rating;
+      prev.count += 1;
+      memberScore.set(member.memberId, prev);
+    }
+  }
+  const popularMemberIds = [...memberScore.entries()]
+    .map(([id, value]) => ({
+      id,
+      avg: value.sum / value.count,
+    }))
+    .filter((row) => row.avg >= 4)
+    .sort((a, b) => b.avg - a.avg)
+    .map((row) => row.id);
 
   return {
     averageRating,
@@ -86,8 +151,12 @@ export function computeRecipeLearningStats(
     familyFavoriteScore,
     improvementCount,
     favoriteByUsers,
+    popularMemberIds,
     wantAgainYes,
     wantAgainNo,
+    wantAgainRate,
+    popularTagIds,
+    recentImprovementLabels: recentImprovementLabels.slice(0, 6),
   };
 }
 

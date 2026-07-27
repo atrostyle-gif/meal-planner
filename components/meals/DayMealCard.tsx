@@ -6,7 +6,11 @@ import { RecipePickerModal } from "@/components/meals/RecipePickerModal";
 import { WEEKDAY_LABELS, formatMonthDay, parseDate } from "@/lib/date";
 import { formatStars } from "@/lib/recipe-nutrition";
 import { getCourseIcon } from "@/types/recipe";
-import type { DayMeal, MealDishItem } from "@/types/meal-plan";
+import type {
+  DayMeal,
+  DayMealRecommendation,
+  MealDishItem,
+} from "@/types/meal-plan";
 import type { Recipe, RecipeCourse } from "@/types/recipe";
 import type { CookingMemberProfile, DailyCookingOverride } from "@/types/weekly-lifestyle";
 import { dateToDayOfWeek } from "@/types/weekly-lifestyle";
@@ -101,26 +105,7 @@ export function DayMealCard({
           )}
 
           {recommendation && orderedItems.length > 0 ? (
-            <div className="mt-3 rounded-xl bg-surface-container px-3 py-2">
-              <p className="text-sm font-medium text-on-surface">
-                <span
-                  className="text-primary"
-                  aria-label={`おすすめ度${recommendation.stars}`}
-                >
-                  {formatStars(recommendation.stars)}
-                </span>
-                <span className="ml-2 text-xs text-on-surface-variant">
-                  おすすめ度
-                </span>
-              </p>
-              {recommendation.reasons.length > 0 ? (
-                <ul className="mt-1 space-y-0.5 text-xs text-on-surface-variant">
-                  {recommendation.reasons.map((reason) => (
-                    <li key={reason}>・{reason}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
+            <DayRecommendationCompact recommendation={recommendation} />
           ) : null}
         </div>
 
@@ -209,5 +194,46 @@ function DishSummary({
       <span aria-hidden>{getCourseIcon(item.course)} </span>
       {name}
     </span>
+  );
+}
+
+/** 理由は1行。全文は展開 */
+function DayRecommendationCompact({
+  recommendation,
+}: {
+  recommendation: DayMealRecommendation;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const first = recommendation.reasons[0] ?? "";
+  return (
+    <div className="mt-3 rounded-xl bg-surface-container px-3 py-2">
+      <p className="text-sm font-medium">
+        <span
+          className="text-primary"
+          aria-label={`おすすめ度${recommendation.stars}`}
+        >
+          {formatStars(recommendation.stars)}
+        </span>
+      </p>
+      {first ? (
+        <p className="mt-1 truncate text-xs text-on-surface-variant">{first}</p>
+      ) : null}
+      {recommendation.reasons.length > 1 ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 text-[11px] font-medium text-primary"
+        >
+          {expanded ? "閉じる" : "▼ 理由"}
+        </button>
+      ) : null}
+      {expanded ? (
+        <ul className="mt-1 space-y-0.5 text-xs text-on-surface-variant">
+          {recommendation.reasons.map((reason) => (
+            <li key={reason}>・{reason}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }

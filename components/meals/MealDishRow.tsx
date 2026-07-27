@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CompactMenu } from "@/components/meals/CompactMenu";
 import { getDishLabel } from "@/lib/meal-plans";
 import {
   formatCourseLabel,
@@ -68,7 +69,7 @@ export function MealDishRow({
         </div>
       </div>
 
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex items-center gap-2">
         <select
           value={item.course}
           onChange={(event) =>
@@ -86,18 +87,22 @@ export function MealDishRow({
         {item.recipeId ? (
           <Link
             href={`/recipes/${item.recipeId}/cook?date=${date}&mealItemId=${item.id}`}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-primary ring-1 ring-outline-variant"
+            className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-on-primary"
           >
             調理
           </Link>
         ) : null}
-        <button
-          type="button"
-          onClick={onRemove}
-          className="rounded-lg px-3 py-2 text-sm text-error hover:bg-error-container"
-        >
-          削除
-        </button>
+        <CompactMenu
+          label={`${label}の操作`}
+          items={[
+            {
+              id: "remove",
+              label: "削除",
+              onClick: onRemove,
+              danger: true,
+            },
+          ]}
+        />
       </div>
     </div>
   );

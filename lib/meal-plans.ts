@@ -18,6 +18,7 @@ import type {
 } from "@/types/meal-plan";
 import type { HouseholdPreferences } from "@/types/meal-preferences";
 import type { Recipe } from "@/types/recipe";
+import { isBudgetMode } from "@/types/food-budget";
 
 type Listener = () => void;
 
@@ -235,6 +236,14 @@ function migrateMealPlan(value: unknown, recipes: Recipe[]): MealPlan | null {
     id: item.id,
     weekStart: item.weekStart,
     days,
+    weeklyFoodBudgetYen:
+      typeof item.weeklyFoodBudgetYen === "number" &&
+      Number.isFinite(item.weeklyFoodBudgetYen)
+        ? item.weeklyFoodBudgetYen
+        : item.weeklyFoodBudgetYen === null
+          ? null
+          : undefined,
+    budgetMode: isBudgetMode(item.budgetMode) ? item.budgetMode : undefined,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   };
@@ -731,6 +740,32 @@ export function autoFillBlankSlots(
     filledCount,
     priorityUsedCount,
   };
+}
+
+/** 週ごとの食費予算を更新 */
+export function updateMealPlanBudget(
+  weekStart: string,
+  patch: {
+    weeklyFoodBudgetYen?: number | null;
+    budgetMode?: MealPlan["budgetMode"];
+  },
+): MealPlan {
+  const plans = loadMealPlans();
+  const index = plans.findIndex((plan) => plan.weekStart === weekStart);
+  const base = index >= 0 ? plans[index] : createEmptyPlan(weekStart);
+  const updated: MealPlan = {
+    ...base,
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+  if (index >= 0) {
+    const next = [...plans];
+    next[index] = updated;
+    persist(next);
+  } else {
+    persist([updated, ...plans]);
+  }
+  return updated;
 }
 
 /** repository / 同期用 */

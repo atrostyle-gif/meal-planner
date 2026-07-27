@@ -1,3 +1,4 @@
+import { resolveQuantityAndUnit } from "@/lib/ingredient";
 import { formatShoppingQuantity } from "@/lib/shopping/scale-ingredient";
 import type {
   ShoppingItemSource,
@@ -5,20 +6,42 @@ import type {
   ShoppingQuantity,
 } from "@/types/shopping-list";
 
-/** 数量行の表示（例: 大さじ10 / 適量 / 3個） */
-export function formatQuantityLine(line: ShoppingQuantity): string {
-  const quantityText = formatShoppingQuantity(line.quantity);
-  const unit = line.unit.trim();
-  const note = line.note.trim();
+/** 欠落した数量をメモ等から補って表示用に正規化する */
+function resolvedLine(line: ShoppingQuantity): {
+  quantity: number | null;
+  unit: string;
+  note: string;
+} {
+  const resolved = resolveQuantityAndUnit(
+    line.quantity,
+    line.unit,
+    line.note,
+  );
+  return {
+    quantity: resolved.quantity,
+    unit: resolved.unit,
+    note: line.note.trim(),
+  };
+}
 
-  let amount = "";
+/** 数量＋単位のみ（メモなし。例: 大さじ10 / 3個 / 1/3束） */
+export function formatQuantityAmount(line: ShoppingQuantity): string {
+  const { quantity, unit } = resolvedLine(line);
+  const quantityText = formatShoppingQuantity(quantity);
+
   if (quantityText !== "" && unit !== "") {
-    amount = `${quantityText}${unit}`;
-  } else if (quantityText !== "") {
-    amount = quantityText;
-  } else if (unit !== "") {
-    amount = unit;
+    return `${quantityText}${unit}`;
   }
+  if (quantityText !== "") {
+    return quantityText;
+  }
+  return unit;
+}
+
+/** 数量行の表示（例: 大さじ10 / 適量 / 3個（メモ）） */
+export function formatQuantityLine(line: ShoppingQuantity): string {
+  const amount = formatQuantityAmount(line);
+  const note = line.note.trim();
 
   if (note !== "") {
     return amount !== "" ? `${amount}（${note}）` : note;
@@ -26,12 +49,17 @@ export function formatQuantityLine(line: ShoppingQuantity): string {
   return amount;
 }
 
-/** 食材グループの数量を短くまとめた表示 */
+/** 一覧用: 数量＋単位だけを短くまとめる（メモは含めない） */
 export function formatGroupQuantitySummary(item: ShoppingListItem): string {
   return item.quantities
-    .map((line) => formatQuantityLine(line))
+    .map((line) => formatQuantityAmount(line))
     .filter((text) => text !== "")
     .join(" / ");
+}
+
+/** 数量にメモがあるか */
+export function hasShoppingQuantityNotes(item: ShoppingListItem): boolean {
+  return item.quantities.some((line) => line.note.trim() !== "");
 }
 
 /** 使用レシピ数（日付×レシピの内訳件数） */
@@ -51,7 +79,7 @@ export function formatSourceDate(date: string): string {
 }
 
 export function formatSourceLine(source: ShoppingItemSource): string {
-  const amount = formatQuantityLine({
+  const amount = formatQuantityAmount({
     quantity: source.quantity,
     unit: source.unit,
     note: source.note,

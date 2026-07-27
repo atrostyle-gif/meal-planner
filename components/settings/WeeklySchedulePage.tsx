@@ -82,7 +82,7 @@ export function WeeklySchedulePage() {
   return <div className="space-y-6">
     <header className="space-y-2">
       <Link href="/settings" className="text-sm text-primary">← 設定</Link>
-      <h1 className="text-2xl font-bold">週間の調理スケジュール</h1>
+      <h1 className="text-2xl font-bold">週間調理スケジュール</h1>
       <p className="text-sm text-on-surface-variant">担当者と、その日の作りやすさを曜日ごとに設定します。</p>
     </header>
     <button type="button" onClick={applyPreset} className="w-full rounded-xl bg-secondary-container px-4 py-3 text-sm font-semibold text-on-secondary-container">

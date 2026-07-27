@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { loadCookingHistory } from "@/lib/cooking-history";
+import { loadFamilyMemberProfiles } from "@/lib/family-member-profiles";
 import { getFeedbacksForRecipe } from "@/lib/recipe-learning/cooking-feedbacks";
 import { getVariantsForParent } from "@/lib/recipe-learning/recipe-variants";
 import {
@@ -25,6 +26,7 @@ export function RecipeFamilyMemoTab({
 }: RecipeFamilyMemoTabProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+  const members = useMemo(() => loadFamilyMemberProfiles(), []);
 
   const stats = useMemo(() => {
     void tick;
@@ -65,33 +67,33 @@ export function RecipeFamilyMemoTab({
     stats.averageRating != null
       ? Math.max(1, Math.min(5, Math.round(stats.averageRating)))
       : null;
+  const wantAgainPercent =
+    stats.wantAgainRate != null
+      ? Math.round(stats.wantAgainRate * 100)
+      : null;
+  const popularMembers = stats.popularMemberIds
+    .map(
+      (id) => members.find((m) => m.id === id)?.displayName ?? id,
+    )
+    .slice(0, 3);
 
   return (
     <section className="space-y-5">
       <div className="rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-        <h2 className="text-lg font-semibold">我が家メモ</h2>
-        <p className="mt-1 text-xs text-on-surface-variant">
-          作るたびに蓄積される、この家庭だけのノウハウです
+        <h2 className="text-lg font-semibold">家族評価</h2>
+        <p className="mt-2 text-2xl text-primary">
+          {avgStars != null ? formatStars(avgStars) : "未評価"}
         </p>
         <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
           <div>
-            <dt className="text-on-surface-variant">平均評価</dt>
-            <dd className="font-semibold">
-              {avgStars != null ? (
-                <>
-                  <span className="text-primary">{formatStars(avgStars)}</span>
-                  <span className="ml-1 text-xs">
-                    ({stats.averageRating?.toFixed(1)})
-                  </span>
-                </>
-              ) : (
-                "まだなし"
-              )}
-            </dd>
+            <dt className="text-on-surface-variant">作成回数</dt>
+            <dd className="font-semibold">{stats.cookCount}回</dd>
           </div>
           <div>
-            <dt className="text-on-surface-variant">作った回数</dt>
-            <dd className="font-semibold">{stats.cookCount}回</dd>
+            <dt className="text-on-surface-variant">また作る率</dt>
+            <dd className="font-semibold">
+              {wantAgainPercent != null ? `${wantAgainPercent}%` : "—"}
+            </dd>
           </div>
           <div>
             <dt className="text-on-surface-variant">最後に作った日</dt>
@@ -102,96 +104,103 @@ export function RecipeFamilyMemoTab({
             </dd>
           </div>
           <div>
-            <dt className="text-on-surface-variant">家族人気</dt>
-            <dd className="font-semibold">
-              {stats.familyFavoriteScore != null
-                ? `${stats.familyFavoriteScore.toFixed(1)} / 5`
-                : "—"}
-            </dd>
+            <dt className="text-on-surface-variant">改善回数</dt>
+            <dd className="font-semibold">{stats.improvementCount}</dd>
           </div>
         </dl>
+        {popularMembers.length > 0 ? (
+          <p className="mt-2 text-xs text-on-surface-variant">
+            人気メンバー: {popularMembers.join("・")}
+          </p>
+        ) : null}
       </div>
 
-      <div className="space-y-2">
-        <h3 className="font-semibold">評価履歴</h3>
-        {feedbacks.length === 0 ? (
-          <p className="text-sm text-on-surface-variant">まだ評価がありません</p>
-        ) : (
-          <ul className="space-y-2">
-            {feedbacks.slice(0, 10).map((feedback) => (
+      {stats.recentImprovementLabels.length > 0 ? (
+        <div className="space-y-2">
+          <h3 className="font-semibold">最近の改善</h3>
+          <ul className="flex flex-wrap gap-2">
+            {stats.recentImprovementLabels.map((label) => (
               <li
-                key={feedback.id}
-                className="rounded-xl bg-surface-container px-3 py-2 text-sm"
+                key={label}
+                className="rounded-lg bg-secondary-container px-2.5 py-1 text-xs font-medium text-on-secondary-container"
               >
-                <p>
-                  {feedback.overallRating != null
-                    ? formatStars(feedback.overallRating)
-                    : "評価なし"}
-                  <span className="ml-2 text-xs text-on-surface-variant">
-                    {new Date(feedback.createdAt).toLocaleString("ja-JP")}
-                  </span>
-                </p>
-                {feedback.memberRatings.length > 0 ? (
-                  <ul className="mt-1 text-xs text-on-surface-variant">
-                    {feedback.memberRatings.map((member) => (
-                      <li key={member.memberId}>
-                        {member.memberName ?? "家族"}:{" "}
-                        {formatStars(member.rating)}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {feedback.memo ? (
-                  <p className="mt-1 text-xs">{feedback.memo}</p>
-                ) : null}
+                {label}
               </li>
             ))}
           </ul>
-        )}
-      </div>
+        </div>
+      ) : null}
 
-      <div className="space-y-2">
-        <h3 className="font-semibold">改善履歴</h3>
-        {feedbacks.every((f) => f.improvementTags.length === 0) ? (
-          <p className="text-sm text-on-surface-variant">
-            改善タグはまだありません
-          </p>
-        ) : (
+      {stats.popularTagIds.length > 0 ? (
+        <div className="space-y-2">
+          <h3 className="font-semibold">人気タグ</h3>
           <ul className="flex flex-wrap gap-2">
-            {[
-              ...new Set(feedbacks.flatMap((f) => f.improvementTags)),
-            ].map((tagId) => (
+            {stats.popularTagIds.map((tagId) => (
               <li
                 key={tagId}
-                className="rounded-lg bg-secondary-container px-2.5 py-1 text-xs font-medium text-on-secondary-container"
+                className="rounded-full bg-surface-container px-2.5 py-1 text-xs"
               >
                 {getImprovementTagById(tagId)?.label ?? tagId}
               </li>
             ))}
           </ul>
-        )}
-        <p className="text-xs text-on-surface-variant">
-          改善タグ数（累計）: {stats.improvementCount}
-        </p>
-      </div>
+        </div>
+      ) : null}
 
       <div className="space-y-2">
-        <h3 className="font-semibold">調理履歴</h3>
-        {histories.length === 0 ? (
-          <p className="text-sm text-on-surface-variant">履歴なし</p>
+        <h3 className="font-semibold">履歴</h3>
+        {feedbacks.length === 0 && histories.length === 0 ? (
+          <p className="text-sm text-on-surface-variant">まだありません</p>
         ) : (
-          <ul className="space-y-1 text-sm text-on-surface-variant">
-            {histories.slice(0, 8).map((history) => (
-              <li key={history.id}>
-                {new Date(history.cookedAt).toLocaleString("ja-JP")}
-                {history.servings != null ? `・${history.servings}人分` : ""}
-                {history.wantAgain === true
-                  ? "・また作る"
-                  : history.wantAgain === false
-                    ? "・また作らない"
-                    : ""}
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {feedbacks.slice(0, 12).map((feedback) => {
+              const labels = [
+                ...feedback.improvementTags.map(
+                  (id) => getImprovementTagById(id)?.label ?? id,
+                ),
+                ...feedback.adjustments.map((a) =>
+                  a.afterValue
+                    ? `${a.ingredientName}${a.afterValue}`
+                    : a.ingredientName,
+                ),
+                ...feedback.seasoningAdjustments.map((s) =>
+                  s.afterAmount
+                    ? `${s.seasoning}${s.afterAmount}`
+                    : s.seasoning,
+                ),
+              ].slice(0, 3);
+              return (
+                <li
+                  key={feedback.id}
+                  className="rounded-xl bg-surface-container px-3 py-2 text-sm"
+                >
+                  <p className="text-xs text-on-surface-variant">
+                    {new Date(feedback.cookedAt).toLocaleDateString("ja-JP")}
+                  </p>
+                  <p className="mt-0.5">
+                    {feedback.overallRating != null
+                      ? formatStars(feedback.overallRating)
+                      : "評価なし"}
+                  </p>
+                  {labels.length > 0 ? (
+                    <p className="mt-1 text-xs text-on-surface-variant">
+                      {labels.join(" · ")}
+                    </p>
+                  ) : null}
+                  {feedback.memo ? (
+                    <p className="mt-1 text-xs">{feedback.memo}</p>
+                  ) : null}
+                  {feedback.photoDataUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={feedback.photoDataUrl}
+                      alt="完成写真"
+                      className="mt-2 max-h-28 rounded-lg object-cover"
+                    />
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -220,9 +229,6 @@ export function RecipeFamilyMemoTab({
                 >
                   {variant.title}
                 </Link>
-                <p className="text-xs text-on-surface-variant">
-                  {variant.summary}
-                </p>
               </li>
             ))}
           </ul>

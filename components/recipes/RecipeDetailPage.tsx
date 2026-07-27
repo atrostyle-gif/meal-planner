@@ -92,32 +92,30 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
           </div>
           <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-on-surface-variant">
             <div>
-              <dt className="inline">平均 </dt>
+              <dt className="sr-only">家族評価</dt>
               <dd className="inline font-medium text-on-surface">
                 {avgStars != null
-                  ? `${formatStars(avgStars)} (${recipe.averageRating?.toFixed(1)})`
+                  ? `${formatStars(avgStars)}`
                   : "未評価"}
               </dd>
             </div>
             <div>
-              <dt className="inline">作った回数 </dt>
+              <dt className="inline"> </dt>
               <dd className="inline font-medium text-on-surface">
-                {recipe.cookCount ?? 0}回
+                {recipe.cookCount ?? 0}回作成
               </dd>
             </div>
-            <div>
-              <dt className="inline">最後に作った日 </dt>
-              <dd className="inline font-medium text-on-surface">
-                {recipe.lastCookedAt
-                  ? new Date(recipe.lastCookedAt).toLocaleDateString("ja-JP")
-                  : "—"}
-              </dd>
-            </div>
-            {recipe.familyFavoriteScore != null ? (
+            {(recipe.wantAgainYes ?? 0) + (recipe.wantAgainNo ?? 0) > 0 ? (
               <div>
-                <dt className="inline">家族人気 </dt>
+                <dt className="inline">また作る率 </dt>
                 <dd className="inline font-medium text-on-surface">
-                  {recipe.familyFavoriteScore.toFixed(1)} / 5
+                  {Math.round(
+                    ((recipe.wantAgainYes ?? 0) /
+                      ((recipe.wantAgainYes ?? 0) +
+                        (recipe.wantAgainNo ?? 0))) *
+                      100,
+                  )}
+                  %
                 </dd>
               </div>
             ) : null}

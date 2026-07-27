@@ -5,7 +5,7 @@ import {
 import type { Recipe } from "@/types/recipe";
 import { normalizeNullableNumber } from "@/types/recipe-nutrition";
 
-/** 糖尿病配慮・集計で使う1レシピあたり栄養（すべて nullable） */
+/** 健康評価・集計で使う1レシピあたり栄養（すべて nullable） */
 export type RecipeMealNutrition = {
   nutritionStatus: NutritionStatus;
   caloriesKcal: number | null;

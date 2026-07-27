@@ -1,13 +1,14 @@
 /**
- * 糖尿病配慮の食事支援設定。
- * 医療診断・治療ではなく、ユーザー入力の目標に基づく献立支援用。
+ * 健康的な体重管理を支援する献立設定。
+ * 優先: エネルギーバランス → 栄養バランス → 糖尿病配慮（補助）。
+ * 医療診断・治療ではなく、家庭向けの参考情報。
  * 未設定の項目に医学的な既定値は適用しない。
  */
 
 export type DiabetesGoalSource = "manual" | "questionnaire" | "clinician";
 
 export type DiabetesMealSupportSettings = {
-  /** 配慮モードの有効/無効 */
+  /** 健康的な体重管理サポートの有効/無効（内部キー名は互換のため維持） */
   diabetesMealSupportEnabled: boolean;
   /** 1食あたり糖質目標（下限 g）。未設定は null */
   targetCarbsPerMealMin: number | null;

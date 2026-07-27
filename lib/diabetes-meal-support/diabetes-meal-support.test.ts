@@ -81,10 +81,40 @@ function emptyDays(weekStart: string): DayMeal[] {
   }));
 }
 
-describe("糖尿病配慮モード", () => {
+describe("健康的な体重管理サポート採点", () => {
   const weekStart = "2026-07-20";
 
-  it("糖質目標内の献立が加点される", () => {
+  it("エネルギー参考範囲内が最優先で加点される", () => {
+    const recipe = recipeStub({
+      id: "energy-ok",
+      name: "適正エネルギーの主菜",
+      course: "主菜",
+      nutritionStatus: "estimated",
+      carbohydratesG: 40,
+      caloriesKcal: 550,
+      proteinG: 25,
+      fatG: 12,
+      dietaryFiberG: 4,
+    });
+    const delta = scoreDiabetesMealSupport(recipe, {
+      settings: settingsStub({
+        diabetesMealSupportEnabled: true,
+        referenceCaloriesMin: 1500,
+        referenceCaloriesMax: 1900,
+        targetCarbsPerMealMin: 30,
+        targetCarbsPerMealMax: 50,
+      }),
+      dayCoursesSoFar: [],
+      previousDayRecipes: [],
+      evaluateAsMealCarbAnchor: true,
+    });
+    expect(delta.scoreDelta).toBeGreaterThan(0);
+    expect(
+      delta.reasons.some((r) => r.detail.includes("エネルギーが参考範囲内")),
+    ).toBe(true);
+  });
+
+  it("糖質の過不足回避は補助として加点される", () => {
     const recipe = recipeStub({
       id: "in-range",
       name: "目標内の主菜",
@@ -106,12 +136,12 @@ describe("糖尿病配慮モード", () => {
       evaluateAsMealCarbAnchor: true,
     });
     expect(delta.scoreDelta).toBeGreaterThan(0);
-    expect(delta.reasons.some((r) => r.detail.includes("目標範囲内"))).toBe(
+    expect(delta.reasons.some((r) => r.detail.includes("糖質の過不足"))).toBe(
       true,
     );
   });
 
-  it("上限超過が減点される", () => {
+  it("糖質多めは補助として減点される（極端な減点ではない）", () => {
     const recipe = recipeStub({
       id: "over",
       name: "糖質多め",
@@ -131,10 +161,14 @@ describe("糖尿病配慮モード", () => {
       previousDayRecipes: [],
       evaluateAsMealCarbAnchor: true,
     });
-    expect(delta.scoreDelta).toBeLessThan(0);
-    expect(delta.reasons.some((r) => r.detail.includes("上限を超過"))).toBe(
-      true,
+    expect(
+      delta.reasons.some((r) => r.detail.includes("糖質が多め")),
+    ).toBe(true);
+    // 補助評価のため、旧仕様の -25 のような過大減点にはしない
+    const carbPenaltyReasons = delta.reasons.filter((r) =>
+      r.detail.includes("糖質が多め"),
     );
+    expect(carbPenaltyReasons.length).toBe(1);
   });
 
   it("null栄養値を0として扱わない", () => {

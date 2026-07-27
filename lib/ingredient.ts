@@ -37,12 +37,77 @@ export function formatIngredientLine(ingredient: Ingredient): string {
   return note !== "" ? `${base}（${note}）` : base;
 }
 
+const DISPLAY_FRACTIONS: ReadonlyArray<readonly [number, string]> = [
+  [1 / 8, "1/8"],
+  [1 / 4, "1/4"],
+  [1 / 3, "1/3"],
+  [1 / 2, "1/2"],
+  [2 / 3, "2/3"],
+  [3 / 4, "3/4"],
+];
+
 export function formatQuantity(quantity: number): string {
   if (Number.isInteger(quantity)) {
     return String(quantity);
   }
+  for (const [value, label] of DISPLAY_FRACTIONS) {
+    if (Math.abs(quantity - value) < 0.001) {
+      return label;
+    }
+  }
   // 小数の無駄な末尾0を抑える
   return String(Number(quantity.toFixed(3)));
+}
+
+/**
+ * quantity が欠落しているとき、単位やメモ（原文）から数量を復元する。
+ * 例: unit="束", note="原文: にら 1/3束" → { quantity: 1/3, unit: "束" }
+ */
+export function resolveQuantityAndUnit(
+  quantity: number | null,
+  unit: string,
+  note: string = "",
+): { quantity: number | null; unit: string } {
+  const unitTrim = unit.trim();
+  if (quantity !== null && Number.isFinite(quantity)) {
+    return { quantity, unit: unitTrim };
+  }
+
+  // 単位欄に「1/3束」が入っているケース
+  const fromUnit = parseAmountString(unitTrim);
+  if (fromUnit && fromUnit.quantity !== null) {
+    return fromUnit;
+  }
+
+  // メモ内の「1/3束」などを拾う（原文: にら 1/3束 など）
+  const fractionInNote = note.match(
+    /(\d+)\s*\/\s*(\d+)\s*([a-zA-Zぁ-んァ-ン一-龥]+)/,
+  );
+  if (fractionInNote) {
+    const denominator = Number(fractionInNote[2]);
+    if (denominator !== 0) {
+      return {
+        quantity: Number(fractionInNote[1]) / denominator,
+        unit: fractionInNote[3].trim() || unitTrim,
+      };
+    }
+  }
+
+  // 「0.5束」など小数+単位
+  const decimalInNote = note.match(
+    /(\d+(?:\.\d+)?)\s*([a-zA-Zぁ-んァ-ン一-龥]+)(?=[（(/]|$)/,
+  );
+  if (decimalInNote && !Number.isNaN(Number(decimalInNote[1]))) {
+    const maybeUnit = decimalInNote[2].trim();
+    if (maybeUnit === unitTrim || unitTrim === "") {
+      return {
+        quantity: Number(decimalInNote[1]),
+        unit: maybeUnit || unitTrim,
+      };
+    }
+  }
+
+  return { quantity: null, unit: unitTrim };
 }
 
 /**

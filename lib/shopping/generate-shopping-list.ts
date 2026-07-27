@@ -1,3 +1,4 @@
+import { resolveQuantityAndUnit } from "@/lib/ingredient";
 import {
   aggregateIngredients,
   buildShoppingItemIdentityKey,
@@ -69,14 +70,21 @@ export function generateAggregatedIngredientsFromMealPlan(
           continue;
         }
 
+        // 取り込み時に数量が欠落したケースを原文メモから補う
+        const resolved = resolveQuantityAndUnit(
+          ingredient.quantity,
+          ingredient.unit,
+          ingredient.note,
+        );
+
         rows.push({
           ingredientName: ingredient.name,
           quantity: scaleIngredientQuantity(
-            ingredient.quantity,
+            resolved.quantity,
             recipe.servings,
             mealItem.servingsOverride,
           ),
-          unit: ingredient.unit,
+          unit: resolved.unit,
           note: ingredient.note,
           recipeId: recipe.id,
           recipeName: recipe.name,

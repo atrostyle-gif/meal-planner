@@ -1,16 +1,31 @@
 "use client";
 
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import {
   RecipeStepsEditor,
   stepsToDrafts,
   type StepDraft,
 } from "@/components/recipes/RecipeStepsEditor";
+import { RecipeNutritionAutoSection } from "@/components/recipes/RecipeNutritionAutoSection";
 import { findIngredientTypeByName } from "@/lib/ingredient-type-lookup";
 import { useRecipes } from "@/lib/use-recipes";
 import { loadFamilyMemberProfiles } from "@/lib/family-member-profiles";
 import { emptyRecipeCookingProfile } from "@/lib/cooking-suitability";
-import { SUITABILITY_LEVELS, SUITABILITY_LABELS, type SuitabilityLevel } from "@/types/weekly-lifestyle";
+import {
+  buildAutoNutritionPreview,
+  type AutoNutritionPreview,
+} from "@/lib/nutrition/recipe-auto-estimate";
+import {
+  SUITABILITY_LEVELS,
+  SUITABILITY_LABELS,
+  type SuitabilityLevel,
+} from "@/types/weekly-lifestyle";
 import {
   DEFAULT_INGREDIENT_TYPE,
   DEFAULT_RECIPE_CATEGORY,
@@ -19,10 +34,8 @@ import {
   INGREDIENT_TYPES,
   INGREDIENT_TYPE_LABELS,
   INGREDIENT_UNITS,
-  PROTEIN_TYPES,
   RECIPE_CATEGORIES,
   RECIPE_COURSES,
-  RECIPE_SEASONS,
   type IngredientInput,
   type IngredientType,
   type ProteinType,
@@ -134,19 +147,6 @@ export function RecipeForm({
   const [season, setSeason] = useState<RecipeSeason | "">(
     initialRecipe?.season ?? "",
   );
-  const [difficultyText, setDifficultyText] = useState(
-    initialRecipe?.difficulty == null ? "" : String(initialRecipe.difficulty),
-  );
-  const [favoriteText, setFavoriteText] = useState(
-    initialRecipe?.favoriteScore == null
-      ? ""
-      : String(initialRecipe.favoriteScore),
-  );
-  const [healthyText, setHealthyText] = useState(
-    initialRecipe?.healthyScore == null
-      ? ""
-      : String(initialRecipe.healthyScore),
-  );
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(() =>
     toDrafts(initialRecipe),
   );
@@ -158,6 +158,81 @@ export function RecipeForm({
     initialRecipe?.cookingProfile ?? emptyRecipeCookingProfile(),
   );
   const [error, setError] = useState<string | null>(null);
+  const [showManualNutrition, setShowManualNutrition] = useState(false);
+  const [nutritionPreview, setNutritionPreview] =
+    useState<AutoNutritionPreview | null>(null);
+  const [calculatingNutrition, setCalculatingNutrition] = useState(false);
+
+  const runAutoNutrition = useCallback((): AutoNutritionPreview => {
+    const servings = Number(servingsText);
+    const safeServings =
+      Number.isInteger(servings) && servings >= 1 ? servings : DEFAULT_SERVINGS;
+    let cookingTimeMinutes: number | null = null;
+    if (cookingTimeText.trim() !== "") {
+      const parsed = Number(cookingTimeText);
+      if (Number.isInteger(parsed) && parsed >= 0) {
+        cookingTimeMinutes = parsed;
+      }
+    }
+    const stepCount = steps.filter((step) => step.text.trim() !== "").length;
+    return buildAutoNutritionPreview({
+      ingredients: ingredients.map((item) => ({
+        name: item.name,
+        quantity: parseQuantityText(item.quantityText),
+        unit: item.unit,
+        quantityText: item.quantityText,
+      })),
+      servings: safeServings,
+      stepCount,
+      cookingTimeMinutes,
+    });
+  }, [cookingTimeText, ingredients, servingsText, steps]);
+
+  const syncManualFieldsFromPreview = useCallback(
+    (preview: AutoNutritionPreview): void => {
+      setCaloriesText(
+        preview.caloriesKcal == null ? "" : String(preview.caloriesKcal),
+      );
+      setProteinText(
+        preview.proteinG == null ? "" : String(preview.proteinG),
+      );
+      setFatText(preview.fatG == null ? "" : String(preview.fatG));
+      setCarbsText(
+        preview.carbohydratesG == null ? "" : String(preview.carbohydratesG),
+      );
+      setSaltText(
+        preview.saltEquivalentG == null
+          ? ""
+          : String(preview.saltEquivalentG),
+      );
+      setVegetablesText(
+        preview.vegetablesG == null ? "" : String(preview.vegetablesG),
+      );
+    },
+    [],
+  );
+
+  const handleRecalculateNutrition = useCallback(() => {
+    setCalculatingNutrition(true);
+    try {
+      const preview = runAutoNutrition();
+      setNutritionPreview(preview);
+      if (!showManualNutrition) {
+        syncManualFieldsFromPreview(preview);
+      }
+    } finally {
+      setCalculatingNutrition(false);
+    }
+  }, [runAutoNutrition, showManualNutrition, syncManualFieldsFromPreview]);
+
+  // 材料・人数・手順・時間が変わったら表示用に再計算
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const preview = runAutoNutrition();
+      setNutritionPreview(preview);
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [runAutoNutrition]);
 
   function updateIngredient(
     key: string,
@@ -269,66 +344,14 @@ export function RecipeForm({
       return parsed;
     }
 
-    const calories = parseOptionalNumber(caloriesText, "カロリー");
-    if (calories === undefined) {
-      return;
-    }
-    const protein = parseOptionalNumber(proteinText, "たんぱく質");
-    if (protein === undefined) {
-      return;
-    }
-    const fat = parseOptionalNumber(fatText, "脂質");
-    if (fat === undefined) {
-      return;
-    }
-    const carbohydrates = parseOptionalNumber(carbsText, "炭水化物");
-    if (carbohydrates === undefined) {
-      return;
-    }
-    const salt = parseOptionalNumber(saltText, "塩分");
-    if (salt === undefined) {
-      return;
-    }
-    const vegetables = parseOptionalNumber(vegetablesText, "野菜量");
-    if (vegetables === undefined) {
-      return;
-    }
-
-    let difficulty: number | null = null;
-    if (difficultyText.trim() !== "") {
-      const parsed = Number(difficultyText);
-      if (!Number.isInteger(parsed) || parsed < 1 || parsed > 5) {
-        setError("難易度は1〜5の整数で入力してください。");
-        return;
-      }
-      difficulty = parsed;
-    }
-
-    let favoriteScore: number | null = null;
-    if (favoriteText.trim() !== "") {
-      const parsed = Number(favoriteText);
-      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5) {
-        setError("好みスコアは0〜5の整数で入力してください。");
-        return;
-      }
-      favoriteScore = parsed;
-    }
-
-    let healthyScore: number | null = null;
-    if (healthyText.trim() !== "") {
-      const parsed = Number(healthyText);
-      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5) {
-        setError("ヘルシースコアは0〜5の整数で入力してください。");
-        return;
-      }
-      healthyScore = parsed;
-    }
-
     for (const item of ingredients) {
       if (item.name.trim() === "") {
         continue;
       }
-      if (item.quantityText.trim() !== "" && parseQuantityText(item.quantityText) === null) {
+      if (
+        item.quantityText.trim() !== "" &&
+        parseQuantityText(item.quantityText) === null
+      ) {
         setError(`「${item.name}」の数量は数値で入力してください。`);
         return;
       }
@@ -341,6 +364,48 @@ export function RecipeForm({
       note: item.note,
       ingredientType: item.ingredientType,
     }));
+
+    const auto = runAutoNutrition();
+    setNutritionPreview(auto);
+
+    let calories: number | null = auto.caloriesKcal;
+    let protein: number | null = auto.proteinG;
+    let fat: number | null = auto.fatG;
+    let carbohydrates: number | null = auto.carbohydratesG;
+    let salt: number | null = auto.saltEquivalentG;
+    let vegetables: number | null = auto.vegetablesG;
+    let calculationSource: RecipeInput["calculationSource"] = "automatic";
+
+    if (showManualNutrition) {
+      const manualCalories = parseOptionalNumber(caloriesText, "カロリー");
+      if (manualCalories === undefined) return;
+      const manualProtein = parseOptionalNumber(proteinText, "たんぱく質");
+      if (manualProtein === undefined) return;
+      const manualFat = parseOptionalNumber(fatText, "脂質");
+      if (manualFat === undefined) return;
+      const manualCarbs = parseOptionalNumber(carbsText, "炭水化物");
+      if (manualCarbs === undefined) return;
+      const manualSalt = parseOptionalNumber(saltText, "塩分");
+      if (manualSalt === undefined) return;
+      const manualVegetables = parseOptionalNumber(vegetablesText, "野菜量");
+      if (manualVegetables === undefined) return;
+
+      const hasManual =
+        manualCalories != null ||
+        manualProtein != null ||
+        manualFat != null ||
+        manualCarbs != null ||
+        manualSalt != null ||
+        manualVegetables != null;
+
+      calories = manualCalories ?? calories;
+      protein = manualProtein ?? protein;
+      fat = manualFat ?? fat;
+      carbohydrates = manualCarbs ?? carbohydrates;
+      salt = manualSalt ?? salt;
+      vegetables = manualVegetables ?? vegetables;
+      calculationSource = hasManual ? "mixed" : "automatic";
+    }
 
     setError(null);
     onSubmit({
@@ -356,20 +421,34 @@ export function RecipeForm({
       carbohydrates,
       salt,
       vegetables,
+      nutritionStatus: auto.nutritionStatus,
+      caloriesKcal: calories,
+      proteinG: protein,
+      fatG: fat,
+      carbohydratesG: carbohydrates,
+      saltEquivalentG: salt,
+      dietaryFiberG: auto.dietaryFiberG,
+      nutritionCoverage: auto.nutritionCoverage,
+      calculationSource,
       proteinType: proteinType === "" ? null : proteinType,
       season: season === "" ? null : season,
-      difficulty,
-      favoriteScore,
-      healthyScore,
+      // 難易度・健康スコアは自動。好みは学習用のため登録時は触らない
+      difficulty: auto.difficulty,
+      favoriteScore: initialRecipe?.favoriteScore ?? null,
+      healthyScore: auto.healthyScore,
       ingredients: ingredientInputs,
       steps: steps.map((step) => ({ text: step.text })),
       memo,
       cookingProfile: {
         ...cookingProfile,
-        activeCookingMinutes: cookingProfile.activeCookingMinutes ?? cookingTimeMinutes,
-        totalCookingMinutes: cookingProfile.totalCookingMinutes ?? cookingTimeMinutes,
-        stepCount: cookingProfile.stepCount ?? steps.length,
-        source: "manual",
+        activeCookingMinutes:
+          cookingProfile.activeCookingMinutes ?? cookingTimeMinutes,
+        totalCookingMinutes:
+          cookingProfile.totalCookingMinutes ?? cookingTimeMinutes,
+        stepCount:
+          cookingProfile.stepCount ??
+          steps.filter((step) => step.text.trim() !== "").length,
+        source: cookingProfile.source === "manual" ? "manual" : "estimated",
       },
       importMethod: initialRecipe?.importMethod,
       source: initialRecipe?.source,
@@ -459,110 +538,6 @@ export function RecipeForm({
           />
         </label>
       </div>
-
-      <fieldset className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-        <legend className="px-1 text-sm font-medium text-on-surface">
-          栄養・特性（任意）
-        </legend>
-        <div className="grid grid-cols-2 gap-3">
-          {(
-            [
-              ["カロリー", caloriesText, setCaloriesText, "kcal"],
-              ["たんぱく質", proteinText, setProteinText, "g"],
-              ["脂質", fatText, setFatText, "g"],
-              ["炭水化物", carbsText, setCarbsText, "g"],
-              ["塩分", saltText, setSaltText, "g"],
-              ["野菜量", vegetablesText, setVegetablesText, "g"],
-            ] as const
-          ).map(([label, value, setter, unit]) => (
-            <label key={label} className="block space-y-1">
-              <span className="text-xs text-on-surface-variant">
-                {label}（{unit}）
-              </span>
-              <input
-                type="number"
-                inputMode="decimal"
-                value={value}
-                onChange={(event) => setter(event.target.value)}
-                className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary"
-                placeholder="未入力可"
-              />
-            </label>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block space-y-1">
-            <span className="text-xs text-on-surface-variant">たんぱく源</span>
-            <select
-              value={proteinType}
-              onChange={(event) =>
-                setProteinType(event.target.value as ProteinType | "")
-              }
-              className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm"
-            >
-              <option value="">未設定</option>
-              {PROTEIN_TYPES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-on-surface-variant">季節</span>
-            <select
-              value={season}
-              onChange={(event) =>
-                setSeason(event.target.value as RecipeSeason | "")
-              }
-              className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm"
-            >
-              <option value="">未設定</option>
-              {RECIPE_SEASONS.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-on-surface-variant">難易度 1〜5</span>
-            <input
-              type="number"
-              min={1}
-              max={5}
-              value={difficultyText}
-              onChange={(event) => setDifficultyText(event.target.value)}
-              className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm"
-              placeholder="未入力可"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-on-surface-variant">好み 0〜5</span>
-            <input
-              type="number"
-              min={0}
-              max={5}
-              value={favoriteText}
-              onChange={(event) => setFavoriteText(event.target.value)}
-              className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm"
-              placeholder="未入力可"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-on-surface-variant">ヘルシー 0〜5</span>
-            <input
-              type="number"
-              min={0}
-              max={5}
-              value={healthyText}
-              onChange={(event) => setHealthyText(event.target.value)}
-              className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm"
-              placeholder="未入力可"
-            />
-          </label>
-        </div>
-      </fieldset>
 
       <fieldset className="space-y-3">
         <legend className="text-sm font-medium text-on-surface">タグ</legend>
@@ -712,6 +687,30 @@ export function RecipeForm({
       </fieldset>
 
       <RecipeStepsEditor steps={steps} onChange={setSteps} />
+
+      <RecipeNutritionAutoSection
+        preview={nutritionPreview}
+        calculating={calculatingNutrition}
+        showManual={showManualNutrition}
+        onRecalculate={handleRecalculateNutrition}
+        onToggleManual={() => setShowManualNutrition((value) => !value)}
+        caloriesText={caloriesText}
+        proteinText={proteinText}
+        fatText={fatText}
+        carbsText={carbsText}
+        saltText={saltText}
+        vegetablesText={vegetablesText}
+        setCaloriesText={setCaloriesText}
+        setProteinText={setProteinText}
+        setFatText={setFatText}
+        setCarbsText={setCarbsText}
+        setSaltText={setSaltText}
+        setVegetablesText={setVegetablesText}
+        proteinType={proteinType}
+        season={season}
+        setProteinType={setProteinType}
+        setSeason={setSeason}
+      />
 
       <fieldset className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
         <legend className="px-1 text-sm font-medium text-on-surface">作る人・作りやすさ</legend>

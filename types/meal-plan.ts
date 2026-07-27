@@ -1,4 +1,5 @@
 import type { RecipeCourse } from "@/types/course";
+import type { BudgetMode } from "@/types/food-budget";
 
 /** 献立アイテムの入力元 */
 export type MealSource = "manual" | "fixed" | "auto";
@@ -65,6 +66,10 @@ export type MealPlan = {
   weekStart: string;
   /** 月〜日の7日分 */
   days: DayMeal[];
+  /** 週ごとの食費予算（未設定なら世帯デフォルト） */
+  weeklyFoodBudgetYen?: number | null;
+  /** 週ごとの予算表示モード */
+  budgetMode?: BudgetMode | null;
   createdAt: string;
   updatedAt: string;
 };

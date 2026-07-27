@@ -2,70 +2,22 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useFamilySession } from "@/components/providers/FamilySessionProvider";
-import {
-  countPushSuccess,
-  getLocalMigrationPreview,
-  type PushResult,
-} from "@/lib/sync/cloud-sync";
+import { getLocalMigrationPreview } from "@/lib/sync/cloud-sync";
 
-type ResultView = {
-  kind: "success" | "partial" | "failure";
-  title: string;
-  lines: string[];
-};
-
-function buildResultView(result: PushResult | null): ResultView {
-  if (!result) {
-    return {
-      kind: "failure",
-      title: "家族共有へのコピーに失敗しました",
-      lines: ["設定画面からあとで再試行できます。"],
-    };
-  }
-
-  const successTotal = countPushSuccess(result);
-  const failCount = result.errors.length;
-  const lines = [
-    `レシピ ${result.recipes}件`,
-    `週間献立 ${result.mealPlans}件`,
-    `買い物リスト ${result.shoppingLists}件`,
-    `冷蔵庫の在庫 ${result.inventory}件`,
-    `常備品の状態 ${result.pantry}件`,
-  ];
-
-  if (failCount === 0) {
-    return {
-      kind: "success",
-      title: `家族共有へコピーしました（合計 ${successTotal}件）`,
-      lines,
-    };
-  }
-
-  if (successTotal === 0) {
-    return {
-      kind: "failure",
-      title: `コピーに失敗しました（失敗 ${failCount}件）`,
-      lines: [...lines, ...result.errors.slice(0, 3)],
-    };
-  }
-
-  return {
-    kind: "partial",
-    title: `一部コピーできました（成功 ${successTotal}件 / 失敗 ${failCount}件）`,
-    lines: [...lines, ...result.errors.slice(0, 3)],
-  };
-}
-
+/**
+ * 初回参加時のみ表示。
+ * コピーまたは破棄を選ぶと migrationCompleted=true になり、二度と出ない。
+ */
 export function MigrationPrompt() {
   const {
     needsMigrationPrompt,
-    dismissMigrationPrompt,
     migrateLocalToCloud,
+    discardLocalMigration,
     syncing,
     household,
   } = useFamilySession();
-  const [resultView, setResultView] = useState<ResultView | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const submittingRef = useRef(false);
 
   const preview = useMemo(() => {
@@ -75,39 +27,12 @@ export function MigrationPrompt() {
     return getLocalMigrationPreview();
   }, [needsMigrationPrompt]);
 
-  if (!needsMigrationPrompt && !resultView) {
+  if (!needsMigrationPrompt) {
     return null;
   }
 
   const busy = syncing || submitting;
   const householdName = household?.name?.trim() ?? "";
-
-  if (resultView) {
-    const tone =
-      resultView.kind === "success"
-        ? "bg-secondary-container text-on-secondary-container"
-        : resultView.kind === "partial"
-          ? "bg-surface-container-lowest text-on-surface ring-1 ring-outline-variant"
-          : "bg-error-container text-error";
-
-    return (
-      <div className={`mb-4 rounded-2xl px-4 py-3 text-sm ${tone}`}>
-        <p className="font-medium">{resultView.title}</p>
-        <ul className="mt-2 space-y-0.5 text-xs opacity-90">
-          {resultView.lines.map((line) => (
-            <li key={line}>・{line}</li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          className="mt-2 text-sm font-medium underline"
-          onClick={() => setResultView(null)}
-        >
-          閉じる
-        </button>
-      </div>
-    );
-  }
 
   async function handleCopy(): Promise<void> {
     if (submittingRef.current || busy) {
@@ -115,79 +40,92 @@ export function MigrationPrompt() {
     }
     submittingRef.current = true;
     setSubmitting(true);
+    setError(null);
     try {
       const result = await migrateLocalToCloud();
-      dismissMigrationPrompt();
-      setResultView(buildResultView(result));
+      if (!result || result.errors.length > 0) {
+        setError(
+          result?.errors[0] ??
+            "コピーに失敗しました。通信状況を確認して再度お試しください。",
+        );
+      }
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
     }
   }
 
+  async function handleDiscard(): Promise<void> {
+    if (submittingRef.current || busy) {
+      return;
+    }
+    const ok = window.confirm(
+      "この端末だけのデータは家族共有に送りません。共有スペースの内容を使います。よろしいですか？",
+    );
+    if (!ok) {
+      return;
+    }
+    submittingRef.current = true;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await discardLocalMigration();
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  }
+
+  if (busy) {
+    return (
+      <div
+        className="mb-4 rounded-2xl bg-surface-container-lowest px-4 py-3 text-sm ring-1 ring-outline-variant"
+        role="status"
+      >
+        <p className="font-medium text-primary">同期しています…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-4 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
       <h2 className="text-base font-semibold text-on-surface">
-        この端末のデータを家族で共有しますか？
+        この端末のデータを家族へコピーしますか？
       </h2>
 
       <p className="mt-2 text-sm text-on-surface">
-        この端末だけに保存されているデータを、現在の家庭の共有スペースへコピーします。
-        コピーすると、家族が別のスマートフォンやPCから同じ内容を見たり編集したりできます。
+        この端末だけに保存されているデータがあります。家族で使う共有スペースへ一度だけ送れます。
       </p>
 
       {householdName !== "" ? (
         <p className="mt-2 text-sm font-medium text-primary">
-          「{householdName}」の共有スペースへコピーします
+          「{householdName}」へコピーします
         </p>
       ) : null}
 
-      <div className="mt-3 space-y-1">
-        <p className="text-xs font-medium text-on-surface-variant">
-          コピーするもの
-        </p>
-        <ul className="space-y-0.5 text-sm text-on-surface">
-          <li>
-            ・レシピ
-            {preview && preview.recipes > 0 ? ` ${preview.recipes}件` : ""}
-          </li>
-          <li>
-            ・週間献立
-            {preview && preview.mealPlanDays > 0
-              ? ` ${preview.mealPlanDays}日分`
-              : preview && preview.mealPlans > 0
-                ? ` ${preview.mealPlans}週分`
-                : ""}
-          </li>
-          <li>
-            ・買い物リスト
-            {preview && preview.shoppingLists > 0
-              ? ` ${preview.shoppingLists}件`
-              : ""}
-          </li>
-          <li>
-            ・冷蔵庫の在庫
-            {preview && preview.inventory > 0 ? ` ${preview.inventory}件` : ""}
-          </li>
-          <li>
-            ・常備品の状態
-            {preview && preview.pantry > 0 ? ` ${preview.pantry}件` : ""}
-          </li>
+      {preview ? (
+        <ul className="mt-3 space-y-0.5 text-sm text-on-surface-variant">
+          {preview.recipes > 0 ? <li>・レシピ {preview.recipes}件</li> : null}
+          {preview.mealPlanDays > 0 ? (
+            <li>・週間献立 {preview.mealPlanDays}日分</li>
+          ) : null}
+          {preview.shoppingLists > 0 ? (
+            <li>・買い物リスト {preview.shoppingLists}件</li>
+          ) : null}
+          {preview.inventory > 0 ? (
+            <li>・冷蔵庫 {preview.inventory}件</li>
+          ) : null}
+          {preview.pantry > 0 ? <li>・常備品 {preview.pantry}件</li> : null}
         </ul>
-      </div>
+      ) : null}
 
-      <div className="mt-3 space-y-1">
-        <p className="text-xs font-medium text-on-surface-variant">注意</p>
-        <ul className="space-y-0.5 text-xs text-on-surface-variant">
-          <li>・この端末にある元データは削除されません</li>
-          <li>・同じデータの重複登録をできるだけ防ぎます</li>
-          <li>・コピーはあとから設定画面でも実行できます</li>
-        </ul>
-      </div>
+      <p className="mt-3 text-xs text-on-surface-variant">
+        コピーまたは破棄を選ぶと、この確認は再表示されません。以降は自動で同期します。
+      </p>
 
-      {busy ? (
-        <p className="mt-3 text-sm font-medium text-primary" role="status">
-          家族共有へコピー中…
+      {error ? (
+        <p className="mt-2 text-sm text-error" role="alert">
+          {error}
         </p>
       ) : null}
 
@@ -196,11 +134,11 @@ export function MigrationPrompt() {
           type="button"
           disabled={busy}
           onClick={() => {
-            dismissMigrationPrompt();
+            void handleDiscard();
           }}
-          className="flex-1 rounded-xl px-3 py-2.5 text-sm font-medium text-on-surface-variant disabled:opacity-60"
+          className="flex-1 rounded-xl px-3 py-2.5 text-sm font-medium ring-1 ring-outline-variant disabled:opacity-60"
         >
-          あとで移行する
+          破棄
         </button>
         <button
           type="button"
@@ -210,7 +148,7 @@ export function MigrationPrompt() {
           }}
           className="flex-1 rounded-xl bg-primary px-3 py-2.5 text-sm font-semibold text-on-primary disabled:opacity-60"
         >
-          {busy ? "コピー中…" : "家族共有へコピー"}
+          コピー
         </button>
       </div>
     </div>

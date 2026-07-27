@@ -1,5 +1,6 @@
-import { LifestyleSetupWizard } from "@/components/settings/LifestyleSetupWizard";
+import { redirect } from "next/navigation";
 
-export default function LifestyleSetupRoutePage() {
-  return <LifestyleSetupWizard />;
+/** 旧URL互換。生活スタイル設定は家族プロフィール内へ統合済み */
+export default function LifestyleSetupRoute() {
+  redirect("/settings/family-profiles?section=lifestyle");
 }

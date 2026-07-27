@@ -2,24 +2,19 @@
 
 import Link from "next/link";
 import { useFamilySession } from "@/components/providers/FamilySessionProvider";
-import { getDataModeLabel } from "@/lib/supabase/env";
 
+/** 設定への短い導線のみ（説明文は出さない） */
 export function ModeBadge() {
-  const { mode, household, syncing } = useFamilySession();
-  const label = getDataModeLabel(mode);
+  const { household } = useFamilySession();
 
   return (
-    <div className="mb-3 flex items-center justify-between gap-2 text-xs text-on-surface-variant">
+    <div className="mb-2 flex items-center justify-end">
       <Link
         href="/settings"
-        className="rounded-full bg-surface-container px-2.5 py-1 ring-1 ring-outline-variant"
+        className="rounded-full bg-surface-container px-3 py-1.5 text-xs font-medium text-on-surface-variant ring-1 ring-outline-variant"
+        aria-label="設定"
       >
-        {label}
-        {mode === "supabase" && household ? `・${household.name}` : null}
-        {syncing ? "・同期中" : null}
-      </Link>
-      <Link href="/settings" className="text-primary">
-        設定
+        ⚙{household?.name ? ` ${household.name}` : " 設定"}
       </Link>
     </div>
   );

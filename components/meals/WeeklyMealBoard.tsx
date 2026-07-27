@@ -14,12 +14,43 @@ import {
 } from "@dnd-kit/core";
 import { useDraggable } from "@dnd-kit/core";
 import { useMemo, useState, type ReactNode } from "react";
+import { CompactMenu } from "@/components/meals/CompactMenu";
 import { MealSlotCard } from "@/components/meals/MealSlotCard";
 import { WEEKDAY_LABELS, formatMonthDay, parseDate } from "@/lib/date";
 import { WEEKLY_AUTO_COURSES } from "@/types/weekly-meal-plan";
 import { formatCourseLabel } from "@/types/course";
 import type { DayMeal, MealDishItem } from "@/types/meal-plan";
 import type { Recipe } from "@/types/recipe";
+
+function DayReasonLine({ reasons }: { reasons: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+  if (reasons.length === 0) return null;
+  const first = reasons[0] ?? "";
+  const hasMore = reasons.length > 1 || first.length > 40;
+  return (
+    <div className="mt-2">
+      <p className="truncate text-xs text-on-surface-variant">
+        {first}
+      </p>
+      {hasMore ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-0.5 text-[11px] font-medium text-primary"
+        >
+          {expanded ? "閉じる" : "▼ 理由"}
+        </button>
+      ) : null}
+      {expanded ? (
+        <ul className="mt-1 space-y-0.5 text-xs text-on-surface-variant">
+          {reasons.map((reason) => (
+            <li key={reason}>・{reason}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 
 type WeeklyMealBoardProps = {
   days: DayMeal[];
@@ -119,39 +150,41 @@ function DayColumn({
             : "bg-surface-container-lowest ring-outline-variant"
       }`}
     >
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <div>
-          <p className="text-sm font-semibold">
-            {WEEKDAY_LABELS[weekdayIndex]}
-            <span className="ml-2 font-normal text-on-surface-variant">
-              {formatMonthDay(day.date)}
-            </span>
-          </p>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold">
+          {WEEKDAY_LABELS[weekdayIndex]}
+          <span className="ml-2 font-normal text-on-surface-variant">
+            {formatMonthDay(day.date)}
+          </span>
           {day.locked ? (
-            <p className="mt-1 text-xs text-on-surface-variant">日ごと固定中</p>
+            <span className="ml-2 text-xs font-normal text-on-surface-variant">
+              🔒
+            </span>
           ) : null}
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <button
-            type="button"
-            onClick={() => onToggleDayLock(day.date)}
-            className="rounded-lg px-2 py-1 text-xs font-medium text-primary hover:bg-secondary-container"
-          >
-            {day.locked ? "日ロック解除" : "日をロック"}
-          </button>
-          {!day.locked ? (
-            <button
-              type="button"
-              onClick={() => onRegenerateDay(day.date)}
-              className="rounded-lg px-2 py-1 text-xs font-medium text-primary hover:bg-secondary-container"
-            >
-              この日を再生成
-            </button>
-          ) : null}
-        </div>
+        </p>
+        <CompactMenu
+          label={`${WEEKDAY_LABELS[weekdayIndex]}の操作`}
+          items={[
+            {
+              id: "day-lock",
+              label: day.locked ? "日ロック解除" : "日をロック",
+              onClick: () => onToggleDayLock(day.date),
+            },
+            {
+              id: "day-regen",
+              label: "この日を再生成",
+              onClick: () => onRegenerateDay(day.date),
+              disabled: day.locked,
+            },
+          ]}
+        />
       </div>
 
-      <ul className="space-y-2">
+      {day.recommendation?.reasons?.length ? (
+        <DayReasonLine reasons={day.recommendation.reasons} />
+      ) : null}
+
+      <ul className="mt-2 space-y-2">
         {WEEKLY_AUTO_COURSES.map((course) => {
           const item =
             day.items.find((entry) => entry.course === course) ?? null;

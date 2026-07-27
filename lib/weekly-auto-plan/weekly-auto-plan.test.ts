@@ -399,6 +399,56 @@ describe("週間献立自動編成", () => {
     expect(second.days[2].items.length).toBeGreaterThan(0);
   });
 
+  it("空き枠を slot 指定で埋められる", () => {
+    const recipes = buildRichRecipes();
+    const days = emptyDays(weekStart);
+    const targetDate = days[0].date;
+    const result = generateWeeklyMealPlan({
+      weekStart,
+      days,
+      recipes,
+      scope: { type: "slot", date: targetDate, course: "主菜" },
+    });
+    const main = result.days[0].items.find((item) => item.course === "主菜");
+    expect(main?.recipeId).toBeTruthy();
+    expect(result.filledCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it("削除済みレシピ枠を slotId 付きで再埋めできる", () => {
+    const recipes = buildRichRecipes();
+    const days = emptyDays(weekStart);
+    const targetDate = days[0].date;
+    const brokenId = "broken-slot";
+    days[0] = {
+      ...days[0],
+      items: [
+        {
+          id: brokenId,
+          recipeId: "missing-recipe",
+          course: "主菜",
+          order: 1,
+          customName: null,
+          source: "auto",
+          slotLocked: false,
+        },
+      ],
+    };
+    const result = generateWeeklyMealPlan({
+      weekStart,
+      days,
+      recipes,
+      scope: {
+        type: "slot",
+        date: targetDate,
+        course: "主菜",
+        slotId: brokenId,
+      },
+    });
+    const main = result.days[0].items.find((item) => item.course === "主菜");
+    expect(main?.recipeId).toBeTruthy();
+    expect(main?.recipeId).not.toBe("missing-recipe");
+  });
+
   it("候補不足でもクラッシュしない", () => {
     const recipes = [
       recipeStub({ id: "only1", name: "唯一の主菜", course: "主菜" }),

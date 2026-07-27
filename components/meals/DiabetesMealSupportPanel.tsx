@@ -2,49 +2,38 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  buildDiabetesMealSupportReport,
-} from "@/lib/diabetes-meal-support/report";
+import { HelpButton, FirstVisitTip } from "@/components/ui/FirstVisitTip";
+import { buildDiabetesMealSupportReport } from "@/lib/diabetes-meal-support/report";
 import { REFERENCE_GOAL_CONFIG } from "@/lib/diabetes-meal-support/reference-goal-config";
-import { resolveEffectiveCarbTargets } from "@/lib/diabetes-meal-support/resolve-targets";
 import { loadDiabetesMealSupportSettings } from "@/lib/diabetes-meal-support/settings";
-import { WEEKDAY_LABELS, formatMonthDay, parseDate } from "@/lib/date";
+import { buildWeeklyHealthSummaryView } from "@/lib/diabetes-meal-support/weekly-summary";
 import type { MealPlan } from "@/types/meal-plan";
 import type { Recipe } from "@/types/recipe";
-import type { CarbTargetStatus } from "@/types/diabetes-meal-support";
-
-function statusLabel(status: CarbTargetStatus): string {
-  switch (status) {
-    case "in_range":
-      return "目標範囲内";
-    case "over":
-      return "超過";
-    case "under":
-      return "不足";
-    case "unknown":
-      return "判定不能";
-    case "no_target":
-      return "目標未設定";
-    default:
-      return status;
-  }
-}
 
 type DiabetesMealSupportPanelProps = {
   plan: MealPlan;
   recipes: Recipe[];
 };
 
+const DISCLAIMER_KEY = "meal-planner:healthDisclaimerSeen";
+
+/**
+ * 普段は星・◎○△・改善件数のみ。詳細はタップ展開。
+ */
 export function DiabetesMealSupportPanel({
   plan,
   recipes,
 }: DiabetesMealSupportPanelProps) {
-  const [open, setOpen] = useState(true);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   const settings = loadDiabetesMealSupportSettings();
-  const effective = resolveEffectiveCarbTargets(settings);
   const report = useMemo(
     () => buildDiabetesMealSupportReport(plan, recipes, settings),
     [plan, recipes, settings],
+  );
+  const summary = useMemo(
+    () => buildWeeklyHealthSummaryView(report),
+    [report],
   );
   const medicationWarning =
     settings.usesInsulin === true ||
@@ -52,103 +41,101 @@ export function DiabetesMealSupportPanel({
 
   if (!settings.diabetesMealSupportEnabled) {
     return (
-      <section className="rounded-2xl bg-surface-container p-4 text-sm">
-        <p className="font-semibold text-on-surface">糖尿病配慮チェック</p>
-        <p className="mt-1 text-on-surface-variant">
-          現在オフです。目標値を設定すると、献立の糖質目安などを確認できます。
-        </p>
+      <section className="rounded-2xl bg-surface-container px-3 py-2.5 text-sm">
+        <p className="font-medium">⭐ 健康・体重管理</p>
+        <p className="mt-0.5 text-xs text-on-surface-variant">オフ</p>
         <Link
-          href="/settings/health-nutrition"
-          className="mt-2 inline-block font-medium text-primary"
+          href="/settings/family-profiles?section=health"
+          className="mt-1 inline-block text-xs font-medium text-primary"
         >
-          健康・栄養設定を開く
+          設定
         </Link>
       </section>
     );
   }
 
   return (
-    <section className="space-y-3 rounded-2xl bg-secondary-container/50 p-4 text-on-secondary-container">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h2 className="font-semibold">糖尿病配慮チェック</h2>
-          <p className="mt-1 text-xs opacity-90">
-            栄養カバー率（週）: {report.weeklyTotals.nutritionCoverage}%
-          </p>
-          <p className="mt-1 text-xs opacity-90">
-            目標値の出所：{effective.sourceLabel}
-          </p>
-        </div>
+    <section className="rounded-2xl bg-surface-container-lowest ring-1 ring-outline-variant">
+      <div className="flex items-start gap-2 px-3 pt-3">
         <button
           type="button"
-          onClick={() => setOpen((value) => !value)}
-          className="text-xs font-medium"
+          onClick={() => setDetailOpen((value) => !value)}
+          className="min-w-0 flex-1 space-y-1 text-left"
+          aria-expanded={detailOpen}
         >
-          {open ? "閉じる" : "開く"}
+          <p
+            className="text-lg leading-none text-primary"
+            aria-label={`評価${summary.stars}`}
+          >
+            {summary.starsLabel}
+          </p>
+          <p className="text-sm">
+            体重管理 {summary.weightManagement}
+            <span className="mx-1.5 text-on-surface-variant">·</span>
+            🥕 野菜 {summary.vegetables}
+            <span className="mx-1.5 text-on-surface-variant">·</span>
+            🍖 たんぱく質 {summary.protein}
+          </p>
+          <p className="text-xs text-on-surface-variant">
+            改善点 {summary.improvementCount}件
+            {summary.nutritionMissingRecipeCount > 0
+              ? " · 栄養情報が不足しています"
+              : ""}
+          </p>
+        </button>
+        <HelpButton
+          label="免責を見る"
+          onClick={() => setShowDisclaimer(true)}
+        />
+        <button
+          type="button"
+          onClick={() => setDetailOpen((value) => !value)}
+          className="shrink-0 pt-1 text-xs font-medium text-primary"
+        >
+          {detailOpen ? "▲" : "▼"}
         </button>
       </div>
 
-      <p className="text-xs leading-relaxed opacity-95">{report.disclaimer}</p>
-      <p className="text-xs leading-relaxed opacity-95">{report.carbDisclaimer}</p>
-      {medicationWarning ? (
-        <p className="rounded-xl bg-white/60 p-3 text-xs text-on-surface">
-          {REFERENCE_GOAL_CONFIG.disclaimers.medicationWarning}
-        </p>
+      {showDisclaimer ? (
+        <div className="px-3 pb-2">
+          <FirstVisitTip
+            storageKey={DISCLAIMER_KEY}
+            title="ご注意"
+            forceOpen={showDisclaimer}
+            onForceClose={() => setShowDisclaimer(false)}
+          >
+            {report.disclaimer}
+          </FirstVisitTip>
+        </div>
       ) : null}
 
-      {open ? (
-        <>
-          <ul className="space-y-2 text-sm">
-            {report.mealChecks.map((meal) => {
-              const weekdayIndex = (parseDate(meal.date).getDay() + 6) % 7;
-              return (
-                <li
-                  key={meal.date}
-                  className="rounded-xl bg-white/50 px-3 py-2 text-on-surface"
-                >
-                  <p className="font-medium">
-                    {WEEKDAY_LABELS[weekdayIndex]} {formatMonthDay(meal.date)}
-                  </p>
-                  <p className="mt-1 text-xs">
-                    推定糖質:{" "}
-                    {meal.carbohydratesG == null
-                      ? "判定不能（栄養情報不足）"
-                      : `${meal.carbohydratesG}g`}
-                    {" · "}
-                    {statusLabel(meal.status)}
-                  </p>
-                  <p className="text-xs">
-                    1日合計糖質:{" "}
-                    {report.dailyTotals.find((d) => d.date === meal.date)
-                      ?.carbohydratesG == null
-                      ? "不完全"
-                      : `${report.dailyTotals.find((d) => d.date === meal.date)?.carbohydratesG}g`}
-                    {" · 食物繊維: "}
-                    {meal.dietaryFiberG == null
-                      ? "不明"
-                      : `${meal.dietaryFiberG}g`}
-                    {" · 野菜: "}
-                    {meal.hasVegetables ? "あり" : "少なめ"}
-                    {" · カバー率: "}
-                    {meal.nutritionCoverage}%
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
+      {detailOpen ? (
+        <div className="space-y-3 border-t border-outline-variant px-3 py-3 text-sm">
+          {medicationWarning ? (
+            <p className="rounded-xl bg-surface-container p-2 text-xs">
+              {REFERENCE_GOAL_CONFIG.disclaimers.medicationWarning}
+            </p>
+          ) : null}
 
-          <div className="rounded-xl bg-white/50 p-3 text-sm text-on-surface">
-            <p className="font-medium">改善候補（提案のみ・自動変更しません）</p>
-            {report.suggestions.length === 0 ? (
-              <p className="mt-1 text-xs text-on-surface-variant">
-                いま提示できる候補はありません
-              </p>
+          <p className="text-xs text-on-surface-variant">
+            カバー率 {Math.round(summary.weeklyCoverage)}%
+          </p>
+
+          <div>
+            <p className="font-medium">改善候補</p>
+            {summary.aggregatedImprovements.length === 0 ? (
+              <p className="mt-1 text-xs text-on-surface-variant">候補なし</p>
             ) : (
-              <ul className="mt-2 space-y-2">
-                {report.suggestions.slice(0, 8).map((suggestion) => (
-                  <li key={suggestion.id} className="text-xs">
-                    <p className="font-medium">{suggestion.title}</p>
-                    <p className="text-on-surface-variant">{suggestion.detail}</p>
+              <ul className="mt-2 space-y-1.5">
+                {summary.aggregatedImprovements.map((item) => (
+                  <li
+                    key={item.key}
+                    className="flex items-baseline justify-between gap-2 text-sm"
+                  >
+                    <span>{item.title}</span>
+                    <span className="shrink-0 text-xs text-on-surface-variant">
+                      {item.countLabel}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -156,13 +143,14 @@ export function DiabetesMealSupportPanel({
           </div>
 
           <Link
-            href="/settings/health-nutrition"
+            href="/settings/family-profiles?section=health"
             className="inline-block text-xs font-medium text-primary"
           >
-            目標値を編集する
+            目標を編集
           </Link>
-        </>
+        </div>
       ) : null}
+      {!detailOpen ? <div className="pb-3" /> : null}
     </section>
   );
 }

@@ -13,7 +13,11 @@ import {
   isWeekdayIndex,
   recipeUsesInventory,
 } from "@/lib/weekly-auto-plan/recipe-features";
-import { scoreDiabetesMealSupport } from "@/lib/diabetes-meal-support/score";
+import { scoreHealthMealSupport } from "@/lib/diabetes-meal-support/score";
+import {
+  scoreBudgetSupport,
+  type BudgetScoreContext,
+} from "@/lib/food-budget/score";
 import type { DiabetesMealSupportSettings } from "@/types/diabetes-meal-support";
 import {
   DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
@@ -30,12 +34,14 @@ export type ScoreContext = {
   weekHasFish: boolean;
   recentRecipeIds: Set<string>;
   inventory: InventoryItem[];
-  /** 糖尿病配慮（OFF時は影響なし） */
+  /** 健康・体重管理サポート採点（OFF時は影響なし） */
   diabetesSettings?: DiabetesMealSupportSettings;
   dayCoursesSoFar?: RecipeCourse[];
   previousDayRecipes?: Recipe[];
   /** 採点対象コース（主菜を1食糖質のアンカーにする） */
   targetCourse?: RecipeCourse;
+  /** 予算・大容量購入の採点（未指定ならスキップ） */
+  budgetContext?: BudgetScoreContext;
 };
 
 export type ScoredCandidate = {
@@ -169,9 +175,31 @@ export function scoreRecipeForSlot(
   }
   const wantNo = recipe.wantAgainNo ?? 0;
   const wantYes = recipe.wantAgainYes ?? 0;
-  if (wantNo >= 2 && wantNo > wantYes) {
-    score -= 25;
-    reasons.push({ detail: "また作る=No が続いている" });
+  const wantTotal = wantYes + wantNo;
+  if (wantTotal >= 2) {
+    const rate = wantYes / wantTotal;
+    if (rate >= 0.8) {
+      score += 12;
+      reasons.push({ detail: "また作る率が高い" });
+    } else if (wantNo >= 2 && wantNo > wantYes) {
+      score -= 25;
+      reasons.push({ detail: "また作る=No が続いている" });
+    }
+  }
+  // 最近好評（高評価かつ直近2週間以内）
+  if (
+    recipe.averageRating != null &&
+    recipe.averageRating >= 4.2 &&
+    recipe.lastCookedAt
+  ) {
+    const last = new Date(recipe.lastCookedAt).getTime();
+    if (!Number.isNaN(last)) {
+      const days = (Date.now() - last) / (1000 * 60 * 60 * 24);
+      if (days <= 14) {
+        score += 8;
+        reasons.push({ detail: "最近好評だったレシピ" });
+      }
+    }
   }
   if (recipe.lastCookedAt) {
     const last = new Date(recipe.lastCookedAt).getTime();
@@ -228,14 +256,22 @@ export function scoreRecipeForSlot(
       ...DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
       updatedAt: "",
     };
-  const diabetes = scoreDiabetesMealSupport(recipe, {
+  // 健康評価: エネルギー → 栄養バランス → 糖尿病配慮（補助）
+  const health = scoreHealthMealSupport(recipe, {
     settings: diabetesSettings,
     dayCoursesSoFar: ctx.dayCoursesSoFar ?? [],
     previousDayRecipes: ctx.previousDayRecipes ?? [],
     evaluateAsMealCarbAnchor: ctx.targetCourse === "主菜",
   });
-  score += diabetes.scoreDelta;
-  reasons.push(...diabetes.reasons);
+  score += health.scoreDelta;
+  reasons.push(...health.reasons);
+
+  if (ctx.budgetContext) {
+    const budget = scoreBudgetSupport(recipe, ctx.budgetContext);
+    score += budget.scoreDelta;
+    reasons.push(...budget.reasons);
+    badges.push(...budget.badges);
+  }
 
   // バッジ重複除去
   const uniqueBadges = [...new Set(badges)];
