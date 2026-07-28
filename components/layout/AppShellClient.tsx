@@ -13,7 +13,7 @@ import { MigrationPrompt } from "@/components/providers/MigrationPrompt";
 import { SyncConflictDialog } from "@/components/providers/SyncConflictDialog";
 import { SyncStatusBanner } from "@/components/providers/SyncStatusBanner";
 
-const HIDE_CHROME = ["/login", "/setup-household"];
+const HIDE_CHROME = ["/login", "/setup-household", "/join"];
 
 export function AppShellClient({ children }: { children: ReactNode }) {
   return (

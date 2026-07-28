@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { SetupHouseholdPage } from "@/components/auth/SetupHouseholdPage";
+import { JoinHouseholdPage } from "@/components/auth/JoinHouseholdPage";
 
-export default function Page() {
+export default function JoinRoutePage() {
   return (
     <Suspense
       fallback={<p className="text-sm text-on-surface-variant">読み込み中…</p>}
     >
-      <SetupHouseholdPage />
+      <JoinHouseholdPage />
     </Suspense>
   );
 }

@@ -1,24 +1,30 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useFamilySession } from "@/components/providers/FamilySessionProvider";
 import {
   isValidInviteCode,
   normalizeInviteCode,
 } from "@/lib/auth/invite-code";
+import { readInviteCodeFromSearch } from "@/lib/auth/invite-link";
 import { toUserFacingError } from "@/lib/supabase/errors";
 
 export function SetupHouseholdPage() {
   const { mode, createHousehold, joinHousehold, household, signOut } =
     useFamilySession();
   const router = useRouter();
-  const [tab, setTab] = useState<"create" | "join">("create");
+  const searchParams = useSearchParams();
+  const codeFromUrl = readInviteCodeFromSearch(searchParams);
+  const [tabDraft, setTabDraft] = useState<"create" | "join" | null>(null);
   const [householdName, setHouseholdName] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
+  const [inviteCodeDraft, setInviteCodeDraft] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const tab = tabDraft ?? (codeFromUrl ? "join" : "create");
+  const inviteCode = inviteCodeDraft ?? codeFromUrl ?? "";
 
   useEffect(() => {
     if (mode === "local" || household) {
@@ -70,12 +76,17 @@ export function SetupHouseholdPage() {
         <p className="mt-1 text-sm text-on-surface-variant">
           家族でデータを共有するために、家庭を作成するか招待コードで参加してください。
         </p>
+        {codeFromUrl ? (
+          <p className="mt-2 rounded-xl bg-secondary-container px-3 py-2 text-sm text-on-secondary-container">
+            招待リンクのコードを入力済みです。表示名を入れて参加してください。
+          </p>
+        ) : null}
       </header>
 
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => setTab("create")}
+          onClick={() => setTabDraft("create")}
           className={`flex-1 rounded-xl px-3 py-2.5 text-sm font-medium ${
             tab === "create"
               ? "bg-primary text-on-primary"
@@ -86,7 +97,7 @@ export function SetupHouseholdPage() {
         </button>
         <button
           type="button"
-          onClick={() => setTab("join")}
+          onClick={() => setTabDraft("join")}
           className={`flex-1 rounded-xl px-3 py-2.5 text-sm font-medium ${
             tab === "join"
               ? "bg-primary text-on-primary"
@@ -126,7 +137,7 @@ export function SetupHouseholdPage() {
           <input
             required
             value={inviteCode}
-            onChange={(event) => setInviteCode(event.target.value)}
+            onChange={(event) => setInviteCodeDraft(event.target.value)}
             placeholder="招待コード"
             className="w-full rounded-xl bg-surface-container px-3 py-3 uppercase outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary"
           />

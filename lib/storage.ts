@@ -128,3 +128,40 @@ export function hasStorageKey(key: string): boolean {
 
   return window.localStorage.getItem(key) !== null;
 }
+
+const APP_STORAGE_PREFIX = "meal-planner:";
+
+/**
+ * この端末のアプリデータをすべて削除して初期状態に戻す。
+ * meal-planner: で始まるキーを対象（レシピ・献立・設定・学習など）。
+ * 家族共有のクラウド上のデータは削除しない。
+ */
+export function clearAllLocalAppData(): { removedCount: number } {
+  if (typeof window === "undefined") {
+    return { removedCount: 0 };
+  }
+
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (key !== null && key.startsWith(APP_STORAGE_PREFIX)) {
+      keysToRemove.push(key);
+    }
+  }
+
+  for (const key of keysToRemove) {
+    window.localStorage.removeItem(key);
+  }
+
+  lastSyncableLocalWriteAt = Date.now();
+  try {
+    window.dispatchEvent(new StorageEvent("storage", { key: null }));
+  } catch {
+    window.dispatchEvent(new Event("storage"));
+  }
+  window.dispatchEvent(
+    new CustomEvent(LOCAL_DATA_CHANGED_EVENT, { detail: { key: null } }),
+  );
+
+  return { removedCount: keysToRemove.length };
+}

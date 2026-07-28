@@ -20,9 +20,16 @@ export function LoginPage() {
 
   useEffect(() => {
     if (mode === "supabase" && session) {
-      router.replace(
-        household ? searchParams.get("next") || "/today" : "/setup-household",
-      );
+      const next = searchParams.get("next");
+      if (household) {
+        router.replace(next && next.startsWith("/") ? next : "/today");
+        return;
+      }
+      if (next && (next.startsWith("/join") || next.startsWith("/setup-household"))) {
+        router.replace(next);
+        return;
+      }
+      router.replace("/setup-household");
     }
   }, [mode, session, household, router, searchParams]);
 
@@ -59,7 +66,13 @@ export function LoginPage() {
         setInfo("アカウントを作成しました。メール確認が必要な場合は受信箱を確認してください。");
       } else {
         await signIn(email, password);
-        router.replace(searchParams.get("next") || "/today");
+        const next = searchParams.get("next");
+        // AuthGate / session 反映後の遷移に任せるが、即時も試みる
+        if (next && next.startsWith("/")) {
+          router.replace(next);
+        } else {
+          router.replace("/today");
+        }
       }
     } catch (err) {
       setError(toUserFacingError(err));

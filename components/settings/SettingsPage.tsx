@@ -21,6 +21,7 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase/env";
 import { toUserFacingError } from "@/lib/supabase/errors";
+import { clearAllLocalAppData } from "@/lib/storage";
 import {
   getSyncMergeMode,
   setSyncMergeMode,
@@ -320,6 +321,34 @@ export function SettingsPage() {
             >
               調理適性再判定
             </button>
+            <div className="space-y-2 border-t border-outline-variant pt-3">
+              <p className="text-xs text-on-surface-variant">
+                この端末の献立・レシピ・買い物・設定などをすべて消し、最初の状態に戻します。家族の共有データ（クラウド）は消えません。
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const first = window.confirm(
+                    "この端末の登録データをすべて削除して初期状態に戻しますか？\nこの操作は取り消せません。",
+                  );
+                  if (!first) return;
+                  const second = window.confirm(
+                    "本当にすべて削除しますか？\n（家族共有中の場合、次回同期でクラウドのデータが戻ることがあります）",
+                  );
+                  if (!second) return;
+                  const result = clearAllLocalAppData();
+                  setMessage(
+                    `${result.removedCount}件のデータを削除しました。再読み込みします…`,
+                  );
+                  window.setTimeout(() => {
+                    window.location.assign("/today");
+                  }, 400);
+                }}
+                className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-error ring-1 ring-error/40"
+              >
+                すべてのデータを初期化する
+              </button>
+            </div>
             <p className="text-xs text-on-surface-variant">v{APP_VERSION}</p>
           </div>
         ) : null}

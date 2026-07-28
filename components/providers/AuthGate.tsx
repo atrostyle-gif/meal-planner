@@ -10,6 +10,14 @@ type AuthGateProps = {
   children: ReactNode;
 };
 
+function isHouseholdSetupPath(pathname: string): boolean {
+  return (
+    pathname === "/setup-household" ||
+    pathname === "/join" ||
+    pathname.startsWith("/join/")
+  );
+}
+
 /**
  * Supabase モード時のみ認証・家庭所属をチェックする。
  * local モードでは何もしない。
@@ -28,21 +36,32 @@ export function AuthGate({ children }: AuthGateProps) {
     const isPublic = PUBLIC_PATHS.some(
       (path) => pathname === path || pathname.startsWith(`${path}/`),
     );
+    const search =
+      typeof window !== "undefined" ? window.location.search : "";
+    const nextPath = `${pathname}${search}`;
 
     if (!session && !isPublic) {
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+      router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
       return;
     }
 
     if (session && pathname === "/login") {
-      router.replace(household ? "/today" : "/setup-household");
+      const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+      const next = params.get("next");
+      if (household) {
+        router.replace(next && next.startsWith("/") ? next : "/today");
+      } else if (next && (next.startsWith("/join") || next.startsWith("/setup-household"))) {
+        router.replace(next);
+      } else {
+        router.replace("/setup-household");
+      }
       return;
     }
 
     if (
       session &&
       !household &&
-      pathname !== "/setup-household" &&
+      !isHouseholdSetupPath(pathname) &&
       !pathname.startsWith("/settings")
     ) {
       router.replace("/setup-household");
