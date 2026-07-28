@@ -36,6 +36,7 @@ import {
   type PushResult,
   type SyncConflictInfo,
 } from "@/lib/sync/cloud-sync";
+import { filterUserFacingSyncErrors } from "@/lib/sync/sync-errors";
 import type {
   Household,
   HouseholdInvite,
@@ -43,6 +44,11 @@ import type {
   Profile,
 } from "@/types/household";
 import type { Session, User } from "@supabase/supabase-js";
+
+function formatSyncErrors(errors: readonly string[]): string | null {
+  const facing = filterUserFacingSyncErrors(errors);
+  return facing.length > 0 ? facing.join(" / ") : null;
+}
 
 type FamilySessionContextValue = {
   mode: AppDataMode;
@@ -208,7 +214,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
             session.user.id,
           );
           if (pushResult.errors.length > 0) {
-            setLastSyncError(pushResult.errors.join(" / "));
+            setLastSyncError(formatSyncErrors(pushResult.errors));
           }
         }
         setLastPulledAt(new Date().toISOString());
@@ -385,10 +391,12 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         beginSync();
         void pushLocalToCloud(client, household.id, session.user.id)
           .then((result) => {
-            if (result.errors.length > 0) {
-              setLastSyncError(result.errors.join(" / "));
+            const syncError = formatSyncErrors(result.errors);
+            if (syncError) {
+              setLastSyncError(syncError);
             } else {
               setLastSyncedAt(household.id);
+              setLastSyncError(null);
             }
           })
           .catch((error) => {
@@ -513,7 +521,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
             household.id,
             session.user.id,
           );
-          if (result.errors.length === 0) {
+          if (formatSyncErrors(result.errors) === null) {
             setMigrationMarker(household.id);
             markMigrationCompleted(household.id, "copied");
             setNeedsMigrationPrompt(false);
@@ -521,7 +529,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
             setLastPulledAt(new Date().toISOString());
             setLastSyncedAt(household.id);
           } else {
-            setLastSyncError(result.errors.join(" / "));
+            setLastSyncError(formatSyncErrors(result.errors));
           }
           return result;
         } catch (error) {
@@ -575,8 +583,8 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
               household.id,
               session.user.id,
             );
-            if (result.errors.length > 0) {
-              setLastSyncError(result.errors.join(" / "));
+            if (formatSyncErrors(result.errors)) {
+              setLastSyncError(formatSyncErrors(result.errors));
               if (conflict) setSyncConflict(conflict);
               return;
             }
@@ -591,7 +599,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
               session.user.id,
             );
             if (pushResult.errors.length > 0) {
-              setLastSyncError(pushResult.errors.join(" / "));
+              setLastSyncError(formatSyncErrors(pushResult.errors));
             }
           } else {
             // merge: 項目単位で自動結合（通常の同期と同じ）
@@ -602,7 +610,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
               session.user.id,
             );
             if (pushResult.errors.length > 0) {
-              setLastSyncError(pushResult.errors.join(" / "));
+              setLastSyncError(formatSyncErrors(pushResult.errors));
             }
           }
           setLastPulledAt(new Date().toISOString());

@@ -111,3 +111,51 @@ export function findSameItemConflicts<T extends HasIdAndUpdatedAt>(
 ): T[] {
   return findSameItemConflictsByKey(local, remote, lastSyncedAtMs, (item) => item.id);
 }
+
+/**
+ * 同じ自然キーが複数あるとき、updatedAt が新しい方だけ残す。
+ * （upsert の ON CONFLICT 重複エラー防止）
+ */
+export function dedupeByNewestUpdatedAt<T extends HasUpdatedAt>(
+  items: readonly T[],
+  getKey: (item: T) => string,
+): T[] {
+  const map = new Map<string, T>();
+  for (const item of items) {
+    const key = getKey(item);
+    const prev = map.get(key);
+    if (!prev || item.updatedAt >= prev.updatedAt) {
+      map.set(key, item);
+    }
+  }
+  return [...map.values()];
+}
+
+/**
+ * 週キー（weekStart）単位のマージ。
+ * preferCloudIds / preferLocalIds は各アイテムの id を受け取り、週キーに変換する。
+ */
+export function mergeByWeekStart<
+  T extends HasIdAndUpdatedAt & { weekStart: string },
+>(
+  local: readonly T[],
+  remote: readonly T[],
+  options?: MergeByUpdatedAtOptions,
+): T[] {
+  const preferCloudWeeks = new Set<string>();
+  const preferLocalWeeks = new Set<string>();
+  if (options?.preferCloudIds || options?.preferLocalIds) {
+    for (const item of [...local, ...remote]) {
+      if (options.preferCloudIds?.has(item.id)) {
+        preferCloudWeeks.add(item.weekStart);
+      }
+      if (options.preferLocalIds?.has(item.id)) {
+        preferLocalWeeks.add(item.weekStart);
+      }
+    }
+  }
+  return mergeByKeyUpdatedAt(local, remote, (item) => item.weekStart, {
+    preferCloudIds: preferCloudWeeks,
+    preferLocalIds: preferLocalWeeks,
+  });
+}

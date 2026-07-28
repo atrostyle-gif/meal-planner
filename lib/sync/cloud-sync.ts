@@ -55,9 +55,11 @@ import {
 } from "@/lib/receipt/sync";
 import { getLastSyncableLocalWriteAt } from "@/lib/storage";
 import {
+  dedupeByNewestUpdatedAt,
   findSameItemConflicts,
   mergeByKeyUpdatedAt,
   mergeByUpdatedAt,
+  mergeByWeekStart,
   type MergeByUpdatedAtOptions,
 } from "@/lib/sync/merge-by-updated-at";
 import { getSyncMergeMode } from "@/lib/sync/sync-preferences";
@@ -200,12 +202,12 @@ export async function pullCloudToLocal(
       remoteRecipes,
       mergeOptions,
     );
-    const mealPlans = mergeByUpdatedAt(
+    const mealPlans = mergeByWeekStart(
       loadMealPlans(),
       (mealsRes.data ?? []).map(mealPlanFromRow),
       mergeOptions,
     );
-    const shoppingLists = mergeByUpdatedAt(
+    const shoppingLists = mergeByWeekStart(
       loadShoppingLists(),
       (shoppingRes.data ?? []).map(shoppingListFromRow),
       mergeOptions,
@@ -401,7 +403,11 @@ export async function pushLocalToCloud(
   }
 
   try {
-    const plans = loadMealPlans();
+    const rawPlans = loadMealPlans();
+    const plans = dedupeByNewestUpdatedAt(rawPlans, (plan) => plan.weekStart);
+    if (plans.length !== rawPlans.length) {
+      replaceMealPlans(plans);
+    }
     if (plans.length > 0) {
       const { error } = await client.from("meal_plans").upsert(
         plans.map((plan) => mealPlanToUpsert(plan, householdId, userId)),
@@ -418,7 +424,11 @@ export async function pushLocalToCloud(
   }
 
   try {
-    const lists = loadShoppingLists();
+    const rawLists = loadShoppingLists();
+    const lists = dedupeByNewestUpdatedAt(rawLists, (list) => list.weekStart);
+    if (lists.length !== rawLists.length) {
+      replaceShoppingLists(lists);
+    }
     if (lists.length > 0) {
       const { error } = await client.from("shopping_lists").upsert(
         lists.map((list) => shoppingListToUpsert(list, householdId, userId)),
