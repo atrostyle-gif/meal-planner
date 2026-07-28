@@ -427,6 +427,7 @@ export function optimizeDayMealV4(
         weekProtein,
         weekFlags,
         daySoFar,
+        foodMasters: context.foodMasters,
       });
       const fit = evaluateDayLifestyleFit(schedule, override, recipe, cook);
       const cookScore = evaluateRecipeForCook(recipe, cook, context.cookingHistory);

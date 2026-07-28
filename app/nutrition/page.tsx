@@ -1,5 +1,6 @@
-import { NutritionDashboardPage } from "@/components/nutrition/NutritionDashboardPage";
+import { redirect } from "next/navigation";
 
+/** 旧URL互換: 栄養ダッシュボードはデータ配下へ */
 export default function NutritionRoutePage() {
-  return <NutritionDashboardPage />;
+  redirect("/data/nutrition");
 }

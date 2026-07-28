@@ -28,20 +28,23 @@ export function MealPlanPreferencesPanel({
       </h2>
 
       <label className="block space-y-1">
-        <span className="text-xs text-on-surface-variant">人数</span>
+        <span className="text-xs text-on-surface-variant">通常の食事人数</span>
         <input
           type="number"
           min={1}
-          max={12}
-          value={preferences.servingCount}
+          max={20}
+          value={preferences.defaultMealServings}
           onChange={(event) => {
             const value = Number(event.target.value);
             if (Number.isInteger(value) && value >= 1) {
-              onChange({ servingCount: value });
+              onChange({ defaultMealServings: value });
             }
           }}
           className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm"
         />
+        <p className="text-[11px] text-on-surface-variant">
+          来客や不在がない日の人数です。日ごとの変更は献立画面から行えます。
+        </p>
       </label>
 
       <label className="block space-y-1">

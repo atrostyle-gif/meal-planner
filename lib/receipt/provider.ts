@@ -23,6 +23,7 @@ function emptyDraft(warning: string): ReceiptDraft {
     taxYen: null,
     totalAmountYen: null,
     paymentMethod: null,
+    points: null,
     items: [],
     rawText: null,
     confidence: null,
@@ -43,6 +44,7 @@ function normalizeItem(item: ReceiptItemDraft): ReceiptItemDraft {
     totalPriceYen: item.totalPriceYen ?? null,
     discountYen: item.discountYen ?? null,
     taxIncluded: item.taxIncluded ?? null,
+    reducedTax: item.reducedTax ?? null,
     confidence: item.confidence ?? null,
     warnings: Array.isArray(item.warnings) ? item.warnings : [],
   };
@@ -75,6 +77,7 @@ export function parseReceiptDraftJson(raw: unknown): ReceiptDraft {
     taxYen: data.taxYen ?? null,
     totalAmountYen: data.totalAmountYen,
     paymentMethod: data.paymentMethod ?? null,
+    points: data.points ?? null,
     items: data.items.map(normalizeItem).filter((i) => i.rawName !== ""),
     rawText: data.rawText,
     confidence: data.confidence,
@@ -133,7 +136,7 @@ export class OpenAIReceiptImportProvider implements ReceiptImportProvider {
         {
           role: "system",
           content:
-            "あなたはレシート抽出器です。書いてある内容だけをJSONで返す。推測で埋めない。不明はnull。容量や価格を推測で確定しない。キー: storeRawName, storeName, storeBrandName, storeBranchName, purchasedAt, subtotalYen, discountYen, taxYen, totalAmountYen, paymentMethod, items[{rawName,quantity,unit,packageCount,packageQuantity,packageUnit,gramsEquivalent,unitPriceYen,totalPriceYen,discountYen,taxIncluded,confidence,warnings}], rawText, confidence, warnings[]",
+            "あなたはレシート抽出器です。書いてある内容だけをJSONで返す。推測で埋めない。不明はnull。容量や価格を推測で確定しない。キー: storeRawName, storeName, storeBrandName, storeBranchName, purchasedAt, subtotalYen, discountYen, taxYen, totalAmountYen, paymentMethod, points, items[{rawName,quantity,unit,packageCount,packageQuantity,packageUnit,gramsEquivalent,unitPriceYen,totalPriceYen,discountYen,taxIncluded,reducedTax,confidence,warnings}], rawText, confidence, warnings[]。pointsはポイント、reducedTaxは軽減税率対象。",
         },
         {
           role: "user",

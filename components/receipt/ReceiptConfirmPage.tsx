@@ -71,7 +71,7 @@ export function ReceiptConfirmPage() {
       }
       clearReceiptSessions();
       router.push(
-        `/receipts/done?count=${result.savedPriceCount}&id=${result.receiptId}`,
+        `/receipts/done?count=${result.savedPriceCount}&id=${result.receiptId}&checked=${result.checkedShoppingCount}`,
       );
     } catch {
       setMessage("保存に失敗しました");

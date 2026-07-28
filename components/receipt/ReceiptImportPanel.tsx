@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useRef, useState } from "react";
 import {
   compressImageFile,
   type CompressedImage,
@@ -18,6 +18,10 @@ type ImageItem = CompressedImage & { id: string };
 
 export function ReceiptImportPanel() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preferCapture = searchParams.get("mode") === "capture";
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<ImageItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -66,13 +70,11 @@ export function ReceiptImportPanel() {
       }
       const data = (await response.json()) as { draft: ReceiptDraft };
       saveReceiptDraftSession(data.draft);
-      // フィンガープリント用に先頭画像だけ一時利用し、確認後は破棄
       const confirm = await buildReceiptConfirmState(
         data.draft,
         images[0]?.base64 ?? null,
       );
       saveReceiptConfirmSession(confirm);
-      // プレビューURLを解放
       for (const image of images) {
         URL.revokeObjectURL(image.previewUrl);
       }
@@ -97,17 +99,43 @@ export function ReceiptImportPanel() {
         </p>
       </header>
 
-      <label className="block space-y-2 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-        <span className="text-sm font-medium">写真を追加</span>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          capture="environment"
-          multiple
-          onChange={(event) => void addFiles(event.target.files)}
-          className="block w-full text-sm"
-        />
-      </label>
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        capture="environment"
+        className="hidden"
+        onChange={(event) => void addFiles(event.target.files)}
+      />
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        className="hidden"
+        onChange={(event) => void addFiles(event.target.files)}
+      />
+
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => cameraRef.current?.click()}
+          className={`rounded-2xl px-4 py-4 text-sm font-semibold ${
+            preferCapture
+              ? "bg-primary text-on-primary"
+              : "bg-secondary-container text-on-secondary-container"
+          }`}
+        >
+          撮影
+        </button>
+        <button
+          type="button"
+          onClick={() => galleryRef.current?.click()}
+          className="rounded-2xl bg-surface-container px-4 py-4 text-sm font-semibold ring-1 ring-outline-variant"
+        >
+          画像を選択
+        </button>
+      </div>
 
       {images.length > 0 ? (
         <ul className="grid grid-cols-3 gap-2">

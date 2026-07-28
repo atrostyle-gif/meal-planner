@@ -1,4 +1,8 @@
 import {
+  isFoodInSeason,
+  resolveFoodMaster,
+} from "@/lib/food-master/resolve";
+import {
   countPriorityIngredientMatches,
   getPriorityInventoryItems,
 } from "@/lib/recipe-inventory-match";
@@ -11,6 +15,7 @@ import {
   scoreToStars,
 } from "@/lib/recipe-nutrition";
 import { parseDate } from "@/lib/date";
+import type { FoodIngredientMaster } from "@/types/food-master";
 import type { InventoryItem } from "@/types/inventory";
 import type {
   ConditionMode,
@@ -75,6 +80,8 @@ type ScoreContext = {
     salt: number;
     vegetables: number;
   };
+  /** Food Master（旬・健康判定） */
+  foodMasters?: FoodIngredientMaster[];
 };
 
 function addReason(
@@ -286,6 +293,31 @@ export function scoreRecipeCandidate(
   } else if (recipe.season !== null) {
     addReason(reasons, breakdown, "seasonOff", -8, "季節外の料理");
     score -= 8;
+  }
+
+  // Food Master 経由の旬加点
+  if (ctx.foodMasters && ctx.foodMasters.length > 0) {
+    const month = parseDate(ctx.date).getMonth() + 1;
+    let inSeasonCount = 0;
+    for (const ingredient of recipe.ingredients) {
+      const hit = resolveFoodMaster(ingredient.name, {
+        masters: ctx.foodMasters,
+      });
+      if (isFoodInSeason(hit.master, month) === true) {
+        inSeasonCount += 1;
+      }
+    }
+    if (inSeasonCount > 0) {
+      const points = Math.min(12, inSeasonCount * 4);
+      addReason(
+        reasons,
+        breakdown,
+        "foodMasterSeason",
+        points,
+        `旬の食材を${inSeasonCount}品使えます`,
+      );
+      score += points;
+    }
   }
 
   const cond = conditionBonus(recipe, ctx.preferences.conditionMode, currentSeason);

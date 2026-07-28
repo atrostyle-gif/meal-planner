@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useFamilySession } from "@/components/providers/FamilySessionProvider";
 import {
   SettingsGroup,
@@ -21,9 +21,27 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase/env";
 import { toUserFacingError } from "@/lib/supabase/errors";
+import {
+  getSyncMergeMode,
+  setSyncMergeMode,
+  subscribeSyncMergeMode,
+  type SyncMergeMode,
+} from "@/lib/sync/sync-preferences";
+
+function useSyncMergeMode(): SyncMergeMode {
+  return useSyncExternalStore(
+    subscribeSyncMergeMode,
+    getSyncMergeMode,
+    () => "auto",
+  );
+}
 
 const APP_VERSION = "0.1.0";
 
+/**
+ * 設定: 変更するものだけを置く。
+ * 結果の閲覧は /data へ。
+ */
 export function SettingsPage() {
   const {
     mode,
@@ -42,6 +60,7 @@ export function SettingsPage() {
   const [showAccount, setShowAccount] = useState(false);
   const [showSamples, setShowSamples] = useState(false);
   const [showMaintenance, setShowMaintenance] = useState(false);
+  const syncMergeMode = useSyncMergeMode();
   const supabaseConfigured = isSupabaseConfigured();
 
   function samplesInUse(): boolean {
@@ -61,8 +80,9 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <header>
+      <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">設定</h1>
+        <p className="text-sm text-on-surface-variant">変更する場所です</p>
       </header>
 
       <button
@@ -115,15 +135,17 @@ export function SettingsPage() {
                 type="button"
                 disabled={syncing}
                 onClick={() => {
-                  void pullLatest().then((result) => {
+                  void pullLatest({ notify: true }).then((result) => {
                     setMessage(
-                      result ? "取得しました" : "取得に失敗しました",
+                      result
+                        ? "最新のデータを同期しました"
+                        : "同期できませんでした",
                     );
                   });
                 }}
                 className="w-full rounded-xl bg-secondary-container px-3 py-2.5 text-sm font-semibold text-on-secondary-container disabled:opacity-50"
               >
-                {syncing ? "同期中…" : "最新データを取得"}
+                {syncing ? "同期中…" : "最新データを同期"}
               </button>
               <button
                 type="button"
@@ -141,22 +163,11 @@ export function SettingsPage() {
         </section>
       ) : null}
 
-      <SettingsGroup title="家族・プロフィール">
+      <SettingsGroup title="家族プロフィール">
         <SettingsLinkRow
           href="/settings/family-profiles"
-          title="家族・プロフィール"
-        />
-      </SettingsGroup>
-
-      <SettingsGroup title="献立・料理">
-        <SettingsLinkRow href="/nutrition" title="栄養バランス" />
-        <SettingsLinkRow
-          href="/settings/weekly-schedule"
-          title="週間調理スケジュール"
-        />
-        <SettingsLinkRow
-          href="/settings/cooking-members"
-          title="調理担当"
+          title="家族プロフィール"
+          description="メンバー・健康・担当曜日・家庭全体"
         />
       </SettingsGroup>
 
@@ -166,13 +177,59 @@ export function SettingsPage() {
           href="/settings/store-budget"
           title="買い物先・食費予算"
         />
-        <SettingsLinkRow href="/food-expenses" title="食費レポート" />
         <SettingsLinkRow
           href="/settings/ingredient-prices"
           title="食材価格"
         />
+        <SettingsLinkRow
+          href="/settings/food-master"
+          title="食材マスター"
+        />
         <SettingsLinkRow href="/settings/pantry" title="常備品" />
       </SettingsGroup>
+
+      {supabaseConfigured && household ? (
+        <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
+          <div>
+            <h2 className="text-base font-semibold">同期方法</h2>
+            <p className="mt-1 text-xs text-on-surface-variant">
+              ふだんは自動でまとめます。同じデータを同時に直したときだけ確認します。
+            </p>
+          </div>
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-surface-container px-3 py-3">
+            <input
+              type="radio"
+              name="syncMergeMode"
+              className="mt-1"
+              checked={syncMergeMode === "auto"}
+              onChange={() => setSyncMergeMode("auto")}
+            />
+            <span>
+              <span className="block text-sm font-medium">
+                自動で結合する（推奨）
+              </span>
+              <span className="mt-0.5 block text-xs text-on-surface-variant">
+                違う項目の変更は自動でまとめます
+              </span>
+            </span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-surface-container px-3 py-3">
+            <input
+              type="radio"
+              name="syncMergeMode"
+              className="mt-1"
+              checked={syncMergeMode === "ask"}
+              onChange={() => setSyncMergeMode("ask")}
+            />
+            <span>
+              <span className="block text-sm font-medium">毎回確認する</span>
+              <span className="mt-0.5 block text-xs text-on-surface-variant">
+                この端末とほかの端末の両方に変更があるとき確認します
+              </span>
+            </span>
+          </label>
+        </section>
+      ) : null}
 
       <section className="space-y-2">
         <button

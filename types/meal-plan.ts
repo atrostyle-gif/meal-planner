@@ -1,5 +1,9 @@
 import type { RecipeCourse } from "@/types/course";
 import type { BudgetMode } from "@/types/food-budget";
+import type {
+  MealDecisionExplanation,
+  MealSelectionReason,
+} from "@/types/meal-decision-explanation";
 
 /** 献立アイテムの入力元 */
 export type MealSource = "manual" | "fixed" | "auto";
@@ -12,7 +16,12 @@ export type DayMealRecommendation = {
   stars: number;
   /** 表示用の理由リスト */
   reasons: string[];
+  /** 構造化理由（あれば優先） */
+  decisionDetails?: MealDecisionExplanation[];
 };
+
+/** 日別献立人数のモード */
+export type ServingsMode = "default" | "custom";
 
 /**
  * 1日の献立に含まれる1品。
@@ -31,6 +40,9 @@ export type MealDishItem = {
   source?: MealSource;
   /** 将来拡張用 */
   notes?: string;
+  /**
+   * @deprecated 日別 DayMeal.servings を使う。互換のため読み取りのみ残す。
+   */
   servingsOverride?: number | null;
   /** 自動生成時のスコア（任意） */
   engineScore?: number;
@@ -46,6 +58,8 @@ export type MealDishItem = {
   selectionReasons?: string[];
   /** 選定理由バッジ（時短・魚の日など） */
   selectionBadges?: string[];
+  /** 構造化した採用理由（判断履歴） */
+  decisionExplanation?: MealSelectionReason | null;
 };
 
 /** 1日分の献立 */
@@ -58,6 +72,13 @@ export type DayMeal = {
   recommendation?: DayMealRecommendation | null;
   /** その日に食べる家族メンバー */
   participantMemberIds?: string[];
+  /**
+   * その日の食事人数。
+   * servingsMode が default のときは家庭の通常人数を使い、この値は無視してよい。
+   */
+  servings?: number | null;
+  /** default=通常人数 / custom=この日だけ上書き */
+  servingsMode?: ServingsMode;
 };
 
 /** 1週間分の献立（月曜始まり） */

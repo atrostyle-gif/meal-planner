@@ -15,6 +15,8 @@ type MealSlotCardProps = {
   isDragging?: boolean;
   onToggleLock?: () => void;
   onRegenerate?: () => void;
+  /** 空き枠向け。おすすめ候補を開く */
+  onAddDish?: () => void;
   onRemove?: () => void;
 };
 
@@ -28,6 +30,7 @@ export function MealSlotCard({
   isDragging = false,
   onToggleLock,
   onRegenerate,
+  onAddDish,
   onRemove,
 }: MealSlotCardProps) {
   // 空き枠、またはレシピ参照が切れている枠
@@ -41,7 +44,19 @@ export function MealSlotCard({
               {!item || empty ? "未設定" : "レシピなし"}
             </p>
           </div>
-          {onRegenerate ? (
+          {onAddDish ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onAddDish();
+              }}
+              className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-on-primary"
+            >
+              料理を追加
+            </button>
+          ) : onRegenerate ? (
             <button
               type="button"
               onClick={(event) => {
@@ -66,6 +81,13 @@ export function MealSlotCard({
           id: "lock",
           label: locked ? "ロック解除" : "ロック",
           onClick: onToggleLock,
+        }
+      : null,
+    onAddDish && !locked
+      ? {
+          id: "add",
+          label: "おすすめから変更",
+          onClick: onAddDish,
         }
       : null,
     onRegenerate && !locked

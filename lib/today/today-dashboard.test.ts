@@ -1,26 +1,27 @@
 import { describe, expect, it } from "vitest";
 import {
   buildTodayDashboard,
-  buildTodayTip,
-  selectUrgentIngredients,
+  pickPrimaryDish,
 } from "@/lib/today/dashboard";
-import { DEFAULT_FOOD_BUDGET_SETTINGS } from "@/types/food-budget";
-import { DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS } from "@/types/diabetes-meal-support";
 import type { MealPlan } from "@/types/meal-plan";
 import type { Recipe } from "@/types/recipe";
-import type { ShoppingList } from "@/types/shopping-list";
-import type { InventoryItem } from "@/types/inventory";
-import type { LeftoverIngredient } from "@/types/leftover-ingredient";
-import { makePriceRecord } from "@/lib/price-learning/test-fixtures";
+import type { CookingFeedback } from "@/types/recipe-learning";
+import type { CookingHistory } from "@/types/weekly-lifestyle";
 
-function makeRecipe(id: string, name: string, minutes: number): Recipe {
+function makeRecipe(
+  id: string,
+  name: string,
+  minutes: number,
+  course: Recipe["course"] = "主菜",
+  servings = 2,
+): Recipe {
   const now = "2026-07-01T00:00:00.000Z";
   return {
     id,
     name,
     category: "和食",
-    course: "主菜",
-    servings: 2,
+    course,
+    servings,
     cookingTimeMinutes: minutes,
     ingredients: [
       {
@@ -41,7 +42,7 @@ function makeRecipe(id: string, name: string, minutes: number): Recipe {
   };
 }
 
-function makePlan(recipeId: string): MealPlan {
+function makePlan(items: MealPlan["days"][0]["items"], participantMemberIds?: string[]): MealPlan {
   return {
     id: "plan-1",
     weekStart: "2026-07-20",
@@ -50,20 +51,8 @@ function makePlan(recipeId: string): MealPlan {
       {
         date: "2026-07-20",
         locked: false,
-        items: [
-          {
-            id: "item-1",
-            recipeId,
-            course: "主菜",
-            order: 1,
-            source: "manual",
-          },
-        ],
-        recommendation: {
-          score: 10,
-          stars: 4,
-          reasons: ["娘さん向けの簡単メニューです"],
-        },
+        items,
+        participantMemberIds,
       },
     ],
     createdAt: "2026-07-01T00:00:00.000Z",
@@ -78,315 +67,217 @@ describe("今日ホームダッシュボード", () => {
       weekStart: "2026-07-20",
       mealPlan: null,
       recipes: [],
-      shoppingList: null,
-      inventory: [],
-      leftovers: [],
-      priceRecords: [],
-      budgetSettings: DEFAULT_FOOD_BUDGET_SETTINGS,
-      diabetesSettings: {
-        ...DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
-        diabetesMealSupportEnabled: false,
-      },
       feedbacks: [],
       cookingHistory: [],
-      receipts: [],
     });
-    expect(dash.meals).toHaveLength(0);
-    expect(dash.shopping.totalUnchecked).toBe(0);
-    expect(dash.ingredients).toHaveLength(0);
-    expect(dash.budget.weeklyFoodBudgetYen).toBe(
-      DEFAULT_FOOD_BUDGET_SETTINGS.weeklyFoodBudgetYen,
-    );
-    expect(dash.health.enabled).toBe(false);
-    expect(dash.tip).toBeNull();
+    expect(dash.dishes).toHaveLength(0);
+    expect(dash.primaryCook).toBeNull();
+    expect(dash.servings).toBeNull();
+    expect(dash.cookingTimeMinutes).toBeNull();
+    expect(dash.reviewStatus).toBe("pending");
+    expect(dash.reviewSummary).toBeNull();
   });
 
-  it("今日の献立・買い物・在庫を表示用に集計する", () => {
-    const recipe = makeRecipe("r1", "生姜焼き", 15);
-    const plan = makePlan("r1");
-    const shopping: ShoppingList = {
-      id: "s1",
+  it("今日の献立を主菜・副菜・汁物などで集約する", () => {
+    const main = makeRecipe("r1", "生姜焼き", 25, "主菜", 4);
+    const side = makeRecipe("r2", "サラダ", 10, "副菜", 4);
+    const soup = makeRecipe("r3", "味噌汁", 15, "汁物", 4);
+    const plan = makePlan([
+      { id: "item-1", recipeId: "r1", course: "主菜", order: 1, source: "manual" },
+      { id: "item-2", recipeId: "r2", course: "副菜", order: 2, source: "manual" },
+      { id: "item-3", recipeId: "r3", course: "汁物", order: 3, source: "manual" },
+    ]);
+
+    const dash = buildTodayDashboard({
+      date: "2026-07-20",
       weekStart: "2026-07-20",
-      createdAt: "",
-      updatedAt: "",
-      items: [
-        {
-          id: "a",
-          ingredientName: "玉ねぎ",
-          checked: false,
-          manuallyAdded: false,
-          ingredientType: "normal",
-          listKind: "buy",
-          quantities: [{ quantity: 1, unit: "個", note: "" }],
-          sources: [],
-        },
-        {
-          id: "b",
-          ingredientName: "にんじん",
-          checked: false,
-          manuallyAdded: false,
-          ingredientType: "normal",
-          listKind: "buy",
-          quantities: [{ quantity: 2, unit: "本", note: "" }],
-          sources: [],
-        },
-        {
-          id: "c",
-          ingredientName: "じゃがいも",
-          checked: false,
-          manuallyAdded: false,
-          ingredientType: "normal",
-          listKind: "buy",
-          quantities: [{ quantity: 3, unit: "個", note: "" }],
-          sources: [],
-        },
-        {
-          id: "d",
-          ingredientName: "ピーマン",
-          checked: false,
-          manuallyAdded: false,
-          ingredientType: "normal",
-          listKind: "buy",
-          quantities: [{ quantity: 1, unit: "個", note: "" }],
-          sources: [],
-        },
-        {
-          id: "e",
-          ingredientName: "買済",
-          checked: true,
-          manuallyAdded: false,
-          ingredientType: "normal",
-          listKind: "buy",
-          quantities: [],
-          sources: [],
-        },
-      ],
+      mealPlan: plan,
+      recipes: [main, side, soup],
+      defaultMealServings: 4,
+      feedbacks: [],
+      cookingHistory: [],
+    });
+
+    expect(dash.dishes).toHaveLength(3);
+    expect(dash.dishes.map((d) => d.title)).toEqual([
+      "生姜焼き",
+      "サラダ",
+      "味噌汁",
+    ]);
+    expect(dash.cookingTimeMinutes).toBe(25);
+    expect(dash.servings).toBe(4);
+    expect(dash.primaryCook?.recipeId).toBe("r1");
+    expect(dash.primaryCook?.cookHref).toContain("/recipes/r1/cook");
+    expect(dash.primaryCook?.cookHref).toContain("mealItemId=item-1");
+    expect(dash.reviewStatus).toBe("pending");
+  });
+
+  it("日別献立人数を優先する", () => {
+    const recipe = makeRecipe("r1", "生姜焼き", 15, "主菜", 4);
+    const plan = makePlan(
+      [{ id: "item-1", recipeId: "r1", course: "主菜", order: 1, source: "manual" }],
+    );
+    plan.days[0] = {
+      ...plan.days[0]!,
+      servings: 3,
+      servingsMode: "custom",
     };
-    const inventory: InventoryItem[] = [
-      {
-        id: "inv1",
-        name: "豆腐",
-        amount: null,
-        unit: "",
-        priority: true,
-        createdAt: "",
-        updatedAt: "",
-      },
-    ];
-    const leftovers: LeftoverIngredient[] = [
-      {
-        id: "l1",
-        householdId: "local",
-        name: "キャベツ",
-        foodMasterId: null,
-        quantity: 0.5,
-        unit: "玉",
-        priority: "must_use",
-        notes: null,
-        source: "manual",
-        status: "active",
-        plannedForDates: [],
-        migratedFromInventoryId: null,
-        includeInProposal: true,
-        createdAt: "",
-        updatedAt: "",
-      },
-    ];
-
     const dash = buildTodayDashboard({
       date: "2026-07-20",
       weekStart: "2026-07-20",
       mealPlan: plan,
       recipes: [recipe],
-      shoppingList: shopping,
-      inventory,
-      leftovers,
-      priceRecords: [],
-      budgetSettings: {
-        ...DEFAULT_FOOD_BUDGET_SETTINGS,
-        weeklyFoodBudgetYen: 7000,
-      },
-      diabetesSettings: {
-        ...DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
-        diabetesMealSupportEnabled: false,
-      },
+      defaultMealServings: 4,
       feedbacks: [],
       cookingHistory: [],
-      receipts: [],
     });
-
-    expect(dash.meals).toHaveLength(1);
-    expect(dash.meals[0]?.title).toBe("生姜焼き");
-    expect(dash.meals[0]?.cookingTimeMinutes).toBe(15);
-    expect(dash.meals[0]?.cookHref).toContain("/cook");
-    expect(dash.shopping.items).toHaveLength(3);
-    expect(dash.shopping.totalUnchecked).toBe(4);
-    expect(dash.ingredients[0]?.name).toBe("キャベツ");
-    expect(dash.tip).toBe("キャベツを使い切る日です");
-    expect(dash.budget.weeklyFoodBudgetYen).toBe(7000);
-    expect(dash.weekSummary.some((l) => l.id === "cook-count")).toBe(true);
+    expect(dash.servings).toBe(3);
+    expect(dash.servingsIsCustom).toBe(true);
+    expect(dash.primaryCook?.servings).toBe(3);
+    expect(recipe.servings).toBe(4);
   });
 
-  it("健康◎○△と予算進捗を集計する", () => {
-    const recipe = makeRecipe("r1", "焼き魚", 20);
-    recipe.ingredients = [
-      {
-        id: "i1",
-        name: "さば",
-        quantity: 1,
-        unit: "切れ",
-        note: "",
-        ingredientType: "normal",
-      },
-    ];
-    const plan = makePlan("r1");
+  it("参加者がいれば人数に使う", () => {
+    // 互換: 参加者は日別人数が無いときの候補ではなく、日別人数が正
+    const recipe = makeRecipe("r1", "生姜焼き", 15, "主菜", 2);
+    const plan = makePlan(
+      [{ id: "item-1", recipeId: "r1", course: "主菜", order: 1, source: "manual" }],
+      ["m1", "m2", "m3"],
+    );
     const dash = buildTodayDashboard({
       date: "2026-07-20",
       weekStart: "2026-07-20",
       mealPlan: plan,
       recipes: [recipe],
-      shoppingList: null,
-      inventory: [],
-      leftovers: [],
-      priceRecords: [
-        makePriceRecord({
-          id: "p1",
-          ingredientName: "さば",
-          normalizedIngredientName: "さば",
-          purchasePriceYen: 300,
-          packageQuantity: 1,
-          packageUnit: "切れ",
-          gramsEquivalent: null,
-          pricePer100g: null,
-          purchasedAt: "2026-07-18T00:00:00.000Z",
-        }),
-      ],
-      budgetSettings: {
-        ...DEFAULT_FOOD_BUDGET_SETTINGS,
-        weeklyFoodBudgetYen: 7000,
-      },
-      diabetesSettings: {
-        ...DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
-        diabetesMealSupportEnabled: true,
-      },
-      feedbacks: [
-        {
-          id: "f1",
-          historyId: "h1",
-          recipeId: "r1",
-          householdId: "local",
-          cookedAt: "2026-07-19T12:00:00.000Z",
-          createdBy: null,
-          overallRating: 5,
-          tasteSalt: null,
-          tasteSweet: null,
-          tasteSpicy: null,
-          texture: null,
-          timeFeeling: null,
-          wantAgain: true,
-          cookingTimeActualMinutes: null,
-          servingsActual: null,
-          improvementTags: [],
-          memberRatings: [
-            { memberId: "m1", memberName: "娘", rating: 5 },
-          ],
-          adjustments: [],
-          seasoningAdjustments: [],
-          photoDataUrl: null,
-          memo: null,
-          createdAt: "2026-07-19T12:00:00.000Z",
-          updatedAt: "2026-07-19T12:00:00.000Z",
-        },
-      ],
+      defaultMealServings: 4,
+      feedbacks: [],
       cookingHistory: [],
-      receipts: [
-        {
-          id: "rc1",
-          storeId: null,
-          storeName: "ロピア",
-          purchasedAt: "2026-07-18",
-          totalAmountYen: 2000,
-          receiptFingerprint: "fp",
-          keepImage: false,
-          confidence: null,
-          warnings: [],
-          rawText: null,
-          createdAt: "2026-07-18T10:00:00.000Z",
-          updatedAt: "2026-07-18T10:00:00.000Z",
-        },
-      ],
     });
-
-    expect(dash.health.enabled).toBe(true);
-    expect(["◎", "○", "△", "—"]).toContain(dash.health.overall);
-    expect(dash.recent.some((r) => r.kind === "receipt")).toBe(true);
-    expect(dash.recent.some((r) => r.kind === "feedback")).toBe(true);
-    expect(dash.recent.some((r) => r.kind === "family")).toBe(true);
+    expect(dash.servings).toBe(4);
   });
 
-  it("買い時・短時間のtipを返す", () => {
-    const tipTime = buildTodayTip({
-      leftovers: [],
-      priceRecords: [],
-      meals: [
-        {
-          mealItemId: "1",
-          recipeId: "r",
-          title: "サラダ",
-          courseLabel: "副菜",
-          cookingTimeMinutes: 10,
-          photoDataUrl: null,
-          cookHref: null,
-          recipeHref: null,
-        },
-      ],
-    });
-    expect(tipTime).toBe("今日は10分で作れます");
-
-    const now = Date.now();
-    const records = [1, 2, 3, 4].map((n) =>
-      makePriceRecord({
-        id: `p${n}`,
-        ingredientName: "豚こま",
-        normalizedIngredientName: "豚こま",
-        purchasePriceYen: 1000,
-        pricePer100g: n === 1 ? 100 : 130,
-        purchasedAt: new Date(now - n * 5 * 24 * 60 * 60 * 1000).toISOString(),
-      }),
-    );
-    const tipPrice = buildTodayTip({
-      leftovers: [],
-      priceRecords: records,
-      meals: [],
-    });
-    expect(tipPrice).toContain("安く買えています");
+  it("主菜が無い場合は主食など次の優先コースを調理対象にする", () => {
+    const staple = makeRecipe("r1", "ごはん", 5, "主食");
+    const side = makeRecipe("r2", "サラダ", 10, "副菜");
+    const dishes = [
+      {
+        mealItemId: "i2",
+        recipeId: "r2",
+        title: "サラダ",
+        course: "副菜" as const,
+        cookingTimeMinutes: 10,
+        cookHref: "/cook/r2",
+      },
+      {
+        mealItemId: "i1",
+        recipeId: "r1",
+        title: "ごはん",
+        course: "主食" as const,
+        cookingTimeMinutes: 5,
+        cookHref: "/cook/r1",
+      },
+    ];
+    expect(pickPrimaryDish(dishes)?.recipeId).toBe("r1");
+    void staple;
+    void side;
   });
 
-  it("今日使う食材は最大3件・賞味期限相当を優先", () => {
-    const leftovers: LeftoverIngredient[] = (
-      ["must_use", "soon", "normal", "must_use"] as const
-    ).map((priority, i) => ({
-      id: `l${i}`,
-      householdId: "local",
-      name: `食材${i}`,
-      foodMasterId: null,
-      quantity: 1,
-      unit: "個",
-      priority,
-      notes: null,
-      source: "manual",
-      status: "active",
-      plannedForDates: [],
-      migratedFromInventoryId: null,
-      includeInProposal: true,
-      createdAt: "",
-      updatedAt: "",
-    }));
-    const selected = selectUrgentIngredients([], leftovers, 3);
-    expect(selected).toHaveLength(3);
-    expect(selected.every((s) => s.reason.includes("使う") || s.reason === "優先")).toBe(
-      true,
-    );
-    expect(selected[0]?.reason).toBe("優先して使う");
+  it("調理完了フラグがあるとレビュー ready になる", () => {
+    const recipe = makeRecipe("r1", "生姜焼き", 15);
+    const plan = makePlan([
+      { id: "item-1", recipeId: "r1", course: "主菜", order: 1, source: "manual" },
+    ]);
+    const dash = buildTodayDashboard({
+      date: "2026-07-20",
+      weekStart: "2026-07-20",
+      mealPlan: plan,
+      recipes: [recipe],
+      feedbacks: [],
+      cookingHistory: [],
+      cookDoneByRecipeId: { r1: true },
+    });
+    expect(dash.reviewStatus).toBe("ready");
+  });
+
+  it("当日の調理履歴があるとレビュー ready になる", () => {
+    const recipe = makeRecipe("r1", "生姜焼き", 15);
+    const plan = makePlan([
+      { id: "item-1", recipeId: "r1", course: "主菜", order: 1, source: "manual" },
+    ]);
+    const cookingHistory: CookingHistory[] = [
+      {
+        id: "h1",
+        householdId: "local",
+        recipeId: "r1",
+        cookedAt: "2026-07-20T18:00:00.000Z",
+        cookedByMemberId: null,
+        createdBy: null,
+        difficultyFeedback: null,
+        durationMinutes: 15,
+        cookingTimeActual: 15,
+        servings: 2,
+        successRating: null,
+        notes: null,
+        memo: null,
+        wantAgain: null,
+        improvementTags: [],
+      },
+    ];
+    const dash = buildTodayDashboard({
+      date: "2026-07-20",
+      weekStart: "2026-07-20",
+      mealPlan: plan,
+      recipes: [recipe],
+      feedbacks: [],
+      cookingHistory,
+      cookDoneByRecipeId: { r1: false },
+    });
+    expect(dash.reviewStatus).toBe("ready");
+  });
+
+  it("当日フィードバックがあるとレビュー done になる", () => {
+    const recipe = makeRecipe("r1", "生姜焼き", 15);
+    const plan = makePlan([
+      { id: "item-1", recipeId: "r1", course: "主菜", order: 1, source: "manual" },
+    ]);
+    const feedbacks: CookingFeedback[] = [
+      {
+        id: "f1",
+        historyId: "h1",
+        recipeId: "r1",
+        householdId: "local",
+        cookedAt: "2026-07-20T19:00:00.000Z",
+        createdBy: null,
+        overallRating: 5,
+        tasteSalt: null,
+        tasteSweet: null,
+        tasteSpicy: null,
+        texture: null,
+        timeFeeling: null,
+        wantAgain: true,
+        cookingTimeActualMinutes: null,
+        servingsActual: null,
+        improvementTags: ["want_again"],
+        memberRatings: [],
+        adjustments: [],
+        seasoningAdjustments: [],
+        photoDataUrl: null,
+        memo: "美味しかった",
+        createdAt: "2026-07-20T19:00:00.000Z",
+        updatedAt: "2026-07-20T19:00:00.000Z",
+      },
+    ];
+    const dash = buildTodayDashboard({
+      date: "2026-07-20",
+      weekStart: "2026-07-20",
+      mealPlan: plan,
+      recipes: [recipe],
+      feedbacks,
+      cookingHistory: [],
+      cookDoneByRecipeId: { r1: true },
+    });
+    expect(dash.reviewStatus).toBe("done");
+    expect(dash.reviewSummary?.overallRating).toBe(5);
+    expect(dash.reviewSummary?.memo).toBe("美味しかった");
   });
 });

@@ -1,13 +1,15 @@
+import { resolveFoodMaster } from "@/lib/food-master/resolve";
+import { normalizeIngredientName } from "@/lib/food-master/normalize";
+import { createSampleFoodMasters } from "@/lib/food-master/sample-data";
+import { loadFoodMasters } from "@/lib/food-master/store";
 import { loadInventory } from "@/lib/inventory";
 import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
 import type { InventoryAmount, InventoryItem } from "@/types/inventory";
 import {
-  isLeftoverPriority,
   isLeftoverSource,
   isLeftoverStatus,
   type LeftoverIngredient,
   type LeftoverIngredientInput,
-  type LeftoverPriority,
 } from "@/types/leftover-ingredient";
 
 type Listener = () => void;
@@ -37,6 +39,49 @@ const PANTRY_NAME_HINTS = [
   "コンソメ",
 ];
 
+function mastersForResolve() {
+  if (typeof window === "undefined") return createSampleFoodMasters();
+  return loadFoodMasters();
+}
+
+function resolveNames(rawName: string): {
+  name: string;
+  rawName: string;
+  normalizedName: string;
+  foodMasterId: string | null;
+  foodCode: string | null;
+} {
+  const trimmed = rawName.trim();
+  const hit = resolveFoodMaster(trimmed, { masters: mastersForResolve() });
+  const name =
+    hit.master && !hit.needsReview ? hit.canonicalName : trimmed;
+  return {
+    name,
+    rawName: trimmed,
+    normalizedName: normalizeIngredientName(name),
+    foodMasterId: hit.master?.id ?? null,
+    foodCode: hit.foodCode,
+  };
+}
+
+function parseQuantityText(quantityText: string | null | undefined): {
+  quantity: number | null;
+  unit: string | null;
+} {
+  if (!quantityText || quantityText.trim() === "") {
+    return { quantity: null, unit: null };
+  }
+  const matched = quantityText.trim().match(/^([\d.]+)\s*(.*)$/);
+  if (!matched) {
+    return { quantity: null, unit: quantityText.trim() };
+  }
+  const value = Number(matched[1]);
+  return {
+    quantity: Number.isFinite(value) ? value : null,
+    unit: matched[2]?.trim() || null,
+  };
+}
+
 function amountToQuantityUnit(amount: InventoryAmount | null, unit: string): {
   quantity: number | null;
   unit: string | null;
@@ -51,22 +96,9 @@ function amountToQuantityUnit(amount: InventoryAmount | null, unit: string): {
     };
   }
   if (amount.kind === "text") {
-    const matched = amount.value.match(/^([\d.]+)\s*(.*)$/);
-    if (matched) {
-      const value = Number(matched[1]);
-      return {
-        quantity: Number.isFinite(value) ? value : null,
-        unit: (matched[2] || unit).trim() || null,
-      };
-    }
-    return { quantity: null, unit: amount.value || unit.trim() || null };
+    return parseQuantityText(amount.value);
   }
-  // preset → 数量なし、メモ相当は unit に残さない
   return { quantity: null, unit: unit.trim() || null };
-}
-
-function inventoryPriorityToLeftover(priority: boolean): LeftoverPriority {
-  return priority ? "soon" : "normal";
 }
 
 function looksLikePantryName(name: string): boolean {
@@ -81,17 +113,53 @@ function migrateItem(value: unknown): LeftoverIngredient | null {
   const item = value as Record<string, unknown>;
   if (typeof item.id !== "string" || typeof item.name !== "string") return null;
   const now = new Date().toISOString();
+  const rawName =
+    typeof item.rawName === "string" && item.rawName.trim() !== ""
+      ? item.rawName
+      : item.name;
+  const resolved = resolveNames(rawName);
+  const quantityText =
+    typeof item.quantityText === "string" ? item.quantityText : null;
+  const parsedFromText = parseQuantityText(quantityText);
+  const source =
+    item.source === "manual_meal_plan"
+      ? ("manual_meal_plan" as const)
+      : isLeftoverSource(item.source)
+        ? item.source
+        : ("manual" as const);
+
   return {
     id: item.id,
     householdId: typeof item.householdId === "string" ? item.householdId : "local",
-    name: item.name,
-    foodMasterId: typeof item.foodMasterId === "string" ? item.foodMasterId : null,
-    quantity: typeof item.quantity === "number" ? item.quantity : null,
-    unit: typeof item.unit === "string" ? item.unit : null,
-    priority: isLeftoverPriority(item.priority) ? item.priority : "normal",
+    name: resolved.name,
+    rawName: resolved.rawName,
+    normalizedName:
+      typeof item.normalizedName === "string" && item.normalizedName !== ""
+        ? item.normalizedName
+        : resolved.normalizedName,
+    foodCode:
+      typeof item.foodCode === "string"
+        ? item.foodCode
+        : resolved.foodCode,
+    foodMasterId:
+      typeof item.foodMasterId === "string"
+        ? item.foodMasterId
+        : resolved.foodMasterId,
+    quantityText,
+    quantity:
+      typeof item.quantity === "number"
+        ? item.quantity
+        : parsedFromText.quantity,
+    unit:
+      typeof item.unit === "string"
+        ? item.unit
+        : parsedFromText.unit,
+    // 優先度廃止: 同期互換のため soon 固定
+    priority: "soon",
     notes: typeof item.notes === "string" ? item.notes : null,
-    source: isLeftoverSource(item.source) ? item.source : "manual",
+    source,
     status: isLeftoverStatus(item.status) ? item.status : "active",
+    weekStart: typeof item.weekStart === "string" ? item.weekStart : null,
     plannedForDates: Array.isArray(item.plannedForDates)
       ? item.plannedForDates.filter((d): d is string => typeof d === "string")
       : [],
@@ -131,19 +199,52 @@ export function loadLeftoverIngredients(): LeftoverIngredient[] {
 
 export function replaceLeftoverIngredients(list: LeftoverIngredient[]): void {
   if (typeof window === "undefined") return;
-  persist(list);
+  persist(list.map((item) => migrateItem(item)).filter((item): item is LeftoverIngredient => item !== null));
 }
 
+/** 指定週の提案対象余り食材（週未設定レガシーは含めない） */
 export function getActiveLeftoversForProposal(
   householdId = "local",
+  weekStart?: string | null,
 ): LeftoverIngredient[] {
-  return loadLeftoverIngredients().filter(
-    (item) =>
-      (item.householdId === householdId || item.householdId === "local") &&
-      item.includeInProposal &&
-      (item.status === "active" || item.status === "planned") &&
-      item.name.trim() !== "",
-  );
+  return loadLeftoverIngredients().filter((item) => {
+    if (item.householdId !== householdId && item.householdId !== "local") {
+      return false;
+    }
+    if (!item.includeInProposal) return false;
+    if (item.status !== "active" && item.status !== "planned") return false;
+    if (item.name.trim() === "") return false;
+    if (weekStart) {
+      return item.weekStart === weekStart;
+    }
+    // weekStart 未指定時は週付きのもののみ（持ち越し防止）
+    return item.weekStart != null && item.weekStart !== "";
+  });
+}
+
+/** 前回入力の候補（明示選択用。自動適用しない） */
+export function getPreviousLeftoverNameSuggestions(
+  currentWeekStart: string,
+  limit = 8,
+): string[] {
+  const list = loadLeftoverIngredients()
+    .filter(
+      (item) =>
+        item.weekStart != null &&
+        item.weekStart !== currentWeekStart &&
+        item.name.trim() !== "",
+    )
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const item of list) {
+    const key = item.normalizedName || normalizeIngredientName(item.name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    names.push(item.name);
+    if (names.length >= limit) break;
+  }
+  return names;
 }
 
 export function saveLeftoverIngredient(
@@ -160,17 +261,32 @@ export function saveLeftoverIngredient(
   const list = loadLeftoverIngredients();
   const id = input.id ?? crypto.randomUUID();
   const existing = list.find((item) => item.id === id);
+  const resolved = resolveNames(input.rawName ?? input.name);
+  const quantityText =
+    input.quantityText?.trim() ||
+    (input.quantity != null
+      ? `${input.quantity}${input.unit?.trim() ?? ""}`
+      : null);
+  const parsed = parseQuantityText(quantityText);
   const next: LeftoverIngredient = {
     id,
     householdId: input.householdId ?? existing?.householdId ?? "local",
-    name: input.name.trim(),
-    foodMasterId: input.foodMasterId ?? existing?.foodMasterId ?? null,
-    quantity: input.quantity,
-    unit: input.unit?.trim() || null,
-    priority: input.priority,
+    name: resolved.name,
+    rawName: resolved.rawName,
+    normalizedName: resolved.normalizedName,
+    foodCode: input.foodCode ?? resolved.foodCode,
+    foodMasterId: input.foodMasterId ?? resolved.foodMasterId,
+    quantityText,
+    quantity: input.quantity ?? parsed.quantity,
+    unit: input.unit?.trim() || parsed.unit,
+    priority: "soon",
     notes: input.notes?.trim() || null,
-    source: input.source ?? existing?.source ?? "manual",
+    source: input.source ?? existing?.source ?? "manual_meal_plan",
     status: input.status ?? existing?.status ?? "active",
+    weekStart:
+      input.weekStart !== undefined
+        ? input.weekStart
+        : (existing?.weekStart ?? null),
     plannedForDates: input.plannedForDates ?? existing?.plannedForDates ?? [],
     migratedFromInventoryId:
       input.migratedFromInventoryId ?? existing?.migratedFromInventoryId ?? null,
@@ -189,18 +305,47 @@ export function updateLeftoverIngredient(
   const list = loadLeftoverIngredients();
   const existing = list.find((item) => item.id === id);
   if (!existing) return null;
-  const next: LeftoverIngredient = {
+  let next: LeftoverIngredient = {
     ...existing,
     ...patch,
     id: existing.id,
+    priority: "soon",
     updatedAt: new Date().toISOString(),
   };
+  if (patch.name != null || patch.rawName != null) {
+    const resolved = resolveNames(patch.rawName ?? patch.name ?? existing.rawName);
+    next = {
+      ...next,
+      name: resolved.name,
+      rawName: resolved.rawName,
+      normalizedName: resolved.normalizedName,
+      foodMasterId: resolved.foodMasterId ?? next.foodMasterId,
+      foodCode: resolved.foodCode ?? next.foodCode,
+    };
+  }
+  if (patch.quantityText !== undefined) {
+    const parsed = parseQuantityText(patch.quantityText);
+    next = {
+      ...next,
+      quantityText: patch.quantityText,
+      quantity: parsed.quantity ?? next.quantity,
+      unit: parsed.unit ?? next.unit,
+    };
+  }
   persist([next, ...list.filter((item) => item.id !== id)]);
   return next;
 }
 
 export function deleteLeftoverIngredient(id: string): void {
   persist(loadLeftoverIngredients().filter((item) => item.id !== id));
+}
+
+export function clearLeftoversForWeek(weekStart: string): number {
+  const before = loadLeftoverIngredients();
+  const next = before.filter((item) => item.weekStart !== weekStart);
+  const removed = before.length - next.length;
+  if (removed > 0) persist(next);
+  return removed;
 }
 
 export function markLeftoversPlanned(
@@ -215,7 +360,10 @@ export function markLeftoversPlanned(
     const plannedForDates = [...new Set([...item.plannedForDates, ...dates])];
     return {
       ...item,
-      status: item.status === "used" || item.status === "dismissed" ? item.status : ("planned" as const),
+      status:
+        item.status === "used" || item.status === "dismissed"
+          ? item.status
+          : ("planned" as const),
       plannedForDates,
       updatedAt: new Date().toISOString(),
     };
@@ -242,8 +390,8 @@ export function markLeftoversUsed(leftoverIds: string[]): number {
 }
 
 /**
- * 既存冷蔵庫在庫 → 余り食材へ冪等移行。
- * 常備品っぽい名前は移行しない。元の inventory は削除しない。
+ * 既存冷蔵庫在庫 → 余り食材へ冪等移行（詳細設定用）。
+ * 通常の献立入力 UI では呼ばない。
  */
 export function migrateInventoryToLeftovers(householdId = "local"): {
   migrated: number;
@@ -270,24 +418,31 @@ export function migrateInventoryToLeftovers(householdId = "local"): {
       continue;
     }
     const { quantity, unit } = amountToQuantityUnit(item.amount, item.unit);
+    const resolved = resolveNames(item.name);
     const now = new Date().toISOString();
     additions.push({
       id: crypto.randomUUID(),
       householdId,
-      name: item.name,
-      foodMasterId: null,
+      name: resolved.name,
+      rawName: resolved.rawName,
+      normalizedName: resolved.normalizedName,
+      foodCode: resolved.foodCode,
+      foodMasterId: resolved.foodMasterId,
+      quantityText:
+        quantity != null ? `${quantity}${unit ?? ""}` : null,
       quantity,
       unit,
-      priority: inventoryPriorityToLeftover(item.priority),
+      priority: "soon",
       notes:
         item.amount?.kind === "preset"
           ? `残量目安: ${item.amount.preset}`
           : null,
       source: "migrated_fridge",
       status: "active",
+      weekStart: null,
       plannedForDates: [],
       migratedFromInventoryId: item.id,
-      includeInProposal: true,
+      includeInProposal: false,
       createdAt: item.createdAt || now,
       updatedAt: now,
     });
@@ -300,7 +455,7 @@ export function migrateInventoryToLeftovers(householdId = "local"): {
   return { migrated, skipped };
 }
 
-/** InventoryItem 形式へ変換（v3 スコア互換用） */
+/** InventoryItem 形式へ変換（互換用） */
 export function leftoversToInventoryCompat(
   leftovers: LeftoverIngredient[],
 ): InventoryItem[] {
@@ -312,7 +467,7 @@ export function leftoversToInventoryCompat(
         ? { kind: "quantity" as const, value: item.quantity }
         : null,
     unit: item.unit ?? "",
-    priority: item.priority === "must_use" || item.priority === "soon",
+    priority: true,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }));

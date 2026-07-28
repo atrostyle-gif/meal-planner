@@ -9,6 +9,11 @@ import {
   formatQuantityWithUnit,
   toGramsEquivalent,
 } from "@/lib/food-budget/unit-convert";
+import {
+  foodMasterMatchKeys,
+  resolveFoodMaster,
+} from "@/lib/food-master/resolve";
+import { loadFoodMasters } from "@/lib/food-master/store";
 import { normalizeIngredientName } from "@/lib/shopping/normalize-ingredient-name";
 import { generateAggregatedIngredientsFromMealPlan } from "@/lib/shopping/generate-shopping-list";
 import { isPantryIngredientType } from "@/types/ingredient-meta";
@@ -45,10 +50,13 @@ function inventoryGramsForName(
   name: string,
   inventory: InventoryItem[],
 ): number {
-  const key = normalizeIngredientName(name);
+  const keys = new Set(foodMasterMatchKeys(name, loadFoodMasters()));
   let total = 0;
   for (const item of inventory) {
-    if (normalizeIngredientName(item.name) !== key) continue;
+    const itemKey = normalizeIngredientName(item.name);
+    if (!keys.has(itemKey) && !keys.has(item.name.trim().toLowerCase())) {
+      continue;
+    }
     if (item.amount?.kind === "quantity") {
       const grams = toGramsEquivalent(item.amount.value, item.unit);
       if (grams != null) total += grams;
@@ -274,9 +282,15 @@ export function calculateWeekBudgetSummary(
       pricedLineCount += 1;
     }
 
+    const masterHit = resolveFoodMaster(group.ingredientName, {
+      masters: loadFoodMasters(),
+    });
     const freezable =
-      /肉|豚|牛|鶏|挽|ひき|魚|エビ|イカ/.test(group.ingredientName) ||
-      group.ingredientType === "pantryFood";
+      masterHit.master?.freezable === "recommended" ||
+      masterHit.master?.freezable === "possible" ||
+      ((masterHit.master == null || masterHit.master.freezable == null) &&
+        (/肉|豚|牛|鶏|挽|ひき|魚|エビ|イカ/.test(group.ingredientName) ||
+          group.ingredientType === "pantryFood"));
 
     lines.push({
       ingredientName: group.ingredientName,

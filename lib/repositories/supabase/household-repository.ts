@@ -87,6 +87,10 @@ export function createSupabaseHouseholdRepository(
         createdBy: data.created_by,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
+        defaultMealServings:
+          typeof data.default_meal_servings === "number"
+            ? data.default_meal_servings
+            : null,
       } satisfies Household;
     },
 

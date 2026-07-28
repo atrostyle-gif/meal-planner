@@ -1,4 +1,5 @@
 import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
+import { loadFamilyMemberProfiles } from "@/lib/family-member-profiles";
 import {
   DEFAULT_HOUSEHOLD_PREFERENCES,
   isActivityLevel,
@@ -16,6 +17,29 @@ const listeners = new Set<Listener>();
 
 let cachedRaw: string | null | undefined = undefined;
 let cachedPrefs: HouseholdPreferences | null = null;
+
+const MIN_SERVINGS = 1;
+const MAX_SERVINGS = 20;
+
+function clampServings(value: number): number {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_HOUSEHOLD_PREFERENCES.defaultMealServings;
+  }
+  return Math.min(MAX_SERVINGS, Math.max(MIN_SERVINGS, Math.round(value)));
+}
+
+function pickDefaultMealServings(
+  rawDefault: number | null,
+  familyCount: number,
+): number {
+  if (rawDefault != null && Number.isFinite(rawDefault) && rawDefault >= 1) {
+    return clampServings(rawDefault);
+  }
+  if (familyCount >= 1) {
+    return clampServings(familyCount);
+  }
+  return DEFAULT_HOUSEHOLD_PREFERENCES.defaultMealServings;
+}
 
 function migrateMember(value: unknown): HouseholdMemberProfile | null {
   if (typeof value !== "object" || value === null) {
@@ -50,17 +74,32 @@ function migratePreferences(value: unknown): HouseholdPreferences {
         .filter((entry): entry is HouseholdMemberProfile => entry !== null)
     : [];
 
-  const servingCount =
-    typeof item.servingCount === "number" &&
-    Number.isInteger(item.servingCount) &&
-    item.servingCount >= 1
-      ? item.servingCount
-      : members.length > 0
-        ? members.length
-        : DEFAULT_HOUSEHOLD_PREFERENCES.servingCount;
+  let familyCount = 0;
+  try {
+    familyCount = loadFamilyMemberProfiles().length;
+  } catch {
+    familyCount = members.length;
+  }
+  if (familyCount <= 0) {
+    familyCount = members.length;
+  }
+
+  const rawDefault =
+    typeof item.defaultMealServings === "number"
+      ? item.defaultMealServings
+      : typeof item.servingCount === "number"
+        ? item.servingCount
+        : null;
+
+  const defaultMealServings = pickDefaultMealServings(
+    rawDefault,
+    familyCount,
+  );
 
   return {
-    servingCount,
+    defaultMealServings,
+    // 既存エンジン互換: servingCount は通常人数と同値
+    servingCount: defaultMealServings,
     members,
     healthGoal: isHealthGoal(item.healthGoal)
       ? item.healthGoal
@@ -97,8 +136,20 @@ export function loadHouseholdPreferences(): HouseholdPreferences {
   }
 
   if (!hasStorageKey(STORAGE_KEYS.mealPreferences)) {
+    let familyCount = 0;
+    try {
+      familyCount = loadFamilyMemberProfiles().length;
+    } catch {
+      familyCount = 0;
+    }
+    const defaultMealServings = pickDefaultMealServings(
+      null,
+      familyCount,
+    );
     const initial: HouseholdPreferences = {
       ...DEFAULT_HOUSEHOLD_PREFERENCES,
+      defaultMealServings,
+      servingCount: defaultMealServings,
       updatedAt: new Date().toISOString(),
     };
     writePrefs(initial);
@@ -122,9 +173,17 @@ export function saveHouseholdPreferences(
   >,
 ): HouseholdPreferences {
   const current = loadHouseholdPreferences();
+  const nextDefaultRaw =
+    patch.defaultMealServings ??
+    patch.servingCount ??
+    current.defaultMealServings;
+  const defaultMealServings = clampServings(nextDefaultRaw);
+
   const next: HouseholdPreferences = {
     ...current,
     ...patch,
+    defaultMealServings,
+    servingCount: defaultMealServings,
     updatedAt: new Date().toISOString(),
   };
   writePrefs(next);

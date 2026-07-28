@@ -56,6 +56,9 @@ function makePlan(recipeIds: string[]): MealPlan {
   ].map((date, index) => ({
     date,
     locked: false,
+    // テスト用レシピは2人分基準。日別人数も2人にして倍率1にする
+    servings: 2,
+    servingsMode: "custom" as const,
     items:
       index < recipeIds.length
         ? [
@@ -183,7 +186,11 @@ describe("食費予算・大容量購入", () => {
         updatedAt: "2026-07-01T00:00:00.000Z",
       },
     });
-    const line = summary.lines.find((item) => item.ingredientName === "豚こま");
+    const line = summary.lines.find(
+      (item) =>
+        item.ingredientName === "豚こま" ||
+        item.ingredientName === "豚こま切れ",
+    );
     expect(line).toBeTruthy();
     // 必要600g - 在庫200g = 400g → 1kgパック購入
     expect(line?.purchaseGrams).toBe(1000);

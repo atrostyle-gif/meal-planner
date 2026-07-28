@@ -108,6 +108,7 @@ function scheduleStub(
 }
 
 const basePreferences: HouseholdPreferences = {
+  defaultMealServings: 4,
   servingCount: 4,
   members: [],
   healthGoal: "通常",

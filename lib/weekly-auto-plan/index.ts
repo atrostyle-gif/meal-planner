@@ -20,3 +20,15 @@ export {
   isFishRecipe,
   isMeatRecipe,
 } from "@/lib/weekly-auto-plan/recipe-features";
+export {
+  recommendRecipesForSlot,
+  type RecommendCandidate,
+  type RecommendTabId,
+} from "@/lib/weekly-auto-plan/recommend";
+export { evaluateDayCombo } from "@/lib/weekly-auto-plan/combo";
+export { scoreMealPlanTags } from "@/lib/weekly-auto-plan/plan-tags-score";
+export {
+  buildMealSelectionReason,
+  aggregateDaySelectionReasons,
+  formatReasonsForUi,
+} from "@/lib/weekly-auto-plan/explain";

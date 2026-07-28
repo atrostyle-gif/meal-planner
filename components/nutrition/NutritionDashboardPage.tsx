@@ -68,7 +68,6 @@ export function NutritionDashboardPage() {
           if (!recipe) return null;
           return getCachedRecipeNutrition(recipe, {
             masters,
-            servingsOverride: item.servingsOverride,
           });
         })
         .filter((n): n is NonNullable<typeof n> => n !== null);
@@ -113,10 +112,12 @@ export function NutritionDashboardPage() {
     <div className="space-y-4">
       <header className="flex items-center justify-between gap-2">
         <div>
-          <Link href="/meals" className="text-sm text-primary">
-            ← 献立
+          <Link href="/data" className="text-sm text-primary">
+            ← データ
           </Link>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight">栄養</h1>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight">
+            栄養ダッシュボード
+          </h1>
         </div>
         <HelpButton onClick={() => setShowHelp(true)} />
       </header>
@@ -163,6 +164,16 @@ export function NutritionDashboardPage() {
           })}
         </ul>
       </section>
+
+      <Link
+        href="/data/ai"
+        className="block rounded-2xl bg-surface-container-lowest px-4 py-3 ring-1 ring-outline-variant"
+      >
+        <p className="text-sm font-semibold">AI分析</p>
+        <p className="mt-0.5 text-xs text-on-surface-variant">
+          この家庭の学習傾向を見る
+        </p>
+      </Link>
 
       <button
         type="button"

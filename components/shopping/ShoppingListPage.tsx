@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import { CompactMenu } from "@/components/meals/CompactMenu";
@@ -31,6 +32,7 @@ import { useInventory } from "@/lib/use-inventory";
 import { useIsClient } from "@/lib/use-is-client";
 import { useRecipes } from "@/lib/use-recipes";
 import { useShoppingList } from "@/lib/use-shopping-lists";
+import { getReceiptRepository } from "@/lib/receipt/receipt-repository";
 import { isPantryIngredientType, type StockStatus } from "@/types/ingredient-meta";
 import type { ShoppingListItem } from "@/types/shopping-list";
 
@@ -398,11 +400,6 @@ export function ShoppingListPage() {
                 label: "常備品",
                 onClick: () => router.push("/settings/pantry"),
               },
-              {
-                id: "receipt",
-                label: "レシート取込",
-                onClick: () => router.push("/receipts/import"),
-              },
             ]}
           />
         </div>
@@ -504,8 +501,64 @@ export function ShoppingListPage() {
               </ShoppingSection>
             </div>
           )}
+
+          <ShoppingReceiptSection />
         </>
       )}
+
+      {!list ? <ShoppingReceiptSection /> : null}
     </div>
+  );
+}
+
+function ShoppingReceiptSection() {
+  const recent = getReceiptRepository()
+    .listReceipts()
+    .slice()
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 5);
+
+  return (
+    <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
+      <h2 className="text-base font-semibold">レシート</h2>
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          href="/receipts/import?mode=capture"
+          className="rounded-2xl bg-primary px-4 py-3.5 text-center text-sm font-semibold text-on-primary"
+        >
+          撮影
+        </Link>
+        <Link
+          href="/receipts/import"
+          className="rounded-2xl bg-secondary-container px-4 py-3.5 text-center text-sm font-semibold text-on-secondary-container"
+        >
+          画像を選択
+        </Link>
+      </div>
+      {recent.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-on-surface-variant">最近の購入</p>
+          <ul className="space-y-1.5 text-sm">
+            {recent.map((receipt) => (
+              <li
+                key={receipt.id}
+                className="flex justify-between gap-2 text-on-surface-variant"
+              >
+                <span className="truncate">{receipt.storeName || "店舗未設定"}</span>
+                <span className="shrink-0">
+                  {receipt.totalAmountYen != null
+                    ? `${Math.round(receipt.totalAmountYen).toLocaleString("ja-JP")}円`
+                    : "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="text-xs text-on-surface-variant">
+          まだレシートがありません
+        </p>
+      )}
+    </section>
   );
 }

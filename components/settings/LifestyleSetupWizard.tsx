@@ -18,9 +18,9 @@ const steps = [
     "/settings/cooking-members",
   ],
   [
-    "週間スケジュール",
-    "曜日ごとの担当者と時間の目安を決めます。",
-    "/settings/weekly-schedule",
+    "担当曜日",
+    "誰がどの曜日に料理するかは家族プロフィールで設定します。",
+    "/settings/family-profiles?section=members",
   ],
   [
     "レシピの作りやすさ",

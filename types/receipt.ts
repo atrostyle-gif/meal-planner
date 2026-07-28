@@ -12,6 +12,8 @@ export type ReceiptDraft = {
   taxYen: number | null;
   totalAmountYen: number | null;
   paymentMethod: string | null;
+  /** ポイント（取得できれば） */
+  points?: number | null;
   items: ReceiptItemDraft[];
   rawText: string | null;
   confidence: number | null;
@@ -30,6 +32,8 @@ export type ReceiptItemDraft = {
   totalPriceYen: number | null;
   discountYen: number | null;
   taxIncluded: boolean | null;
+  /** 軽減税率対象なら true */
+  reducedTax?: boolean | null;
   confidence: number | null;
   warnings: string[];
 };

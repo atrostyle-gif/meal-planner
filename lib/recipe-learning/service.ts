@@ -1,4 +1,5 @@
 import { addCookingHistory, loadCookingHistory } from "@/lib/cooking-history";
+import { refreshFamilyLearningProfile } from "@/lib/family-learning/store";
 import {
   getFeedbacksForRecipe,
   saveCookingFeedback,
@@ -76,6 +77,7 @@ export function recordCookingWithFeedback(
   };
   saveCookingFeedback(feedback);
   refreshRecipeLearningStats(input.recipeId);
+  refreshFamilyLearningProfile(input.householdId);
   return { historyId: history.id, feedback };
 }
 

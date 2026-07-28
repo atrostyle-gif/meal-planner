@@ -18,11 +18,20 @@ import {
   scoreBudgetSupport,
   type BudgetScoreContext,
 } from "@/lib/food-budget/score";
+import {
+  evaluateLeftoverIngredientUsage,
+  evaluateRepeatedIngredientPenalty,
+} from "@/lib/leftover-match";
 import type { DiabetesMealSupportSettings } from "@/types/diabetes-meal-support";
 import {
   DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
 } from "@/types/diabetes-meal-support";
+import type { FoodAliasMapping, FoodIngredientMaster } from "@/types/food-master";
+import type { LeftoverIngredient } from "@/types/leftover-ingredient";
+import type { MealPlanTagId } from "@/types/meal-plan-tags";
 import type { RecipeCourse } from "@/types/recipe";
+import { scoreMealPlanTags } from "@/lib/weekly-auto-plan/plan-tags-score";
+import { scoreFamilyLearning } from "@/lib/family-learning/score";
 
 export type ScoreContext = {
   dayIndex: number;
@@ -34,6 +43,11 @@ export type ScoreContext = {
   weekHasFish: boolean;
   recentRecipeIds: Set<string>;
   inventory: InventoryItem[];
+  /** 今週使い切りたい余り食材（空なら影響なし） */
+  leftovers?: LeftoverIngredient[];
+  leftoverUsageCounts?: Record<string, number>;
+  foodMasters?: FoodIngredientMaster[];
+  foodAliasMappings?: FoodAliasMapping[];
   /** 健康・体重管理サポート採点（OFF時は影響なし） */
   diabetesSettings?: DiabetesMealSupportSettings;
   dayCoursesSoFar?: RecipeCourse[];
@@ -42,6 +56,23 @@ export type ScoreContext = {
   targetCourse?: RecipeCourse;
   /** 予算・大容量購入の採点（未指定ならスキップ） */
   budgetContext?: BudgetScoreContext;
+  /** その日の献立人数（任意・小さめの加点） */
+  plannedServings?: number;
+  /** 献立作成タグ（任意） */
+  planTags?: readonly MealPlanTagId[];
+  /** 家族プロフィールから集約した学習ヒント（任意） */
+  familyHints?: {
+    allergies: string[];
+    dislikedIngredients: string[];
+    likedIngredients: string[];
+    foodPreferences: string[];
+    healthFlags: string[];
+    aiNotes: string[];
+  };
+  /** 家庭ごとの学習プロファイル（任意） */
+  familyLearning?: import("@/types/family-learning").FamilyLearningProfile | null;
+  /** その日の料理担当メンバーID */
+  cookMemberId?: string | null;
 };
 
 export type ScoredCandidate = {
@@ -157,6 +188,26 @@ export function scoreRecipeForSlot(
     score += 8;
   }
 
+  // 日別人数との相性（小さく、強制変更はしない）
+  if (
+    ctx.plannedServings != null &&
+    typeof recipe.servings === "number" &&
+    recipe.servings > 0
+  ) {
+    const diff = Math.abs(recipe.servings - ctx.plannedServings);
+    if (diff === 0) {
+      score += 4;
+    } else if (diff === 1) {
+      score += 2;
+    } else if (ctx.plannedServings >= 5 && recipe.servings >= 4) {
+      score += 2;
+      reasons.push({ detail: "大人数向けの分量感" });
+    } else if (ctx.plannedServings <= 2 && recipe.servings <= 3) {
+      score += 2;
+      reasons.push({ detail: "少人数でも作りやすい分量" });
+    }
+  }
+
   // 学習統計（フィードバック蓄積）
   if (recipe.familyFavoriteScore != null && recipe.familyFavoriteScore >= 4) {
     score += 14;
@@ -239,6 +290,45 @@ export function scoreRecipeForSlot(
     }
   }
 
+  // 余り食材（今週使い切り）— 入力なしなら影響なし
+  const leftovers = ctx.leftovers ?? [];
+  if (leftovers.length > 0) {
+    const leftoverScore = evaluateLeftoverIngredientUsage(
+      recipe,
+      leftovers,
+      ctx.foodMasters ?? [],
+      ctx.foodAliasMappings ?? [],
+      { usageCounts: ctx.leftoverUsageCounts ?? {} },
+    );
+    const leftoverRepeat = evaluateRepeatedIngredientPenalty(
+      recipe,
+      leftovers,
+      ctx.leftoverUsageCounts ?? {},
+      ctx.foodMasters ?? [],
+      ctx.foodAliasMappings ?? [],
+    );
+    score += leftoverScore.points + leftoverRepeat.points;
+    for (const detail of leftoverScore.reasons) {
+      const badge = leftoverScore.badges.includes("余り食材活用")
+        ? ("余り食材活用" as const)
+        : leftoverScore.badges.includes("食材使い切り")
+          ? ("食材使い切り" as const)
+          : undefined;
+      reasons.push({ detail, badge });
+    }
+    for (const detail of leftoverRepeat.reasons) {
+      reasons.push({ detail });
+    }
+    for (const badge of leftoverScore.badges) {
+      if (
+        badge === "余り食材活用" ||
+        badge === "食材使い切り"
+      ) {
+        badges.push(badge);
+      }
+    }
+  }
+
   if (
     recipe.tags.some((tag) => /作り置き|冷凍|保存/.test(tag)) ||
     /作り置き/.test(recipe.name)
@@ -271,6 +361,59 @@ export function scoreRecipeForSlot(
     score += budget.scoreDelta;
     reasons.push(...budget.reasons);
     badges.push(...budget.badges);
+  }
+
+  if (ctx.planTags && ctx.planTags.length > 0) {
+    const tagScore = scoreMealPlanTags(recipe, ctx.planTags);
+    score += tagScore.delta;
+    reasons.push(...tagScore.reasons);
+  }
+
+  if (ctx.familyHints) {
+    const hints = ctx.familyHints;
+    const haystack = `${recipe.name} ${recipe.tags.join(" ")} ${recipe.category} ${recipe.ingredients.map((i) => i.name).join(" ")}`;
+    for (const liked of hints.likedIngredients.slice(0, 8)) {
+      if (liked && haystack.includes(liked)) {
+        score += 8;
+        reasons.push({ detail: `好きな食材（${liked}）を使えます` });
+        break;
+      }
+    }
+    for (const disliked of hints.dislikedIngredients.slice(0, 8)) {
+      if (disliked && haystack.includes(disliked)) {
+        score -= 22;
+        reasons.push({ detail: `苦手な食材（${disliked}）を含みます` });
+        break;
+      }
+    }
+    for (const pref of hints.foodPreferences) {
+      if (pref && (recipe.category.includes(pref.replace("料理", "")) || haystack.includes(pref))) {
+        score += 7;
+        reasons.push({ detail: `好みの「${pref}」に合います` });
+        break;
+      }
+    }
+    if (hints.healthFlags.includes("dieting") && /揚げ|フライ|天ぷら/.test(haystack)) {
+      score -= 10;
+      reasons.push({ detail: "ダイエット中のため揚げ物は控えめに" });
+    }
+    if (hints.healthFlags.includes("low_salt") && /減塩|薄味/.test(haystack)) {
+      score += 6;
+      reasons.push({ detail: "減塩の希望に合います" });
+    }
+    if (hints.healthFlags.includes("high_protein") && (isMeatRecipe(recipe) || isFishRecipe(recipe))) {
+      score += 6;
+      reasons.push({ detail: "高たんぱくの希望に合います" });
+    }
+  }
+
+  if (ctx.familyLearning) {
+    const learned = scoreFamilyLearning(recipe, ctx.familyLearning, {
+      dayIndex: ctx.dayIndex,
+      cookMemberId: ctx.cookMemberId,
+    });
+    score += learned.delta;
+    reasons.push(...learned.reasons);
   }
 
   // バッジ重複除去

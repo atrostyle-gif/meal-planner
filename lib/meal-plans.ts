@@ -2,6 +2,13 @@ import { getWeekDates, getWeekStart } from "@/lib/date";
 import { mealPlannerEngine } from "@/lib/meal-planner-engine";
 import { loadHouseholdPreferences } from "@/lib/meal-preferences";
 import { loadRecipes } from "@/lib/recipes";
+import {
+  buildDayServingsPatch,
+  buildResetDayServingsPatch,
+  clampMealServings,
+  isServingsMode,
+  loadDefaultMealServings,
+} from "@/lib/servings/resolve";
 import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
 import {
   DEFAULT_RECIPE_COURSE,
@@ -15,11 +22,20 @@ import type {
   MealDishItem,
   MealPlan,
   MealSource,
+  ServingsMode,
 } from "@/types/meal-plan";
 import type { HouseholdPreferences } from "@/types/meal-preferences";
 import type { Recipe } from "@/types/recipe";
 import { isBudgetMode } from "@/types/food-budget";
-
+import {
+  isMealDecisionExplanation,
+  isMealSelectionReason,
+  type MealSelectionReason,
+} from "@/types/meal-decision-explanation";
+import {
+  selectionReasonFromLegacyStrings,
+} from "@/lib/weekly-auto-plan/explain";
+import { recordMealChangeEvent } from "@/lib/family-learning/meal-change-events";
 type Listener = () => void;
 
 let cachedRaw: string | null | undefined = undefined;
@@ -105,6 +121,25 @@ function migrateDishItem(
           (entry): entry is string => typeof entry === "string",
         )
       : undefined,
+    decisionExplanation: isMealSelectionReason(item.decisionExplanation)
+      ? item.decisionExplanation
+      : Array.isArray(item.selectionReasons) || Array.isArray(item.engineReasons)
+        ? selectionReasonFromLegacyStrings(
+            [
+              ...(Array.isArray(item.selectionReasons)
+                ? item.selectionReasons.filter(
+                    (e): e is string => typeof e === "string",
+                  )
+                : []),
+              ...(Array.isArray(item.engineReasons)
+                ? item.engineReasons.filter(
+                    (e): e is string => typeof e === "string",
+                  )
+                : []),
+            ],
+            typeof item.engineScore === "number" ? item.engineScore : 60,
+          )
+        : undefined,
   };
 }
 
@@ -127,6 +162,9 @@ function migrateRecommendation(
     reasons: Array.isArray(item.reasons)
       ? item.reasons.filter((entry): entry is string => typeof entry === "string")
       : [],
+    decisionDetails: Array.isArray(item.decisionDetails)
+      ? item.decisionDetails.filter(isMealDecisionExplanation)
+      : undefined,
   };
 }
 
@@ -160,6 +198,17 @@ function migrateDayMeal(value: unknown, recipes: Recipe[]): DayMeal | null {
         ? item.participantMemberIds.filter(
             (id): id is string => typeof id === "string",
           )
+        : undefined,
+      servings:
+        typeof item.servings === "number" &&
+        Number.isFinite(item.servings) &&
+        item.servings >= 1
+          ? clampMealServings(item.servings)
+          : item.servings === null
+            ? null
+            : undefined,
+      servingsMode: isServingsMode(item.servingsMode)
+        ? item.servingsMode
         : undefined,
     };
   }
@@ -326,6 +375,8 @@ function createEmptyDays(weekStart: string): DayMeal[] {
     locked: false,
     items: [],
     recommendation: null,
+    servings: null,
+    servingsMode: "default" as ServingsMode,
   }));
 }
 
@@ -480,6 +531,82 @@ export function toggleDayLocked(weekStart: string, date: string): MealPlan {
   );
 }
 
+/**
+ * 日付単位の食事人数を設定する。
+ * 通常人数と同じ値なら default に戻す。
+ */
+export function setDayMealServings(
+  weekStart: string,
+  date: string,
+  servings: number,
+  defaultMealServings: number = loadDefaultMealServings(),
+): MealPlan {
+  const patch = buildDayServingsPatch(servings, defaultMealServings);
+  return updatePlanDays(weekStart, (days) =>
+    days.map((day) =>
+      day.date === date
+        ? {
+            ...day,
+            servings: patch.servings,
+            servingsMode: patch.servingsMode,
+          }
+        : day,
+    ),
+  );
+}
+
+/** 日付単位の食事人数を通常人数に戻す */
+export function resetDayMealServings(
+  weekStart: string,
+  date: string,
+): MealPlan {
+  const patch = buildResetDayServingsPatch();
+  return updatePlanDays(weekStart, (days) =>
+    days.map((day) =>
+      day.date === date
+        ? {
+            ...day,
+            servings: patch.servings,
+            servingsMode: patch.servingsMode,
+          }
+        : day,
+    ),
+  );
+}
+
+/**
+ * 週の各日の人数を一括設定。
+ * entries: date → servings（null なら通常人数に戻す）
+ */
+export function setWeekMealServings(
+  weekStart: string,
+  entries: Record<string, number | null>,
+  defaultMealServings: number = loadDefaultMealServings(),
+): MealPlan {
+  return updatePlanDays(weekStart, (days) =>
+    days.map((day) => {
+      if (!(day.date in entries)) {
+        return day;
+      }
+      const value = entries[day.date];
+      if (value == null) {
+        const patch = buildResetDayServingsPatch();
+        return {
+          ...day,
+          servings: patch.servings,
+          servingsMode: patch.servingsMode,
+        };
+      }
+      const patch = buildDayServingsPatch(value, defaultMealServings);
+      return {
+        ...day,
+        servings: patch.servings,
+        servingsMode: patch.servingsMode,
+      };
+    }),
+  );
+}
+
 /** レシピを1品追加 */
 export function addDishFromRecipe(
   weekStart: string,
@@ -497,6 +624,95 @@ export function addDishFromRecipe(
       source: "manual",
     },
   ]);
+}
+
+/**
+ * 指定コースの枠にレシピを入れる（既存があれば差し替え）。
+ */
+export function upsertDishForCourse(
+  weekStart: string,
+  date: string,
+  course: RecipeCourse,
+  recipe: Recipe,
+  options?: {
+    slotId?: string;
+    engineReasons?: string[];
+    decisionExplanation?: MealSelectionReason | null;
+  },
+): MealPlan {
+  const slotId = options?.slotId;
+  const engineReasons = options?.engineReasons;
+  const decisionExplanation = options?.decisionExplanation;
+  const existingBefore = (() => {
+    const plan = getOrCreateMealPlan(weekStart);
+    const day = plan.days.find((d) => d.date === date);
+    if (!day) return null;
+    return slotId
+      ? day.items.find((item) => item.id === slotId) ?? null
+      : day.items.find((item) => item.course === course) ?? null;
+  })();
+  const fromRecipeId = existingBefore?.recipeId ?? null;
+
+  const updated = updateDayItems(weekStart, date, (items) => {
+    const existingIndex = slotId
+      ? items.findIndex((item) => item.id === slotId)
+      : items.findIndex((item) => item.course === course);
+
+    if (existingIndex >= 0) {
+      return items.map((item, index) =>
+        index === existingIndex
+          ? {
+              ...item,
+              recipeId: recipe.id,
+              course,
+              customName: null,
+              source: "manual" as const,
+              engineScore: decisionExplanation?.score,
+              engineReasons:
+                engineReasons ??
+                decisionExplanation?.reasons.map((r) => r.message),
+              selectionReasons:
+                engineReasons ??
+                decisionExplanation?.reasons.map((r) => r.message),
+              decisionExplanation: decisionExplanation ?? undefined,
+            }
+          : item,
+      );
+    }
+
+    return [
+      ...items,
+      {
+        id: crypto.randomUUID(),
+        recipeId: recipe.id,
+        course,
+        order: items.length + 1,
+        customName: null,
+        source: "manual" as const,
+        engineScore: decisionExplanation?.score,
+        engineReasons:
+          engineReasons ??
+          decisionExplanation?.reasons.map((r) => r.message),
+        selectionReasons:
+          engineReasons ??
+          decisionExplanation?.reasons.map((r) => r.message),
+        decisionExplanation: decisionExplanation ?? undefined,
+      },
+    ];
+  });
+
+  if (fromRecipeId && fromRecipeId !== recipe.id) {
+    recordMealChangeEvent({
+      householdId: "local",
+      date,
+      course,
+      fromRecipeId,
+      toRecipeId: recipe.id,
+      source: decisionExplanation ? "recommend" : "manual",
+    });
+  }
+
+  return updated;
 }
 
 /** 料理を削除 */

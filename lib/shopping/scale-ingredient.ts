@@ -1,44 +1,41 @@
 import { formatQuantity } from "@/lib/ingredient";
+import { getServingScale } from "@/lib/servings/resolve";
 import { QUANTITY_OPTIONAL_UNITS } from "@/types/recipe";
 
 /**
  * 献立の人数補正倍率を計算する。
- * servingsOverride が無い／不正なら 1。
+ * plannedServings（旧 servingsOverride）が無い／不正、または recipe 人数不明なら 1。
+ *
+ * @deprecated 新規は getServingScale({ recipeServings, plannedServings }) を使う
  */
 export function getServingsScale(
   recipeServings: number,
   servingsOverride: number | null | undefined,
 ): number {
-  if (
-    typeof servingsOverride !== "number" ||
-    !Number.isFinite(servingsOverride) ||
-    servingsOverride <= 0
-  ) {
-    return 1;
-  }
-
-  if (!Number.isFinite(recipeServings) || recipeServings <= 0) {
-    return 1;
-  }
-
-  return servingsOverride / recipeServings;
+  return getServingScale({
+    recipeServings,
+    plannedServings: servingsOverride,
+  }).scale;
 }
 
 /**
- * quantity × servingsOverride / recipe.servings
+ * quantity × plannedServings / recipe.servings
  * 未入力や非数値はそのまま null。
  */
 export function scaleIngredientQuantity(
   quantity: number | null,
   recipeServings: number,
-  servingsOverride: number | null | undefined,
+  plannedServings: number | null | undefined,
 ): number | null {
   if (quantity === null || !Number.isFinite(quantity)) {
     return null;
   }
 
-  const scaled = quantity * getServingsScale(recipeServings, servingsOverride);
-  return roundScaledQuantity(scaled);
+  const { scale } = getServingScale({
+    recipeServings,
+    plannedServings,
+  });
+  return roundScaledQuantity(quantity * scale);
 }
 
 /** 表示・保存用に実用的な桁へ丸める（切り上げはしない） */

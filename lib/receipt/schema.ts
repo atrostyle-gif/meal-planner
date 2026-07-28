@@ -12,6 +12,7 @@ export const receiptItemDraftSchema = z.object({
   totalPriceYen: z.number().nullable(),
   discountYen: z.number().nullable(),
   taxIncluded: z.boolean().nullable(),
+  reducedTax: z.boolean().nullable().optional(),
   confidence: z.number().nullable(),
   warnings: z.array(z.string()).optional().default([]),
 });
@@ -27,6 +28,7 @@ export const receiptDraftSchema = z.object({
   taxYen: z.number().nullable().optional(),
   totalAmountYen: z.number().nullable(),
   paymentMethod: z.string().nullable().optional(),
+  points: z.number().nullable().optional(),
   items: z.array(receiptItemDraftSchema),
   rawText: z.string().nullable(),
   confidence: z.number().nullable(),

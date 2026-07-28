@@ -5,20 +5,42 @@ import {
   loadFoodBudgetSettings,
 } from "@/lib/food-budget/settings";
 import { loadIngredientPrices } from "@/lib/food-budget/prices";
+import { loadFoodAliasMappings, loadFoodMasters } from "@/lib/food-master/store";
+import { createSampleFoodMasters } from "@/lib/food-master/sample-data";
+import { loadFamilyMemberProfiles } from "@/lib/family-member-profiles";
+import { loadHouseholdPreferences } from "@/lib/meal-preferences";
+import { loadFamilyLearningProfile } from "@/lib/family-learning/store";
+import { collectFamilyLearningHints } from "@/lib/family-profile-helpers";
+import {
+  evaluateLeftoverIngredientUsage,
+  summarizeLeftoverUsage,
+} from "@/lib/leftover-match";
 import {
   getGenreKey,
   getMainIngredientKey,
   isFishRecipe,
   isMeatRecipe,
+  recipeUsesInventory,
 } from "@/lib/weekly-auto-plan/recipe-features";
+import {
+  aggregateDaySelectionReasons,
+  buildMealSelectionReason,
+} from "@/lib/weekly-auto-plan/explain";
+import {
+  loadDefaultMealServings,
+  resolveDayServings,
+} from "@/lib/servings/resolve";
 import {
   pickBestCandidate,
   scoreRecipeForSlot,
   type ScoreContext,
 } from "@/lib/weekly-auto-plan/score";
+import { getScheduleForDay } from "@/lib/weekly-cooking-schedules";
 import type { FoodBudgetSettings } from "@/types/food-budget";
+import type { FoodAliasMapping, FoodIngredientMaster } from "@/types/food-master";
 import type { IngredientPriceRecord } from "@/types/ingredient-price";
 import type { InventoryItem } from "@/types/inventory";
+import type { LeftoverIngredient, LeftoverUsageSummary } from "@/types/leftover-ingredient";
 import type { DayMeal, MealDishItem, MealPlan } from "@/types/meal-plan";
 import type { Recipe } from "@/types/recipe";
 import {
@@ -26,12 +48,16 @@ import {
   type WeeklyAutoCourse,
   type WeeklyAutoScope,
 } from "@/types/weekly-meal-plan";
-
+import { DAYS_OF_WEEK } from "@/types/weekly-lifestyle";
 export type GenerateWeeklyPlanInput = {
   weekStart: string;
   days: DayMeal[];
   recipes: Recipe[];
   inventory?: InventoryItem[];
+  /** 今週使い切りたい余り食材（空なら従来どおり） */
+  leftovers?: LeftoverIngredient[];
+  foodMasters?: FoodIngredientMaster[];
+  foodAliasMappings?: FoodAliasMapping[];
   recentRecipeIds?: string[];
   scope?: WeeklyAutoScope;
   /** 乱数を固定したい場合（テスト用） */
@@ -40,6 +66,10 @@ export type GenerateWeeklyPlanInput = {
   foodBudgetSettings?: FoodBudgetSettings;
   priceRecords?: IngredientPriceRecord[];
   weeklyFoodBudgetYen?: number | null;
+  /** 献立作成タグ（任意・複数） */
+  planTags?: readonly import("@/types/meal-plan-tags").MealPlanTagId[];
+  /** 家族プロフィール学習ヒント */
+  familyHints?: ScoreContext["familyHints"];
 };
 
 export type GenerateWeeklyPlanResult = {
@@ -47,6 +77,7 @@ export type GenerateWeeklyPlanResult = {
   filledCount: number;
   emptySlotCount: number;
   warnings: string[];
+  leftoverUsage: LeftoverUsageSummary;
 };
 
 function createId(): string {
@@ -179,6 +210,14 @@ function buildContextForDay(
     | undefined,
   targetCourse: import("@/types/recipe").RecipeCourse,
   budgetContext: ScoreContext["budgetContext"],
+  leftovers: LeftoverIngredient[],
+  leftoverUsageCounts: Record<string, number>,
+  foodMasters: FoodIngredientMaster[],
+  foodAliasMappings: FoodAliasMapping[],
+  planTags?: readonly import("@/types/meal-plan-tags").MealPlanTagId[],
+  familyHints?: ScoreContext["familyHints"],
+  familyLearning?: ScoreContext["familyLearning"],
+  cookMemberId?: string | null,
 ): ScoreContext {
   const recipeMap = new Map(recipes.map((r) => [r.id, r]));
   const prev = dayIndex > 0 ? days[dayIndex - 1] : null;
@@ -217,11 +256,23 @@ function buildContextForDay(
     weekHasFish,
     recentRecipeIds,
     inventory,
+    leftovers,
+    leftoverUsageCounts,
+    foodMasters,
+    foodAliasMappings,
     diabetesSettings,
     dayCoursesSoFar,
     previousDayRecipes,
     targetCourse,
     budgetContext,
+    plannedServings: resolveDayServings(
+      days[dayIndex] ?? { date: "", locked: false, items: [] },
+      loadDefaultMealServings(),
+    ).servings,
+    planTags,
+    familyHints,
+    familyLearning,
+    cookMemberId,
   };
 }
 
@@ -234,6 +285,15 @@ export function generateWeeklyMealPlan(
 ): GenerateWeeklyPlanResult {
   const scope: WeeklyAutoScope = input.scope ?? { type: "week" };
   const inventory = input.inventory ?? [];
+  const leftovers = input.leftovers ?? [];
+  const foodMasters =
+    input.foodMasters ??
+    (typeof window === "undefined"
+      ? createSampleFoodMasters()
+      : loadFoodMasters());
+  const foodAliasMappings =
+    input.foodAliasMappings ??
+    (typeof window === "undefined" ? [] : loadFoodAliasMappings());
   const recentRecipeIds = new Set(input.recentRecipeIds ?? []);
   const warnings: string[] = [];
   const foodBudgetSettings =
@@ -247,13 +307,14 @@ export function generateWeeklyMealPlan(
   const recipeMap = new Map(input.recipes.map((r) => [r.id, r]));
   const selectedRecipes: Recipe[] = [];
   let runningPurchaseCostYen = 0;
+  const leftoverUsageCounts: Record<string, number> = {};
 
   let days = normalizeDays(input.weekStart, input.days).map((day) => ({
     ...day,
     items: removeRegeneratedSlots(day, scope),
   }));
 
-  // 使用済みレシピ（ロック枠含む）
+  // 使用済みレシピ（ロック枠含む）＋既に使われている余り食材カウント
   const usedRecipeIds = new Set<string>();
   for (const day of days) {
     for (const item of day.items) {
@@ -272,6 +333,17 @@ export function generateWeeklyMealPlan(
             runningPurchaseCostYen,
           });
           runningPurchaseCostYen += budgetPart.addedPurchaseCostYen;
+          if (leftovers.length > 0) {
+            const used = evaluateLeftoverIngredientUsage(
+              lockedRecipe,
+              leftovers,
+              foodMasters,
+              foodAliasMappings,
+            );
+            for (const id of used.matchedIds) {
+              leftoverUsageCounts[id] = (leftoverUsageCounts[id] ?? 0) + 1;
+            }
+          }
         }
       }
     }
@@ -279,6 +351,16 @@ export function generateWeeklyMealPlan(
 
   let filledCount = 0;
   let emptySlotCount = 0;
+  const familyProfiles =
+    typeof window === "undefined" ? [] : loadFamilyMemberProfiles();
+  const householdPrefs =
+    typeof window === "undefined" ? null : loadHouseholdPreferences();
+  const familyLearning =
+    typeof window === "undefined" ? null : loadFamilyLearningProfile();
+  const familyHints =
+    typeof window === "undefined"
+      ? undefined
+      : collectFamilyLearningHints(familyProfiles);
 
   days = days.map((day, dayIndex) => {
     if (day.locked && scope.type === "week") {
@@ -290,6 +372,19 @@ export function generateWeeklyMealPlan(
     const coursesToFill = WEEKLY_AUTO_COURSES.filter((course) =>
       shouldRegenerateSlot(day, course, scope),
     );
+
+    const dayOfWeek = DAYS_OF_WEEK[dayIndex];
+    const householdIdForDay = "local";
+    const schedule = dayOfWeek
+      ? getScheduleForDay(householdIdForDay, dayOfWeek)
+      : null;
+    const cookId = schedule?.defaultCookMemberId ?? null;
+    const cookProfile = cookId
+      ? familyProfiles.find((p) => p.id === cookId) ?? null
+      : null;
+    const cookMember = cookProfile
+      ? { id: cookProfile.id, displayName: cookProfile.displayName }
+      : null;
 
     // 既に同コースがある場合は追加しない（再生成で消えている想定）
     for (const course of coursesToFill) {
@@ -319,6 +414,14 @@ export function generateWeeklyMealPlan(
         input.diabetesSettings,
         course,
         budgetContext,
+        leftovers,
+        { ...leftoverUsageCounts },
+        foodMasters,
+        foodAliasMappings,
+        input.planTags,
+        input.familyHints ?? familyHints,
+        familyLearning,
+        cookMember?.id ?? null,
       );
 
       const candidates = input.recipes
@@ -336,6 +439,40 @@ export function generateWeeklyMealPlan(
       const added = scoreBudgetSupport(best.recipe, budgetContext);
       runningPurchaseCostYen += added.addedPurchaseCostYen;
       selectedRecipes.push(best.recipe);
+      let leftoverMatchedNames: string[] = [];
+      if (leftovers.length > 0) {
+        const used = evaluateLeftoverIngredientUsage(
+          best.recipe,
+          leftovers,
+          foodMasters,
+          foodAliasMappings,
+          { usageCounts: leftoverUsageCounts },
+        );
+        for (const id of used.matchedIds) {
+          leftoverUsageCounts[id] = (leftoverUsageCounts[id] ?? 0) + 1;
+        }
+        leftoverMatchedNames = leftovers
+          .filter((item) => used.matchedIds.includes(item.id))
+          .map((item) => item.name);
+      }
+      const inventoryMatched = recipeUsesInventory(
+        best.recipe,
+        inventory,
+      ).matched;
+      const decisionExplanation = buildMealSelectionReason({
+        recipe: best.recipe,
+        score: best.score,
+        scoredReasons: best.reasons,
+        dayIndex,
+        date: day.date,
+        planTags: input.planTags,
+        inventoryMatched,
+        leftoverMatched: leftoverMatchedNames,
+        cookMember,
+        familyProfiles,
+        householdHealthGoal: householdPrefs?.healthGoal ?? null,
+        defaultMealServings: householdPrefs?.defaultMealServings ?? null,
+      });
       nextItems.push({
         id: createId(),
         recipeId: best.recipe.id,
@@ -344,18 +481,23 @@ export function generateWeeklyMealPlan(
         customName: null,
         source: "auto",
         engineScore: best.score,
-        engineReasons: best.reasons.map((r) => r.detail),
-        selectionReasons: best.reasons.map((r) => r.detail),
+        engineReasons: decisionExplanation.reasons.map((r) => r.message),
+        selectionReasons: decisionExplanation.reasons.map((r) => r.message),
         selectionBadges: best.badges,
+        decisionExplanation,
         slotLocked: false,
       });
       filledCount += 1;
     }
 
-    // おすすめ要約
-    const autoReasons = nextItems
-      .flatMap((item) => item.selectionReasons ?? [])
-      .slice(0, 5);
+    // おすすめ要約（構造化）
+    const daySelections = nextItems
+      .map((item) => item.decisionExplanation)
+      .filter((x): x is NonNullable<typeof x> => x != null);
+    const aggregated = aggregateDaySelectionReasons(
+      daySelections,
+      nextItems.flatMap((item) => item.selectionReasons ?? []).slice(0, 8),
+    );
     const avgScore =
       nextItems
         .map((item) => item.engineScore ?? 0)
@@ -371,7 +513,8 @@ export function generateWeeklyMealPlan(
           ? {
               score: avgScore,
               stars: Math.min(5, Math.max(1, Math.round(avgScore / 20))),
-              reasons: autoReasons,
+              reasons: aggregated.messages.slice(0, 6),
+              decisionDetails: aggregated.details.slice(0, 8),
             }
           : day.recommendation ?? null,
     };
@@ -392,7 +535,18 @@ export function generateWeeklyMealPlan(
     warnings.push("保存済みレシピがありません");
   }
 
-  return { days, filledCount, emptySlotCount, warnings };
+  const leftoverUsage = summarizeLeftoverUsage(
+    days,
+    input.recipes,
+    leftovers,
+    foodMasters,
+    foodAliasMappings,
+  );
+  for (const item of leftoverUsage.unused) {
+    warnings.push(`${item.name}を使える候補が見つかりませんでした`);
+  }
+
+  return { days, filledCount, emptySlotCount, warnings, leftoverUsage };
 }
 
 /** MealPlan へ適用しやすいラッパ */

@@ -7,6 +7,8 @@ import { CompactMenu } from "@/components/meals/CompactMenu";
 import { DiabetesMealSupportPanel } from "@/components/meals/DiabetesMealSupportPanel";
 import { LeftoverIngredientsPanel } from "@/components/meals/LeftoverIngredientsPanel";
 import { MealPlanPreferencesPanel } from "@/components/meals/MealPlanPreferencesPanel";
+import { MealPlanTagPicker } from "@/components/meals/MealPlanTagPicker";
+import { MealRecommendModal } from "@/components/meals/MealRecommendModal";
 import { WeekBudgetSummaryPanel } from "@/components/meals/WeekBudgetSummary";
 import { WeeklyMealBoard } from "@/components/meals/WeeklyMealBoard";
 import { useFamilySession } from "@/components/providers/FamilySessionProvider";
@@ -16,10 +18,15 @@ import {
   clearMealPlanWeek,
   moveOrSwapDishBetweenDays,
   removeDishItem,
+  resetDayMealServings,
+  setDayMealServings,
+  setWeekMealServings,
   toggleDayLocked,
   toggleSlotLocked,
+  upsertDishForCourse,
 } from "@/lib/meal-plans";
 import { createOrRegenerateShoppingList } from "@/lib/shopping-lists";
+import { WeekServingsDialog } from "@/components/meals/WeekServingsDialog";
 import { useInventory } from "@/lib/use-inventory";
 import { useIsClient } from "@/lib/use-is-client";
 import { useMealPlan } from "@/lib/use-meal-plans";
@@ -28,9 +35,18 @@ import { useRecipes } from "@/lib/use-recipes";
 import { useShoppingList } from "@/lib/use-shopping-lists";
 import { applyWeeklyAutoPlan } from "@/lib/weekly-auto-plan";
 import { WEEKLY_AUTO_COURSES } from "@/types/weekly-meal-plan";
-import type { WeeklyPlanUiStatus } from "@/types/weekly-meal-plan";
+import type { WeeklyAutoCourse, WeeklyPlanUiStatus } from "@/types/weekly-meal-plan";
+import type { LeftoverUsageSummary } from "@/types/leftover-ingredient";
+import type { MealPlanTagId } from "@/types/meal-plan-tags";
 
 const HELP_SEEN_KEY = "meal-planner:mealsHelpSeen";
+
+type RecommendTarget = {
+  date: string;
+  course: WeeklyAutoCourse;
+  slotId?: string;
+  excludeRecipeId?: string | null;
+};
 
 export function MealPlanPage() {
   const isClient = useIsClient();
@@ -42,6 +58,12 @@ export function MealPlanPage() {
   const [showHelp, setShowHelp] = useState(false);
   const [showHealthBudget, setShowHealthBudget] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showWeekServings, setShowWeekServings] = useState(false);
+  const [leftoverUsage, setLeftoverUsage] =
+    useState<LeftoverUsageSummary | null>(null);
+  const [planTags, setPlanTags] = useState<MealPlanTagId[]>([]);
+  const [recommendTarget, setRecommendTarget] =
+    useState<RecommendTarget | null>(null);
   const generatingRef = useRef(false);
   const plan = useMealPlan(weekStart);
   const recipes = useRecipes();
@@ -49,6 +71,7 @@ export function MealPlanPage() {
   const shoppingList = useShoppingList(weekStart);
   const { preferences, save: savePreferences } = useHouseholdPreferences();
   const { household } = useFamilySession();
+  const householdId = household?.id ?? "local";
 
   useEffect(() => {
     if (!isClient) return;
@@ -107,8 +130,11 @@ export function MealPlanPage() {
           weekStart,
           recipes,
           inventory,
+          householdId,
           scope,
+          planTags,
         });
+        setLeftoverUsage(result.leftoverUsage);
         if (result.filledCount === 0) {
           setStatus("partial_empty");
           setMessage(result.warnings[0] ?? "入れられる料理がありません");
@@ -179,6 +205,7 @@ export function MealPlanPage() {
                     setWeekStart((current) => shiftWeek(current, -1));
                     setMessage(null);
                     setStatus("idle");
+                    setLeftoverUsage(null);
                   },
                 },
                 {
@@ -188,6 +215,7 @@ export function MealPlanPage() {
                     setWeekStart((current) => shiftWeek(current, 1));
                     setMessage(null);
                     setStatus("idle");
+                    setLeftoverUsage(null);
                   },
                 },
                 {
@@ -205,6 +233,11 @@ export function MealPlanPage() {
                   id: "shopping-open",
                   label: "買い物リストを開く",
                   onClick: () => router.push(`/shopping?week=${weekStart}`),
+                },
+                {
+                  id: "week-servings",
+                  label: "今週の人数設定",
+                  onClick: () => setShowWeekServings(true),
                 },
                 {
                   id: "health-budget",
@@ -262,6 +295,12 @@ export function MealPlanPage() {
           </Link>
         ) : null}
 
+        <LeftoverIngredientsPanel
+          householdId={householdId}
+          weekStart={weekStart}
+          usageSummary={leftoverUsage}
+        />
+
         <button
           type="button"
           disabled={generating || recipes.length === 0}
@@ -270,6 +309,8 @@ export function MealPlanPage() {
         >
           {generating ? "作成中…" : "今週の献立を作る"}
         </button>
+
+        <MealPlanTagPicker selected={planTags} onChange={setPlanTags} />
 
         {message ? (
           <p className="text-sm text-on-surface-variant" role="status">
@@ -285,6 +326,7 @@ export function MealPlanPage() {
       <WeeklyMealBoard
         days={plan.days}
         recipes={recipes}
+        defaultMealServings={preferences.defaultMealServings}
         onToggleDayLock={(date) => {
           toggleDayLocked(weekStart, date);
           setMessage(null);
@@ -297,6 +339,19 @@ export function MealPlanPage() {
         onRegenerateSlot={(date, course, slotId) =>
           runGenerate({ type: "slot", date, course, slotId })
         }
+        onAddDish={(date, course, slotId) => {
+          const existing = plan.days
+            .find((day) => day.date === date)
+            ?.items.find((item) =>
+              slotId ? item.id === slotId : item.course === course,
+            );
+          setRecommendTarget({
+            date,
+            course,
+            slotId,
+            excludeRecipeId: existing?.recipeId ?? null,
+          });
+        }}
         onRemoveItem={(date, itemId) => {
           removeDishItem(weekStart, date, itemId);
           setMessage(null);
@@ -311,7 +366,78 @@ export function MealPlanPage() {
           );
           setMessage("移動しました");
         }}
+        onChangeDayServings={(date, servings) => {
+          const updated = setDayMealServings(
+            weekStart,
+            date,
+            servings,
+            preferences.defaultMealServings,
+          );
+          if (shoppingList) {
+            createOrRegenerateShoppingList(updated, recipes);
+          }
+          setMessage("人数を更新しました");
+        }}
+        onResetDayServings={(date) => {
+          const updated = resetDayMealServings(weekStart, date);
+          if (shoppingList) {
+            createOrRegenerateShoppingList(updated, recipes);
+          }
+          setMessage("通常人数に戻しました");
+        }}
       />
+
+      {showWeekServings ? (
+        <WeekServingsDialog
+          days={plan.days}
+          defaultMealServings={preferences.defaultMealServings}
+          onClose={() => setShowWeekServings(false)}
+          onSave={(entries) => {
+            const updated = setWeekMealServings(
+              weekStart,
+              entries,
+              preferences.defaultMealServings,
+            );
+            if (shoppingList) {
+              createOrRegenerateShoppingList(updated, recipes);
+            }
+            setMessage("今週の人数を更新しました");
+          }}
+        />
+      ) : null}
+
+      {recommendTarget ? (
+        <MealRecommendModal
+          weekStart={weekStart}
+          date={recommendTarget.date}
+          course={recommendTarget.course}
+          days={plan.days}
+          recipes={recipes}
+          inventory={inventory}
+          planTags={planTags}
+          householdId={householdId}
+          excludeRecipeId={recommendTarget.excludeRecipeId}
+          onClose={() => setRecommendTarget(null)}
+          onSelect={(recipe, reasons, decisionExplanation) => {
+            const updated = upsertDishForCourse(
+              weekStart,
+              recommendTarget.date,
+              recommendTarget.course,
+              recipe,
+              {
+                slotId: recommendTarget.slotId,
+                engineReasons: reasons,
+                decisionExplanation,
+              },
+            );
+            if (shoppingList) {
+              createOrRegenerateShoppingList(updated, recipes);
+            }
+            setRecommendTarget(null);
+            setMessage(`${recipe.name}を追加しました`);
+          }}
+        />
+      ) : null}
 
       {showHealthBudget ? (
         <div className="space-y-3">
@@ -340,7 +466,6 @@ export function MealPlanPage() {
               savePreferences(patch);
             }}
           />
-          <LeftoverIngredientsPanel householdId={household?.id ?? "local"} />
         </div>
       ) : null}
     </div>

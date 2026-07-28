@@ -54,10 +54,20 @@ import {
   pushReceiptDomain,
 } from "@/lib/receipt/sync";
 import { getLastSyncableLocalWriteAt } from "@/lib/storage";
+import {
+  findSameItemConflicts,
+  mergeByKeyUpdatedAt,
+  mergeByUpdatedAt,
+  type MergeByUpdatedAtOptions,
+} from "@/lib/sync/merge-by-updated-at";
+import { getSyncMergeMode } from "@/lib/sync/sync-preferences";
+import { loadCookingFeedbacks } from "@/lib/recipe-learning/cooking-feedbacks";
 import type { Database } from "@/lib/supabase/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type Client = SupabaseClient<Database>;
+
+export type PullMergeOptions = MergeByUpdatedAtOptions;
 
 /** pull 中の local 書き込みで push が連鎖しないようにする */
 let suppressLocalPush = false;
@@ -113,10 +123,11 @@ export type PushResult = {
   errors: string[];
 };
 
-/** クラウド → 端末 */
+/** クラウド → 端末（項目単位で自動マージ） */
 export async function pullCloudToLocal(
   client: Client,
   householdId: string,
+  mergeOptions?: PullMergeOptions,
 ): Promise<PullResult> {
   if (shouldSkipCloudPull()) {
     return {
@@ -179,25 +190,90 @@ export async function pullCloudToLocal(
     if (leftoversRes.error) throw leftoversRes.error;
 
     // ユーザーがサンプルを削除済みなら、クラウドのサンプルで上書き復活させない
-    const recipes = (recipesRes.data ?? [])
+    const remoteRecipes = (recipesRes.data ?? [])
       .map(recipeFromRow)
       .filter((recipe) => !(areSampleRecipesDismissed() && recipe.isSample));
-    const mealPlans = (mealsRes.data ?? []).map(mealPlanFromRow);
-    const shoppingLists = (shoppingRes.data ?? []).map(shoppingListFromRow);
-    const inventory = (inventoryRes.data ?? []).map(inventoryFromRow);
-    const pantry = (pantryRes.data ?? [])
-      .map(pantryFromRow)
-      .filter((item): item is NonNullable<typeof item> => item !== null);
-    const familyMemberProfiles = (familyProfilesRes.data ?? []).map(familyMemberProfileFromRow);
-    const dailyConditions = (dailyConditionsRes.data ?? []).map(dailyConditionFromRow);
-    const foodAliasMappings = (foodAliasesRes.data ?? []).map(foodAliasFromRow);
-    const weeklyCookingSchedules = (weeklySchedulesRes.data ?? [])
-      .map(weeklyCookingScheduleFromRow)
-      .filter((item): item is NonNullable<typeof item> => item !== null);
-    const cookingMemberProfiles = (cookingProfilesRes.data ?? []).map(cookingMemberProfileFromRow);
-    const dailyCookingOverrides = (dailyOverridesRes.data ?? []).map(dailyCookingOverrideFromRow);
-    const cookingHistory = (cookingHistoryRes.data ?? []).map(cookingHistoryFromRow);
-    const leftovers = (leftoversRes.data ?? []).map(leftoverIngredientFromRow);
+    const recipes = mergeByUpdatedAt(
+      loadRecipes().filter(
+        (recipe) => !(areSampleRecipesDismissed() && recipe.isSample),
+      ),
+      remoteRecipes,
+      mergeOptions,
+    );
+    const mealPlans = mergeByUpdatedAt(
+      loadMealPlans(),
+      (mealsRes.data ?? []).map(mealPlanFromRow),
+      mergeOptions,
+    );
+    const shoppingLists = mergeByUpdatedAt(
+      loadShoppingLists(),
+      (shoppingRes.data ?? []).map(shoppingListFromRow),
+      mergeOptions,
+    );
+    const inventory = mergeByUpdatedAt(
+      loadInventory(),
+      (inventoryRes.data ?? []).map(inventoryFromRow),
+      mergeOptions,
+    );
+    const pantry = mergeByKeyUpdatedAt(
+      loadPantryStock(),
+      (pantryRes.data ?? [])
+        .map(pantryFromRow)
+        .filter((item): item is NonNullable<typeof item> => item !== null),
+      (item) => item.key,
+      mergeOptions,
+    );
+    const familyMemberProfiles = mergeByUpdatedAt(
+      loadFamilyMemberProfiles(),
+      (familyProfilesRes.data ?? []).map(familyMemberProfileFromRow),
+      mergeOptions,
+    );
+    const dailyConditions = mergeByKeyUpdatedAt(
+      loadDailyConditions(),
+      (dailyConditionsRes.data ?? []).map(dailyConditionFromRow),
+      (item) => item.date,
+      mergeOptions,
+    );
+    const foodAliasMappings = mergeByUpdatedAt(
+      loadFoodAliasMappings(),
+      (foodAliasesRes.data ?? []).map(foodAliasFromRow),
+      mergeOptions,
+    );
+    const weeklyCookingSchedules = mergeByUpdatedAt(
+      loadWeeklyCookingSchedules(),
+      (weeklySchedulesRes.data ?? [])
+        .map(weeklyCookingScheduleFromRow)
+        .filter((item): item is NonNullable<typeof item> => item !== null),
+      mergeOptions,
+    );
+    const cookingMemberProfiles = mergeByUpdatedAt(
+      loadCookingMemberProfiles(),
+      (cookingProfilesRes.data ?? []).map(cookingMemberProfileFromRow),
+      mergeOptions,
+    );
+    const dailyCookingOverrides = mergeByUpdatedAt(
+      loadDailyCookingOverrides(),
+      (dailyOverridesRes.data ?? []).map(dailyCookingOverrideFromRow),
+      mergeOptions,
+    );
+    // 調理履歴に updatedAt が無いため、id 単位で和集合（端末を優先）
+    const cookingHistory = (() => {
+      const remoteHistory = (cookingHistoryRes.data ?? []).map(
+        cookingHistoryFromRow,
+      );
+      const map = new Map(
+        remoteHistory.map((item) => [item.id, item] as const),
+      );
+      for (const item of loadCookingHistory()) {
+        map.set(item.id, item);
+      }
+      return [...map.values()];
+    })();
+    const leftovers = mergeByUpdatedAt(
+      loadLeftoverIngredients(),
+      (leftoversRes.data ?? []).map(leftoverIngredientFromRow),
+      mergeOptions,
+    );
 
     replaceRecipes(recipes);
     replaceMealPlans(mealPlans);
@@ -207,9 +283,13 @@ export async function pullCloudToLocal(
     replaceFamilyMemberProfiles(familyMemberProfiles);
     const nutritionPreferences = nutritionPreferencesRes.data?.[0];
     if (nutritionPreferences) {
-      replaceHouseholdNutritionPreferences(
-        householdNutritionPreferencesFromRow(nutritionPreferences),
-      );
+      const remotePrefs =
+        householdNutritionPreferencesFromRow(nutritionPreferences);
+      const localPrefs = loadHouseholdNutritionPreferences();
+      const useRemote =
+        mergeOptions?.preferCloudIds?.has(householdId) ||
+        remotePrefs.updatedAt >= localPrefs.updatedAt;
+      replaceHouseholdNutritionPreferences(useRemote ? remotePrefs : localPrefs);
     }
     replaceDailyConditions(dailyConditions);
     replaceFoodAliasMappings(foodAliasMappings);
@@ -682,16 +762,42 @@ export function setLastSyncedAt(householdId: string, at = Date.now()): void {
   );
 }
 
+export type SyncConflictItem = {
+  domain: string;
+  id: string;
+  label: string;
+};
+
 export type SyncConflictInfo = {
   householdId: string;
   localWriteAt: number;
   cloudWriteAt: number;
   lastSyncedAt: number;
+  /** 同一項目の競合一覧（空のときは「毎回確認」の双方向更新） */
+  items: SyncConflictItem[];
+  reason: "item_conflict" | "ask_bidirectional";
 };
 
+type CloudIdUpdated = {
+  id: string;
+  updated_at: string;
+  name?: string | null;
+};
+
+function toConflictItems(
+  domain: string,
+  conflicts: { id: string; label: string }[],
+): SyncConflictItem[] {
+  return conflicts.map((item) => ({
+    domain,
+    id: item.id,
+    label: item.label,
+  }));
+}
+
 /**
- * 最終同期以降に端末とクラウドの両方に更新があり、
- * 自動解決できない双方向更新かをざっくり判定する。
+ * 同一項目の競合、または（設定が「毎回確認」のとき）双方向更新を検出する。
+ * 通常の自動結合では、異なる項目の変更は競合にしない。
  */
 export async function detectUnresolvedSyncConflict(
   client: Client,
@@ -699,37 +805,202 @@ export async function detectUnresolvedSyncConflict(
 ): Promise<SyncConflictInfo | null> {
   const lastSyncedAt = getLastSyncedAt(householdId);
   const localWriteAt = getLastSyncableLocalWriteAt();
+  const mergeMode = getSyncMergeMode();
 
-  // 初回同期前、または端末に未同期の変更が無い場合は競合にしない
-  if (lastSyncedAt === 0 || localWriteAt <= lastSyncedAt) {
+  // 初回同期前は競合ダイアログを出さない（マージ同期へ）
+  if (lastSyncedAt === 0) {
     return null;
   }
 
-  const { data, error } = await client
-    .from("recipes")
-    .select("updated_at")
-    .eq("household_id", householdId)
-    .order("updated_at", { ascending: false })
-    .limit(1);
+  const sinceIso = new Date(lastSyncedAt).toISOString();
 
-  if (error) {
-    return null;
-  }
+  const [
+    recipesRes,
+    mealsRes,
+    shoppingRes,
+    profilesRes,
+    feedbacksRes,
+  ] = await Promise.all([
+    client
+      .from("recipes")
+      .select("id, updated_at, name")
+      .eq("household_id", householdId)
+      .gt("updated_at", sinceIso),
+    client
+      .from("meal_plans")
+      .select("id, updated_at, week_start")
+      .eq("household_id", householdId)
+      .gt("updated_at", sinceIso),
+    client
+      .from("shopping_lists")
+      .select("id, updated_at, week_start")
+      .eq("household_id", householdId)
+      .gt("updated_at", sinceIso),
+    client
+      .from("family_member_profiles")
+      .select("id, updated_at, display_name")
+      .eq("household_id", householdId)
+      .gt("updated_at", sinceIso),
+    client
+      .from("cooking_feedbacks")
+      .select("id, updated_at")
+      .eq("household_id", householdId)
+      .gt("updated_at", sinceIso),
+  ]);
 
-  const cloudWriteAt = data?.[0]?.updated_at
-    ? Date.parse(data[0].updated_at)
-    : 0;
+  // cooking_feedbacks 未整備時は無視して他ドメインで判定
+  const remoteRecipes = (recipesRes.error ? [] : (recipesRes.data ?? [])).map(
+    (row) => ({
+      id: row.id,
+      updatedAt: row.updated_at,
+      name: row.name,
+    }),
+  );
+  const remoteMeals = (mealsRes.error ? [] : (mealsRes.data ?? [])).map(
+    (row) => ({
+      id: row.id,
+      updatedAt: row.updated_at,
+      weekStart: row.week_start,
+    }),
+  );
+  const remoteShopping = (shoppingRes.error
+    ? []
+    : (shoppingRes.data ?? [])
+  ).map((row) => ({
+    id: row.id,
+    updatedAt: row.updated_at,
+    weekStart: row.week_start,
+  }));
+  const remoteProfiles = (profilesRes.error
+    ? []
+    : (profilesRes.data ?? [])
+  ).map((row) => ({
+    id: row.id,
+    updatedAt: row.updated_at,
+    displayName: row.display_name,
+  }));
+  const remoteFeedbacks = (feedbacksRes.error
+    ? []
+    : (feedbacksRes.data ?? [])
+  ).map((row) => ({
+    id: row.id,
+    updatedAt: row.updated_at,
+  }));
 
-  if (!Number.isFinite(cloudWriteAt) || cloudWriteAt <= lastSyncedAt) {
-    return null;
-  }
-
-  return {
-    householdId,
-    localWriteAt,
-    cloudWriteAt,
+  const recipeConflicts = findSameItemConflicts(
+    loadRecipes(),
+    remoteRecipes,
     lastSyncedAt,
-  };
+  );
+  const mealConflicts = findSameItemConflicts(
+    loadMealPlans(),
+    remoteMeals,
+    lastSyncedAt,
+  );
+  const shoppingConflicts = findSameItemConflicts(
+    loadShoppingLists(),
+    remoteShopping,
+    lastSyncedAt,
+  );
+  const profileConflicts = findSameItemConflicts(
+    loadFamilyMemberProfiles(),
+    remoteProfiles,
+    lastSyncedAt,
+  );
+  const feedbackConflicts = findSameItemConflicts(
+    loadCookingFeedbacks(),
+    remoteFeedbacks,
+    lastSyncedAt,
+  );
+
+  const items: SyncConflictItem[] = [
+    ...toConflictItems(
+      "レシピ",
+      recipeConflicts.map((item) => ({ id: item.id, label: item.name })),
+    ),
+    ...toConflictItems(
+      "献立",
+      mealConflicts.map((item) => ({
+        id: item.id,
+        label: `献立（${item.weekStart}）`,
+      })),
+    ),
+    ...toConflictItems(
+      "買い物リスト",
+      shoppingConflicts.map((item) => ({
+        id: item.id,
+        label: `買い物（${item.weekStart}）`,
+      })),
+    ),
+    ...toConflictItems(
+      "家族プロフィール",
+      profileConflicts.map((item) => ({
+        id: item.id,
+        label: item.displayName,
+      })),
+    ),
+    ...toConflictItems(
+      "レビュー",
+      feedbackConflicts.map((item) => ({
+        id: item.id,
+        label: "調理レビュー",
+      })),
+    ),
+  ];
+
+  const cloudCandidates: CloudIdUpdated[] = [
+    ...(recipesRes.error ? [] : (recipesRes.data ?? [])),
+    ...(mealsRes.error ? [] : (mealsRes.data ?? [])),
+    ...(shoppingRes.error ? [] : (shoppingRes.data ?? [])),
+    ...(profilesRes.error ? [] : (profilesRes.data ?? [])),
+  ];
+  let cloudWriteAt = 0;
+  for (const row of cloudCandidates) {
+    const at = Date.parse(row.updated_at);
+    if (Number.isFinite(at) && at > cloudWriteAt) {
+      cloudWriteAt = at;
+    }
+  }
+  if (!feedbacksRes.error) {
+    for (const row of feedbacksRes.data ?? []) {
+      const at = Date.parse(row.updated_at);
+      if (Number.isFinite(at) && at > cloudWriteAt) {
+        cloudWriteAt = at;
+      }
+    }
+  }
+
+  const hasLocalChanges = localWriteAt > lastSyncedAt;
+  const hasCloudChanges = cloudWriteAt > lastSyncedAt;
+
+  if (items.length > 0) {
+    return {
+      householdId,
+      localWriteAt,
+      cloudWriteAt,
+      lastSyncedAt,
+      items,
+      reason: "item_conflict",
+    };
+  }
+
+  // 「毎回確認する」のときだけ、双方向更新で確認ダイアログを出す
+  if (
+    mergeMode === "ask" &&
+    hasLocalChanges &&
+    hasCloudChanges
+  ) {
+    return {
+      householdId,
+      localWriteAt,
+      cloudWriteAt,
+      lastSyncedAt,
+      items: [],
+      reason: "ask_bidirectional",
+    };
+  }
+
+  return null;
 }
 
 export function hasLocalDataToMigrate(): boolean {

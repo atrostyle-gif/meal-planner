@@ -3,6 +3,11 @@ import {
   formatGramsLabel,
   toGramsEquivalent,
 } from "@/lib/food-budget/unit-convert";
+import {
+  isFoodInSeason,
+  resolveFoodMaster,
+} from "@/lib/food-master/resolve";
+import { loadFoodMasters } from "@/lib/food-master/store";
 import { analyzeIngredientPrice } from "@/lib/receipt/analytics";
 import { normalizeIngredientName } from "@/lib/shopping/normalize-ingredient-name";
 import { isPantryIngredientType } from "@/types/ingredient-meta";
@@ -43,7 +48,32 @@ function perishableIngredient(name: string): boolean {
 }
 
 function freezableIngredient(name: string): boolean {
+  const hit = resolveFoodMaster(name, { masters: loadFoodMasters() });
+  if (hit.master?.freezable === "recommended" || hit.master?.freezable === "possible") {
+    return true;
+  }
+  if (hit.master?.freezable === "not_recommended") {
+    return false;
+  }
   return /肉|豚|牛|鶏|挽|ひき|魚|エビ|イカ/.test(name);
+}
+
+function perishableViaMaster(name: string): boolean | null {
+  const hit = resolveFoodMaster(name, { masters: loadFoodMasters() });
+  if (!hit.master) return null;
+  if (
+    hit.master.recommendedShelfLifeDays != null &&
+    hit.master.recommendedShelfLifeDays <= 5
+  ) {
+    return true;
+  }
+  if (
+    hit.master.storageType === "room_temperature" &&
+    (hit.master.recommendedShelfLifeDays ?? 99) > 14
+  ) {
+    return false;
+  }
+  return null;
 }
 
 function recipeIngredientGrams(recipe: Recipe): Map<string, number> {
@@ -186,9 +216,25 @@ export function scoreBudgetSupport(
       }
     }
 
-    // 傷みやすい食材を週内で使う
-    if (perishableIngredient(ingredient.name) && !freezableIngredient(ingredient.name)) {
+    // 傷みやすい食材を週内で使う（Food Master の賞味目安を優先）
+    const perishable =
+      perishableViaMaster(ingredient.name) ??
+      perishableIngredient(ingredient.name);
+    if (perishable && !freezableIngredient(ingredient.name)) {
       scoreDelta += 4 * w.perishable;
+    }
+
+    // 旬の食材は予算観点でもわずかに加点
+    const seasonHit = resolveFoodMaster(ingredient.name, {
+      masters: loadFoodMasters(),
+    });
+    if (isFoodInSeason(seasonHit.master) === true) {
+      scoreDelta += 2 * w.budget;
+      reasons.push({
+        detail: `旬の${seasonHit.canonicalName}を活用`,
+        badge: "旬の食材",
+      });
+      badges.push("旬の食材");
     }
   }
 

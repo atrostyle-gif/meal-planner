@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { DevConsoleHelpers } from "@/components/dev/DevConsoleHelpers";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { ModeBadge } from "@/components/layout/ModeBadge";
 import { AuthGate } from "@/components/providers/AuthGate";
 import {
   FamilySessionProvider,
@@ -50,7 +49,6 @@ function AppShellFrame({ children }: { children: ReactNode }) {
           hideChrome ? "pb-8" : "pb-24"
         }`}
       >
-        {!hideChrome ? <ModeBadge /> : null}
         {!hideChrome ? <MigrationPrompt /> : null}
         {!hideChrome ? <SyncConflictDialog /> : null}
         {!hideChrome ? <SyncStatusBanner /> : null}

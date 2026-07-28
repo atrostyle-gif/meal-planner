@@ -1,6 +1,8 @@
-import { normalizeIngredientName } from "@/lib/shopping/normalize-ingredient-name";
 import { toGramsEquivalent } from "@/lib/food-budget/unit-convert";
+import { foodMasterMatchKeys } from "@/lib/food-master/resolve";
+import { loadFoodMasters } from "@/lib/food-master/store";
 import { calculateUnitPrice } from "@/lib/price-learning/unit-price";
+import { normalizeIngredientName } from "@/lib/shopping/normalize-ingredient-name";
 import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
 import type {
   IngredientPriceEstimate,
@@ -224,9 +226,17 @@ export function estimateIngredientPrice(
   preferStoreName?: string | null,
 ): IngredientPriceEstimate {
   const key = normalizeIngredientName(ingredientName);
-  const matched = records.filter(
-    (item) => item.normalizedIngredientName === key,
+  const aliasKeys = new Set(
+    foodMasterMatchKeys(ingredientName, loadFoodMasters()),
   );
+  const matched = records.filter((item) => {
+    const recordKey = item.normalizedIngredientName;
+    return (
+      recordKey === key ||
+      aliasKeys.has(recordKey) ||
+      aliasKeys.has(normalizeIngredientName(item.ingredientName))
+    );
+  });
   const storeFiltered =
     preferStoreName && preferStoreName.trim() !== ""
       ? matched.filter((item) => item.storeName === preferStoreName.trim())

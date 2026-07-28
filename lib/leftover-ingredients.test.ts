@@ -12,18 +12,26 @@ import {
 } from "@/lib/leftover-match";
 import { leftoverIngredientFromRow } from "@/lib/mappers/leftover-ingredient-mapper";
 import {
+  getActiveLeftoversForProposal,
+  getPreviousLeftoverNameSuggestions,
   migrateInventoryToLeftovers,
   replaceLeftoverIngredients,
   markLeftoversPlanned,
   markLeftoversUsed,
   loadLeftoverIngredients,
+  saveLeftoverIngredient,
 } from "@/lib/leftover-ingredients";
+import { summarizeLeftoverUsage } from "@/lib/leftover-match";
+import { generateWeeklyMealPlan } from "@/lib/weekly-auto-plan/generate";
+import { generateShoppingListFromMealPlan } from "@/lib/shopping/generate-shopping-list";
+import { createSampleFoodMasters } from "@/lib/food-master/sample-data";
 import { replaceInventory } from "@/lib/inventory";
 import type { LeftoverIngredient } from "@/types/leftover-ingredient";
 import type { Recipe } from "@/types/recipe";
 import type { CookingMemberProfile, WeeklyCookingSchedule } from "@/types/weekly-lifestyle";
 import type { HouseholdPreferences } from "@/types/meal-preferences";
 import type { DayMeal } from "@/types/meal-plan";
+import { foodMasterFixture } from "@/lib/food-master/fixture";
 import type { FoodAliasMapping, FoodIngredientMaster } from "@/types/food-master";
 
 function recipeStub(partial: Partial<Recipe> & Pick<Recipe, "id" | "name">): Recipe {
@@ -56,15 +64,21 @@ function recipeStub(partial: Partial<Recipe> & Pick<Recipe, "id" | "name">): Rec
 function leftoverStub(
   partial: Partial<LeftoverIngredient> & Pick<LeftoverIngredient, "id" | "name">,
 ): LeftoverIngredient {
+  const name = partial.name;
   return {
     householdId: "local",
+    rawName: name,
+    normalizedName: name.toLowerCase().replace(/\s/g, ""),
+    foodCode: null,
     foodMasterId: null,
+    quantityText: null,
     quantity: null,
     unit: null,
-    priority: "normal",
+    priority: "soon",
     notes: null,
-    source: "manual",
+    source: "manual_meal_plan",
     status: "active",
+    weekStart: "2026-07-20",
     plannedForDates: [],
     migratedFromInventoryId: null,
     includeInProposal: true,
@@ -75,6 +89,7 @@ function leftoverStub(
 }
 
 const preferences: HouseholdPreferences = {
+  defaultMealServings: 4,
   servingCount: 4,
   members: [],
   healthGoal: "通常",
@@ -88,9 +103,9 @@ function blankDay(date: string): DayMeal {
 }
 
 describe("leftover scoring", () => {
-  const cabbage = leftoverStub({ id: "l1", name: "キャベツ", priority: "soon" });
-  const pork = leftoverStub({ id: "l2", name: "豚こま", priority: "must_use" });
-  const carrot = leftoverStub({ id: "l3", name: "にんじん", priority: "normal" });
+  const cabbage = leftoverStub({ id: "l1", name: "キャベツ" });
+  const pork = leftoverStub({ id: "l2", name: "豚こま" });
+  const carrot = leftoverStub({ id: "l3", name: "にんじん" });
 
   const stirFry = recipeStub({
     id: "r1",
@@ -128,12 +143,23 @@ describe("leftover scoring", () => {
     expect(score.matchedIds).toContain("l2");
   });
 
-  it("gives higher points to higher priority leftovers", () => {
-    const withMust = evaluateLeftoverIngredientUsage(stirFry, [pork]);
-    const withNormal = evaluateLeftoverIngredientUsage(stirFry, [
-      leftoverStub({ id: "l2", name: "豚こま", priority: "normal" }),
+  it("treats all leftovers with the same use-up scoring rule", () => {
+    const a = evaluateLeftoverIngredientUsage(stirFry, [pork]);
+    const b = evaluateLeftoverIngredientUsage(stirFry, [
+      leftoverStub({ id: "l2b", name: "豚こま切れ" }),
     ]);
-    expect(withMust.points).toBeGreaterThan(withNormal.points);
+    expect(a.points).toBe(b.points);
+    expect(a.points).toBeGreaterThan(0);
+  });
+
+  it("boosts unused leftovers more than already-used ones", () => {
+    const first = evaluateLeftoverIngredientUsage(stirFry, [cabbage], [], [], {
+      usageCounts: {},
+    });
+    const second = evaluateLeftoverIngredientUsage(stirFry, [cabbage], [], [], {
+      usageCounts: { l1: 2 },
+    });
+    expect(first.points).toBeGreaterThan(second.points);
   });
 
   it("works for side dishes and soups", () => {
@@ -155,7 +181,7 @@ describe("leftover scoring", () => {
 
   it("matches by foodMasterId", () => {
     const masters: FoodIngredientMaster[] = [
-      {
+      foodMasterFixture({
         id: "fm-cabbage",
         canonicalName: "キャベツ",
         aliases: ["きゃべつ"],
@@ -172,9 +198,7 @@ describe("leftover scoring", () => {
           calcium: 0,
           iron: 0,
         },
-        createdAt: "",
-        updatedAt: "",
-      },
+      }),
     ];
     const leftover = leftoverStub({
       id: "l9",
@@ -194,7 +218,7 @@ describe("leftover scoring", () => {
 
   it("matches via alias mapping", () => {
     const masters: FoodIngredientMaster[] = [
-      {
+      foodMasterFixture({
         id: "fm-onion",
         canonicalName: "玉ねぎ",
         aliases: [],
@@ -211,9 +235,7 @@ describe("leftover scoring", () => {
           calcium: 0,
           iron: 0,
         },
-        createdAt: "",
-        updatedAt: "",
-      },
+      }),
     ];
     const aliases: FoodAliasMapping[] = [
       {
@@ -245,7 +267,7 @@ describe("leftover scoring", () => {
         { id: "i", name: "卵", quantity: 2, unit: "個", note: "", ingredientType: "通常" },
       ],
     });
-    const leftover = leftoverStub({ id: "le", name: "卵", priority: "must_use" });
+    const leftover = leftoverStub({ id: "le", name: "卵" });
     const leftoverScore = evaluateLeftoverIngredientUsage(eggDish, [leftover]);
     const allergy = evaluateRecipeHardConstraints(eggDish, ["卵"], []);
     expect(leftoverScore.points).toBeGreaterThan(0);
@@ -330,7 +352,7 @@ describe("leftover scoring", () => {
     expect(fit.blocked).toBe(true);
     expect(
       evaluateLeftoverIngredientUsage(fried, [
-        leftoverStub({ id: "lc", name: "鶏肉", priority: "must_use" }),
+        leftoverStub({ id: "lc", name: "鶏肉" }),
       ]).points,
     ).toBeGreaterThan(0);
   });
@@ -501,7 +523,7 @@ describe("leftover storage migration and status", () => {
       quantity: 1,
       unit: "丁",
       priority: "soon",
-      notes: null,
+      notes: "[mp]week:2026-07-20|qty:1丁 メモ",
       source: "manual",
       status: "active",
       planned_for_dates: [],
@@ -512,5 +534,307 @@ describe("leftover storage migration and status", () => {
     });
     expect(item?.name).toBe("豆腐");
     expect(item?.priority).toBe("soon");
+    expect(item?.weekStart).toBe("2026-07-20");
+    expect(item?.quantityText).toBe("1丁");
+  });
+
+  it("does not auto-carry leftovers to the next week", () => {
+    saveLeftoverIngredient({
+      name: "キャベツ",
+      householdId: "local",
+      weekStart: "2026-07-13",
+      source: "manual_meal_plan",
+    });
+    expect(getActiveLeftoversForProposal("local", "2026-07-20")).toHaveLength(0);
+    expect(getPreviousLeftoverNameSuggestions("2026-07-20")).toContain("キャベツ");
+  });
+
+  it("normalizes alias names via Food Master on save", () => {
+    const saved = saveLeftoverIngredient({
+      name: "豚こま",
+      householdId: "local",
+      weekStart: "2026-07-20",
+      source: "manual_meal_plan",
+    });
+    expect(saved.name).toBe("豚こま切れ");
+    expect(saved.foodCode).toBe("fm-pork-koma");
+  });
+});
+
+describe("leftover weekly plan and shopping", () => {
+  const masters = createSampleFoodMasters();
+
+  it("prefers recipes that use leftovers and reports unused", () => {
+    const recipes = [
+      recipeStub({
+        id: "r-cabbage",
+        name: "キャベツ炒め",
+        course: "主菜",
+        ingredients: [
+          {
+            id: "i1",
+            name: "キャベツ",
+            quantity: 200,
+            unit: "g",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+      recipeStub({
+        id: "r-other",
+        name: "唐揚げ",
+        course: "主菜",
+        ingredients: [
+          {
+            id: "i1",
+            name: "鶏肉",
+            quantity: 300,
+            unit: "g",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+      recipeStub({
+        id: "r-side",
+        name: "サラダ",
+        course: "副菜",
+        ingredients: [
+          {
+            id: "i1",
+            name: "レタス",
+            quantity: 1,
+            unit: "個",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+      recipeStub({
+        id: "r-soup",
+        name: "味噌汁",
+        course: "汁物",
+        ingredients: [
+          {
+            id: "i1",
+            name: "豆腐",
+            quantity: 0.5,
+            unit: "丁",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+    ];
+    const leftovers = [
+      leftoverStub({ id: "l1", name: "キャベツ", weekStart: "2026-07-20" }),
+      leftoverStub({ id: "l2", name: "バナナ", weekStart: "2026-07-20" }),
+    ];
+    const result = generateWeeklyMealPlan({
+      weekStart: "2026-07-20",
+      days: [blankDay("2026-07-20")],
+      recipes,
+      leftovers,
+      foodMasters: masters,
+      foodAliasMappings: [],
+    });
+    const main = result.days[0]?.items.find((item) => item.course === "主菜");
+    expect(main?.recipeId).toBe("r-cabbage");
+    expect(result.leftoverUsage.used.some((u) => u.name === "キャベツ")).toBe(
+      true,
+    );
+    expect(result.leftoverUsage.unused.some((u) => u.name === "バナナ")).toBe(
+      true,
+    );
+  });
+
+  it("does not treat unknown quantity leftovers as full stock", () => {
+    const plan = {
+      id: "p",
+      weekStart: "2026-07-20",
+      createdAt: "",
+      updatedAt: "",
+      days: [
+        {
+          date: "2026-07-20",
+          locked: false,
+          servings: 2,
+          servingsMode: "custom" as const,
+          items: [
+            {
+              id: "m1",
+              recipeId: "r1",
+              course: "主菜" as const,
+              order: 1,
+              customName: null,
+              source: "manual" as const,
+            },
+          ],
+          recommendation: null,
+        },
+      ],
+    };
+    const recipes = [
+      recipeStub({
+        id: "r1",
+        name: "炒め",
+        ingredients: [
+          {
+            id: "i1",
+            name: "キャベツ",
+            quantity: 300,
+            unit: "g",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+    ];
+    const leftovers = [
+      leftoverStub({
+        id: "l1",
+        name: "キャベツ",
+        quantity: null,
+        quantityText: null,
+        unit: null,
+      }),
+    ];
+    const list = generateShoppingListFromMealPlan(
+      plan,
+      recipes,
+      null,
+      leftovers,
+    );
+    const cabbage = list.items.find((item) => item.ingredientName === "キャベツ");
+    expect(cabbage).toBeTruthy();
+    expect(cabbage?.leftoverNote).toContain("数量不明");
+    expect(cabbage?.quantities[0]?.quantity).toBe(300);
+  });
+
+  it("deducts known leftover quantity from shopping list", () => {
+    const plan = {
+      id: "p",
+      weekStart: "2026-07-20",
+      createdAt: "",
+      updatedAt: "",
+      days: [
+        {
+          date: "2026-07-20",
+          locked: false,
+          servings: 2,
+          servingsMode: "custom" as const,
+          items: [
+            {
+              id: "m1",
+              recipeId: "r1",
+              course: "主菜" as const,
+              order: 1,
+              customName: null,
+              source: "manual" as const,
+            },
+          ],
+          recommendation: null,
+        },
+      ],
+    };
+    const recipes = [
+      recipeStub({
+        id: "r1",
+        name: "炒め",
+        ingredients: [
+          {
+            id: "i1",
+            name: "キャベツ",
+            quantity: 300,
+            unit: "g",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+    ];
+    const leftovers = [
+      leftoverStub({
+        id: "l1",
+        name: "キャベツ",
+        quantity: 300,
+        unit: "g",
+        quantityText: "300g",
+      }),
+    ];
+    const list = generateShoppingListFromMealPlan(
+      plan,
+      recipes,
+      null,
+      leftovers,
+    );
+    expect(list.items.find((item) => item.ingredientName === "キャベツ")).toBeUndefined();
+  });
+
+  it("summarizes multi-recipe leftover usage", () => {
+    const leftovers = [leftoverStub({ id: "l1", name: "キャベツ" })];
+    const recipes = [
+      recipeStub({
+        id: "r1",
+        name: "炒め",
+        ingredients: [
+          {
+            id: "i1",
+            name: "キャベツ",
+            quantity: 100,
+            unit: "g",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+      recipeStub({
+        id: "r2",
+        name: "和え物",
+        course: "副菜",
+        ingredients: [
+          {
+            id: "i1",
+            name: "キャベツ",
+            quantity: 100,
+            unit: "g",
+            note: "",
+            ingredientType: "通常",
+          },
+        ],
+      }),
+    ];
+    const summary = summarizeLeftoverUsage(
+      [
+        {
+          date: "2026-07-20",
+          locked: false,
+          items: [
+            {
+              id: "a",
+              recipeId: "r1",
+              course: "主菜",
+              order: 1,
+              customName: null,
+              source: "auto",
+            },
+            {
+              id: "b",
+              recipeId: "r2",
+              course: "副菜",
+              order: 2,
+              customName: null,
+              source: "auto",
+            },
+          ],
+          recommendation: null,
+        },
+      ],
+      recipes,
+      leftovers,
+      masters,
+    );
+    expect(summary.used[0]?.recipeCount).toBe(2);
   });
 });

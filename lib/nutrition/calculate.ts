@@ -40,7 +40,13 @@ const VEGETABLE_LIKE = new Set(["野菜", "きのこ", "海藻"]);
 export type CalculateRecipeNutritionOptions = {
   masters: FoodIngredientMaster[];
   aliasMap?: Map<string, string>;
+  /**
+   * @deprecated 1人分計算には使わない（二重倍率防止）。
+   * 日別全量は plannedServings と scaleNutritionForPlannedServings を使う。
+   */
   servingsOverride?: number | null;
+  /** その日の献立人数（全量栄養の算出用。1人分には影響しない） */
+  plannedServings?: number | null;
 };
 
 /**
@@ -87,11 +93,7 @@ export function calculateRecipeNutritionFromIngredients(
   }
 
   const safeServings = Math.max(1, servings);
-  const effectiveServings =
-    options.servingsOverride && options.servingsOverride >= 1
-      ? options.servingsOverride
-      : safeServings;
-
+  // 1人分は常にレシピ基準人数で割る（献立人数で変えない）
   const totalIngredients = ingredients.filter((item) => item.name.trim() !== "").length;
   const confidence =
     totalIngredients === 0
@@ -100,7 +102,7 @@ export function calculateRecipeNutritionFromIngredients(
 
   return {
     total,
-    perServing: scaleNutritionAmount(total, 1 / effectiveServings),
+    perServing: scaleNutritionAmount(total, 1 / safeServings),
     calculatedIngredientCount: calculated,
     uncalculatedIngredientCount: uncalculated.length,
     uncalculatedIngredients: uncalculated,
@@ -203,7 +205,7 @@ export function getCachedRecipeNutrition(
   recipe: Recipe,
   options: CalculateRecipeNutritionOptions,
 ): NutritionCalculationResult {
-  const key = `${recipe.id}:${recipe.updatedAt}:${options.servingsOverride ?? ""}`;
+  const key = `${recipe.id}:${recipe.updatedAt}`;
   const hit = cache.get(key);
   if (hit) {
     return hit;
@@ -230,4 +232,19 @@ export function sumDayNutrition(
     (sum, item) => addNutritionAmount(sum, item.perServing),
     emptyNutritionAmount(),
   );
+}
+
+/**
+ * 1人分栄養 × 献立人数 = その日に作る全量の栄養。
+ * perServing を再度人数で割らない（二重適用しない）。
+ */
+export function scaleNutritionForPlannedServings(
+  perServing: NutritionAmount,
+  plannedServings: number,
+): NutritionAmount {
+  const safe =
+    Number.isFinite(plannedServings) && plannedServings > 0
+      ? plannedServings
+      : 1;
+  return scaleNutritionAmount(perServing, safe);
 }

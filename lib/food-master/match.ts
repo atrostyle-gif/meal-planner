@@ -19,9 +19,15 @@ export function findFoodMaster(
   const key = normalizeIngredientName(label);
 
   if (householdAliasMasterIds) {
-    const mappedId = householdAliasMasterIds.get(key);
+    const mappedId =
+      householdAliasMasterIds.get(key) ??
+      householdAliasMasterIds.get(label.trim().toLowerCase()) ??
+      householdAliasMasterIds.get(ingredientName.trim().toLowerCase());
     if (mappedId) {
-      const master = masters.find((item) => item.id === mappedId) ?? null;
+      const master =
+        masters.find(
+          (item) => item.id === mappedId || item.foodCode === mappedId,
+        ) ?? null;
       return {
         master,
         confidence: master ? "exact" : "none",

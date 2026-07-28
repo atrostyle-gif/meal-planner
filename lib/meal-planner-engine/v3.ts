@@ -294,6 +294,7 @@ export function optimizeDayMeal(
         weekProtein,
         weekFlags,
         daySoFar,
+        foodMasters: context.foodMasters,
       });
 
       const conditionDeltas = scoreRecipeForConditions(

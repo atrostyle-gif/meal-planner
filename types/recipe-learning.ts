@@ -81,18 +81,19 @@ export const IMPROVEMENT_TAGS: readonly ImprovementTag[] = [
   { id: "cook_heat_low", category: "調理", label: "火力弱め" },
   { id: "cook_pre_marinate", category: "調理", label: "下味を長めに" },
   { id: "cook_one_pot", category: "調理", label: "ワンパン向き" },
-  { id: "kid_popular", category: "子ども向け", label: "子どもに好評" },
+  { id: "kid_popular", category: "子ども向け", label: "子ども向け" },
   { id: "adult_oriented", category: "その他", label: "大人向け" },
   { id: "kid_spicy", category: "子ども向け", label: "子どもには辛い" },
   { id: "kid_cut_small", category: "子ども向け", label: "子ども用に小さく切る" },
   { id: "kid_mild", category: "子ども向け", label: "子ども向け薄味" },
+  { id: "family_popular", category: "その他", label: "家族に好評" },
   { id: "other_lunchbox", category: "その他", label: "お弁当に向く" },
   { id: "other_cost", category: "その他", label: "コスパ良い" },
   { id: "other_easy", category: "その他", label: "簡単" },
   { id: "other_hard", category: "その他", label: "手間が多い" },
   { id: "other_makeahead", category: "その他", label: "作り置き向き" },
   { id: "other_freezer", category: "その他", label: "冷凍向き" },
-  { id: "want_again", category: "その他", label: "また作る" },
+  { id: "want_again", category: "その他", label: "また作りたい" },
   { id: "repeat_decide", category: "その他", label: "リピート決定" },
 ] as const;
 
@@ -106,6 +107,15 @@ export const QUICK_IMPROVEMENT_TAG_IDS = [
   "kid_popular",
   "cook_faster",
   "want_again",
+] as const;
+
+/** ホームの調理後レビュー用クイックタグ */
+export const HOME_REVIEW_TAG_IDS = [
+  "want_again",
+  "taste_thick",
+  "taste_thin",
+  "family_popular",
+  "kid_popular",
 ] as const;
 
 export type RecipeAdjustmentType =

@@ -15,8 +15,10 @@ import {
 import { useDraggable } from "@dnd-kit/core";
 import { useMemo, useState, type ReactNode } from "react";
 import { CompactMenu } from "@/components/meals/CompactMenu";
+import { DayServingsEditor } from "@/components/meals/DayServingsEditor";
 import { MealSlotCard } from "@/components/meals/MealSlotCard";
 import { WEEKDAY_LABELS, formatMonthDay, parseDate } from "@/lib/date";
+import { resolveDayServings } from "@/lib/servings/resolve";
 import { WEEKLY_AUTO_COURSES } from "@/types/weekly-meal-plan";
 import { formatCourseLabel } from "@/types/course";
 import type { DayMeal, MealDishItem } from "@/types/meal-plan";
@@ -55,10 +57,13 @@ function DayReasonLine({ reasons }: { reasons: string[] }) {
 type WeeklyMealBoardProps = {
   days: DayMeal[];
   recipes: Recipe[];
+  defaultMealServings: number;
   onToggleDayLock: (date: string) => void;
   onToggleSlotLock: (date: string, itemId: string) => void;
   onRegenerateDay: (date: string) => void;
   onRegenerateSlot: (date: string, course: (typeof WEEKLY_AUTO_COURSES)[number], slotId?: string) => void;
+  /** 空き枠の「料理を追加」→ おすすめ候補 */
+  onAddDish: (date: string, course: (typeof WEEKLY_AUTO_COURSES)[number], slotId?: string) => void;
   onRemoveItem: (date: string, itemId: string) => void;
   onMoveOrSwap: (
     fromDate: string,
@@ -66,6 +71,8 @@ type WeeklyMealBoardProps = {
     itemId: string,
     targetItemId?: string | null,
   ) => void;
+  onChangeDayServings: (date: string, servings: number) => void;
+  onResetDayServings: (date: string) => void;
 };
 
 type DragData = {
@@ -110,14 +117,19 @@ function DraggableSlot({
 function DayColumn({
   day,
   recipes,
+  defaultMealServings,
   onToggleDayLock,
   onToggleSlotLock,
   onRegenerateDay,
   onRegenerateSlot,
+  onAddDish,
   onRemoveItem,
+  onChangeDayServings,
+  onResetDayServings,
 }: {
   day: DayMeal;
   recipes: Recipe[];
+  defaultMealServings: number;
   onToggleDayLock: (date: string) => void;
   onToggleSlotLock: (date: string, itemId: string) => void;
   onRegenerateDay: (date: string) => void;
@@ -126,7 +138,14 @@ function DayColumn({
     course: (typeof WEEKLY_AUTO_COURSES)[number],
     slotId?: string,
   ) => void;
+  onAddDish: (
+    date: string,
+    course: (typeof WEEKLY_AUTO_COURSES)[number],
+    slotId?: string,
+  ) => void;
   onRemoveItem: (date: string, itemId: string) => void;
+  onChangeDayServings: (date: string, servings: number) => void;
+  onResetDayServings: (date: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `day:${day.date}`,
@@ -138,6 +157,7 @@ function DayColumn({
     () => new Map(recipes.map((recipe) => [recipe.id, recipe])),
     [recipes],
   );
+  const resolved = resolveDayServings(day, defaultMealServings);
 
   return (
     <section
@@ -150,33 +170,44 @@ function DayColumn({
             : "bg-surface-container-lowest ring-outline-variant"
       }`}
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold">
-          {WEEKDAY_LABELS[weekdayIndex]}
-          <span className="ml-2 font-normal text-on-surface-variant">
-            {formatMonthDay(day.date)}
-          </span>
-          {day.locked ? (
-            <span className="ml-2 text-xs font-normal text-on-surface-variant">
-              🔒
-            </span>
-          ) : null}
-        </p>
-        <CompactMenu
-          label={`${WEEKDAY_LABELS[weekdayIndex]}の操作`}
-          items={[
-            {
-              id: "day-lock",
-              label: day.locked ? "日ロック解除" : "日をロック",
-              onClick: () => onToggleDayLock(day.date),
-            },
-            {
-              id: "day-regen",
-              label: "この日を再生成",
-              onClick: () => onRegenerateDay(day.date),
-              disabled: day.locked,
-            },
-          ]}
+      <div className="mb-2 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 items-baseline gap-2">
+            <p className="text-lg font-bold tracking-tight text-on-surface">
+              {WEEKDAY_LABELS[weekdayIndex]}
+            </p>
+            {day.locked ? (
+              <span className="text-xs text-on-surface-variant">🔒</span>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-right text-sm text-on-surface-variant">
+              {formatMonthDay(day.date)}
+            </p>
+            <CompactMenu
+              label={`${WEEKDAY_LABELS[weekdayIndex]}の操作`}
+              items={[
+                {
+                  id: "day-lock",
+                  label: day.locked ? "日ロック解除" : "日をロック",
+                  onClick: () => onToggleDayLock(day.date),
+                },
+                {
+                  id: "day-regen",
+                  label: "この日を再生成",
+                  onClick: () => onRegenerateDay(day.date),
+                  disabled: day.locked,
+                },
+              ]}
+            />
+          </div>
+        </div>
+        <DayServingsEditor
+          servings={resolved.servings}
+          isCustom={resolved.isCustom}
+          defaultMealServings={defaultMealServings}
+          onChange={(servings) => onChangeDayServings(day.date, servings)}
+          onReset={() => onResetDayServings(day.date)}
         />
       </div>
 
@@ -201,10 +232,10 @@ function DayColumn({
                   recipe={null}
                   courseLabel={formatCourseLabel(course)}
                   empty
-                  onRegenerate={
+                  onAddDish={
                     day.locked
                       ? undefined
-                      : () => onRegenerateSlot(day.date, course)
+                      : () => onAddDish(day.date, course)
                   }
                 />
               </li>
@@ -223,6 +254,11 @@ function DayColumn({
                       isDragging={isDragging}
                       dragHandleProps={{ ...attributes, ...listeners }}
                       onToggleLock={() => onToggleSlotLock(day.date, item.id)}
+                      onAddDish={
+                        day.locked || item.slotLocked
+                          ? undefined
+                          : () => onAddDish(day.date, course, item.id)
+                      }
                       onRegenerate={
                         day.locked || item.slotLocked
                           ? undefined
@@ -248,12 +284,16 @@ function DayColumn({
 export function WeeklyMealBoard({
   days,
   recipes,
+  defaultMealServings,
   onToggleDayLock,
   onToggleSlotLock,
   onRegenerateDay,
   onRegenerateSlot,
+  onAddDish,
   onRemoveItem,
   onMoveOrSwap,
+  onChangeDayServings,
+  onResetDayServings,
 }: WeeklyMealBoardProps) {
   const [active, setActive] = useState<{
     item: MealDishItem;
@@ -324,11 +364,15 @@ export function WeeklyMealBoard({
             <DayColumn
               day={day}
               recipes={recipes}
+              defaultMealServings={defaultMealServings}
               onToggleDayLock={onToggleDayLock}
               onToggleSlotLock={onToggleSlotLock}
               onRegenerateDay={onRegenerateDay}
               onRegenerateSlot={onRegenerateSlot}
+              onAddDish={onAddDish}
               onRemoveItem={onRemoveItem}
+              onChangeDayServings={onChangeDayServings}
+              onResetDayServings={onResetDayServings}
             />
           </li>
         ))}

@@ -54,7 +54,14 @@ export type HouseholdMemberProfile = {
 
 /** 家庭の献立設定 */
 export type HouseholdPreferences = {
-  /** 人数（メンバー配列と揃えるが、簡易入力用にも保持） */
+  /**
+   * 通常の食事人数（来客・不在がない日の既定）。
+   * 献立の日別人数が default のときに使う。
+   */
+  defaultMealServings: number;
+  /**
+   * @deprecated defaultMealServings と同値で保持（既存エンジン互換）
+   */
   servingCount: number;
   members: HouseholdMemberProfile[];
   healthGoal: HealthGoal;
@@ -68,6 +75,7 @@ export const DEFAULT_HOUSEHOLD_PREFERENCES: Omit<
   HouseholdPreferences,
   "updatedAt"
 > = {
+  defaultMealServings: 4,
   servingCount: 4,
   members: [],
   healthGoal: "通常",

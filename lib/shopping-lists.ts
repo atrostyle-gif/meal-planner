@@ -329,7 +329,7 @@ export function createOrRegenerateShoppingList(
     mealPlan,
     recipes,
     existing,
-    getActiveLeftoversForProposal(),
+    getActiveLeftoversForProposal("local", mealPlan.weekStart),
   );
   return saveList(generated);
 }
@@ -349,6 +349,49 @@ export function toggleShoppingItemChecked(
       item.id === itemId ? { ...item, checked: !item.checked } : item,
     ),
   });
+}
+
+/**
+ * レシート明細の食材名と照合し、買い物リストの未チェック項目を購入済みにする。
+ * 正規化名の一致で判定。戻り値はチェックした件数。
+ */
+export function checkShoppingItemsMatchingNames(
+  weekStart: string,
+  ingredientNames: string[],
+): number {
+  const list = getShoppingListByWeek(weekStart);
+  if (!list || ingredientNames.length === 0) {
+    return 0;
+  }
+
+  const keys = new Set(
+    ingredientNames
+      .map((name) => normalizeIngredientName(name))
+      .filter((name) => name.length > 0),
+  );
+  if (keys.size === 0) {
+    return 0;
+  }
+
+  let checkedCount = 0;
+  const nextItems = list.items.map((item) => {
+    if (item.checked) {
+      return item;
+    }
+    const key = normalizeIngredientName(item.ingredientName);
+    if (!keys.has(key)) {
+      return item;
+    }
+    checkedCount += 1;
+    return { ...item, checked: true };
+  });
+
+  if (checkedCount === 0) {
+    return 0;
+  }
+
+  saveList({ ...list, items: nextItems });
+  return checkedCount;
 }
 
 /** 常備品の在庫状態変更に合わせて listKind を同期する */

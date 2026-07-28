@@ -13,6 +13,8 @@ export type Household = {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  /** 通常の食事人数（未設定時はクライアント側で家族人数などから推定） */
+  defaultMealServings?: number | null;
 };
 
 export type HouseholdMember = {

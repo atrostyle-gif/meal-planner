@@ -1,12 +1,14 @@
 import { addIngredientPrice } from "@/lib/food-budget/prices";
 import { calculateUnitPrice } from "@/lib/price-learning/unit-price";
 import { upsertExpenseFromReceipt } from "@/lib/food-expense/from-receipt";
+import { getWeekStartFromDate, getToday } from "@/lib/date";
 import { netItemPriceYen } from "@/lib/receipt/confirm";
 import { getMappingRepository } from "@/lib/receipt/mapping-repository";
 import { getReceiptRepository } from "@/lib/receipt/receipt-repository";
 import { recordStoreMerge } from "@/lib/stores/merge-history";
 import { getStoreRepository } from "@/lib/stores/store-repository";
 import { normalizeIngredientName } from "@/lib/shopping/normalize-ingredient-name";
+import { checkShoppingItemsMatchingNames } from "@/lib/shopping-lists";
 import type { ReceiptConfirmState } from "@/types/receipt";
 import type { ReceiptItem } from "@/types/receipt";
 
@@ -15,6 +17,8 @@ export type SaveReceiptResult = {
   savedPriceCount: number;
   skippedDuplicate: boolean;
   expenseTransactionId: string | null;
+  /** 買い物リストで自動チェックした件数 */
+  checkedShoppingCount: number;
 };
 
 /**
@@ -49,6 +53,7 @@ export function saveConfirmedReceipt(
       savedPriceCount: 0,
       skippedDuplicate: true,
       expenseTransactionId: null,
+      checkedShoppingCount: 0,
     };
   }
 
@@ -227,11 +232,19 @@ export function saveConfirmedReceipt(
     taxYen: state.draft.taxYen,
   });
 
+  const purchasedAt = state.purchasedAt ?? getToday();
+  const weekStart = getWeekStartFromDate(purchasedAt.slice(0, 10));
+  const checkedShoppingCount = checkShoppingItemsMatchingNames(
+    weekStart,
+    included.map((item) => item.ingredientName),
+  );
+
   return {
     receiptId: receipt.id,
     savedPriceCount,
     skippedDuplicate: false,
     expenseTransactionId: expense.id,
+    checkedShoppingCount,
   };
 }
 

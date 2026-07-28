@@ -2,52 +2,71 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   formatShoppingQuantity,
-  getServingsScale,
   scaleIngredientQuantity,
 } from "@/lib/shopping/scale-ingredient";
 import { useIsClient } from "@/lib/use-is-client";
 import { useRecipe } from "@/lib/use-recipes";
-import { getOrCreateMealPlan } from "@/lib/meal-plans";
-import { getWeekStartFromDate } from "@/lib/date";
+import {
+  getOrCreateMealPlan,
+  resetDayMealServings,
+  setDayMealServings,
+} from "@/lib/meal-plans";
+import { getWeekStartFromDate, getToday } from "@/lib/date";
 import { PostCookFeedbackPanel } from "@/components/cook/PostCookFeedbackPanel";
+import { DayServingsEditor } from "@/components/meals/DayServingsEditor";
 import { findLeftoverMatchesForRecipe } from "@/lib/leftover-match";
 import {
   getActiveLeftoversForProposal,
   markLeftoversUsed,
 } from "@/lib/leftover-ingredients";
+import { markCookDone } from "@/lib/today/cook-done";
+import {
+  getServingScale,
+  loadDefaultMealServings,
+  resolveDayServings,
+} from "@/lib/servings/resolve";
+import { createOrRegenerateShoppingList } from "@/lib/shopping-lists";
+import { loadRecipes } from "@/lib/recipes";
 import type { Ingredient, Recipe } from "@/types/recipe";
 
 type CookModePageProps = {
   recipeId: string;
 };
 
-type WakeLockSentinelLike = {
-  release: () => Promise<void>;
+type CookProgress = {
+  stepIndex: number;
+  finished: boolean;
 };
 
-function loadCheckedSteps(key: string): boolean[] {
+function loadProgress(key: string): CookProgress {
   if (typeof window === "undefined") {
-    return [];
+    return { stepIndex: 0, finished: false };
   }
   try {
     const raw = window.localStorage.getItem(key);
-    if (!raw) {
-      return [];
-    }
+    if (!raw) return { stepIndex: 0, finished: false };
     const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed)
-      ? parsed.map((item) => item === true)
-      : [];
+    if (typeof parsed !== "object" || parsed === null) {
+      return { stepIndex: 0, finished: false };
+    }
+    const item = parsed as Record<string, unknown>;
+    return {
+      stepIndex:
+        typeof item.stepIndex === "number" && item.stepIndex >= 0
+          ? item.stepIndex
+          : 0,
+      finished: item.finished === true,
+    };
   } catch {
-    return [];
+    return { stepIndex: 0, finished: false };
   }
 }
 
-function saveCheckedSteps(key: string, values: boolean[]): void {
-  window.localStorage.setItem(key, JSON.stringify(values));
+function saveProgress(key: string, progress: CookProgress): void {
+  window.localStorage.setItem(key, JSON.stringify(progress));
 }
 
 function formatScaledIngredient(
@@ -80,24 +99,32 @@ function formatScaledIngredient(
 
 type CookModeInnerProps = {
   recipe: Recipe;
-  initialServings: number;
+  plannedServings: number;
+  servingsIsCustom: boolean;
+  defaultMealServings: number;
+  recipeServingsKnown: boolean;
   storageKey: string;
+  cookDate: string;
+  weekStart: string;
+  linkedToMealPlan: boolean;
 };
 
 function CookModeInner({
   recipe,
-  initialServings,
+  plannedServings,
+  servingsIsCustom,
+  defaultMealServings,
+  recipeServingsKnown,
   storageKey,
+  cookDate,
+  weekStart,
+  linkedToMealPlan,
 }: CookModeInnerProps) {
-  const [servings, setServings] = useState(initialServings);
-  const [stepIndex, setStepIndex] = useState(0);
-  const [showAll, setShowAll] = useState(false);
-  const [checked, setChecked] = useState<boolean[]>(() => {
-    const saved = loadCheckedSteps(storageKey);
-    return recipe.steps.map((_, index) => saved[index] === true);
-  });
-  const [wakeLockOn, setWakeLockOn] = useState(false);
-  const [wakeLock, setWakeLock] = useState<WakeLockSentinelLike | null>(null);
+  const [servings, setServings] = useState(plannedServings);
+  const [showServingsEdit, setShowServingsEdit] = useState(false);
+  const [progress, setProgress] = useState<CookProgress>(() =>
+    loadProgress(storageKey),
+  );
   const [recorded, setRecorded] = useState(false);
   const [selectedLeftoverIds, setSelectedLeftoverIds] = useState<string[]>(() =>
     findLeftoverMatchesForRecipe(recipe, getActiveLeftoversForProposal()).map(
@@ -109,57 +136,62 @@ function CookModeInner({
     getActiveLeftoversForProposal(),
   );
 
-  useEffect(() => {
-    return () => {
-      void wakeLock?.release().catch(() => undefined);
-    };
-  }, [wakeLock]);
-
   const steps = recipe.steps;
+  const stepIndex = Math.min(
+    progress.stepIndex,
+    Math.max(0, steps.length - 1),
+  );
   const current = steps[stepIndex];
-  const scale = getServingsScale(recipe.servings, servings);
-  const allDone =
-    steps.length === 0 || (checked.length > 0 && checked.every(Boolean));
+  const finished = progress.finished || steps.length === 0;
+  const isLastStep = steps.length > 0 && stepIndex >= steps.length - 1;
+  const scaleInfo = getServingScale({
+    recipeServings: recipe.servings,
+    plannedServings: servings,
+  });
 
-  async function toggleWakeLock(next: boolean): Promise<void> {
-    if (!next) {
-      await wakeLock?.release().catch(() => undefined);
-      setWakeLock(null);
-      setWakeLockOn(false);
+  function updateProgress(next: CookProgress): void {
+    setProgress(next);
+    saveProgress(storageKey, next);
+  }
+
+  function applyDayServings(next: number): void {
+    setServings(next);
+    if (linkedToMealPlan) {
+      const updated = setDayMealServings(
+        weekStart,
+        cookDate,
+        next,
+        defaultMealServings,
+      );
+      createOrRegenerateShoppingList(updated, loadRecipes());
+    }
+  }
+
+  function resetDayServings(): void {
+    setServings(defaultMealServings);
+    if (linkedToMealPlan) {
+      const updated = resetDayMealServings(weekStart, cookDate);
+      createOrRegenerateShoppingList(updated, loadRecipes());
+    }
+  }
+
+  function goNext(): void {
+    if (steps.length === 0 || isLastStep) {
+      markCookDone(cookDate, recipe.id);
+      updateProgress({ stepIndex, finished: true });
       return;
     }
-    try {
-      const nav = navigator as Navigator & {
-        wakeLock?: {
-          request: (type: "screen") => Promise<WakeLockSentinelLike>;
-        };
-      };
-      if (!nav.wakeLock) {
-        window.alert("このブラウザでは画面点灯の維持に対応していません。");
-        return;
-      }
-      const sentinel = await nav.wakeLock.request("screen");
-      setWakeLock(sentinel);
-      setWakeLockOn(true);
-    } catch {
-      window.alert("画面点灯の維持を開始できませんでした。");
-    }
+    updateProgress({ stepIndex: stepIndex + 1, finished: false });
   }
 
-  function toggleCheck(index: number): void {
-    setChecked((currentChecks) => {
-      const next = [...currentChecks];
-      next[index] = !next[index];
-      saveCheckedSteps(storageKey, next);
-      return next;
-    });
+  function goPrev(): void {
+    if (stepIndex <= 0) return;
+    updateProgress({ stepIndex: stepIndex - 1, finished: false });
   }
 
-  function resetChecks(): void {
-    const next = steps.map(() => false);
-    setChecked(next);
-    saveCheckedSteps(storageKey, next);
-    setStepIndex(0);
+  function resetCook(): void {
+    updateProgress({ stepIndex: 0, finished: false });
+    setRecorded(false);
   }
 
   return (
@@ -170,33 +202,61 @@ function CookModeInner({
         </Link>
         <h1 className="text-3xl font-bold leading-tight">{recipe.name}</h1>
         <p className="text-base text-on-surface-variant">
-          基準 {recipe.servings}人分
+          今日の人数：{servings}人分
           {recipe.cookingTimeMinutes != null
             ? `・約${recipe.cookingTimeMinutes}分`
             : ""}
-          {scale !== 1 ? `・表示 ${servings}人分` : ""}
         </p>
+        {recipeServingsKnown ? (
+          <p className="text-sm text-on-surface-variant">
+            材料は{servings}人分へ調整済み
+            {scaleInfo.scale !== 1
+              ? `（元レシピ${recipe.servings}人分から調整）`
+              : ""}
+          </p>
+        ) : (
+          <p className="text-sm text-on-surface-variant">
+            元レシピの人数が不明のため、登録どおりの分量を表示しています
+          </p>
+        )}
       </header>
 
       <section className="rounded-2xl bg-surface-container px-4 py-3">
-        <p className="mb-2 text-sm font-medium">人数</p>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="h-12 w-12 rounded-xl bg-surface-container-lowest text-2xl font-bold"
-            onClick={() => setServings((value) => Math.max(1, value - 1))}
-          >
-            −
-          </button>
-          <p className="min-w-12 text-center text-2xl font-bold">{servings}</p>
-          <button
-            type="button"
-            className="h-12 w-12 rounded-xl bg-surface-container-lowest text-2xl font-bold"
-            onClick={() => setServings((value) => Math.min(12, value + 1))}
-          >
-            ＋
-          </button>
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-medium">今日の人数：{servings}人分</p>
+            {recipeServingsKnown ? (
+              <p className="text-xs text-on-surface-variant">
+                元レシピ：{recipe.servings}人分
+              </p>
+            ) : null}
+          </div>
+          {linkedToMealPlan ? (
+            <button
+              type="button"
+              className="text-sm font-medium text-primary"
+              onClick={() => setShowServingsEdit((v) => !v)}
+            >
+              人数を変更
+            </button>
+          ) : (
+            <Link href="/meals" className="text-sm font-medium text-primary">
+              献立で人数設定
+            </Link>
+          )}
         </div>
+        {showServingsEdit && linkedToMealPlan ? (
+          <div className="mt-3">
+            <DayServingsEditor
+              servings={servings}
+              isCustom={servingsIsCustom || servings !== defaultMealServings}
+              defaultMealServings={defaultMealServings}
+              compact={false}
+              onChange={applyDayServings}
+              onReset={resetDayServings}
+            />
+          </div>
+        ) : null}
       </section>
 
       <section className="space-y-2">
@@ -212,155 +272,107 @@ function CookModeInner({
           <p className="text-sm text-on-surface-variant">材料がありません</p>
         ) : null}
       </section>
-      {allDone || recorded ? (
-        <PostCookFeedbackPanel
-          recipeId={recipe.id}
-          householdId="local"
-          defaultServings={servings}
-          defaultCookMinutes={recipe.cookingTimeMinutes}
-          onSaved={() => setRecorded(true)}
-        />
-      ) : (
-        <section className="rounded-2xl bg-surface-container px-4 py-3 text-sm text-on-surface-variant">
-          手順を完了すると「今回どうだった？」フィードバックが表示されます
-        </section>
-      )}
 
-      {recorded && matchedLeftovers.length > 0 ? (
-        <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-          <p className="text-sm font-medium">使った余り食材</p>
-          <ul className="space-y-2">
-            {matchedLeftovers.map((match) => (
-              <li key={match.leftover.id}>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={selectedLeftoverIds.includes(match.leftover.id)}
-                    onChange={() =>
-                      setSelectedLeftoverIds((ids) =>
-                        ids.includes(match.leftover.id)
-                          ? ids.filter((id) => id !== match.leftover.id)
-                          : [...ids, match.leftover.id],
-                      )
-                    }
-                  />
-                  {match.leftover.name}
-                </label>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            disabled={selectedLeftoverIds.length === 0}
-            onClick={() => {
-              markLeftoversUsed(selectedLeftoverIds);
-              setSelectedLeftoverIds([]);
-            }}
-            className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-primary ring-1 ring-outline-variant disabled:opacity-50"
-          >
-            選択した食材を使用済みにする
-          </button>
-        </section>
-      ) : null}
-
-      <section className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
+      {!finished ? (
+        <section className="space-y-3">
           <h2 className="text-lg font-semibold">手順</h2>
-          <button
-            type="button"
-            onClick={() => setShowAll((current) => !current)}
-            className="text-sm font-medium text-primary"
-          >
-            {showAll ? "1ステップ表示" : "一覧表示"}
-          </button>
-        </div>
-
-        {allDone ? (
+          {current ? (
+            <div className="space-y-4 rounded-2xl bg-surface-container-lowest p-5 ring-1 ring-outline-variant">
+              <p className="text-sm font-medium text-primary">
+                手順 {stepIndex + 1} / {steps.length}
+              </p>
+              <p className="text-2xl font-medium leading-relaxed">
+                {current.text}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  disabled={stepIndex === 0}
+                  onClick={goPrev}
+                  className="rounded-2xl px-4 py-4 text-lg font-semibold ring-1 ring-outline-variant disabled:opacity-40"
+                >
+                  前へ
+                </button>
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="rounded-2xl bg-primary px-4 py-4 text-lg font-semibold text-on-primary"
+                >
+                  {isLastStep ? "調理完了" : "次へ"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-on-surface-variant">手順がありません</p>
+              <button
+                type="button"
+                onClick={goNext}
+                className="w-full rounded-2xl bg-primary px-4 py-4 text-lg font-semibold text-on-primary"
+              >
+                調理完了
+              </button>
+            </div>
+          )}
+        </section>
+      ) : (
+        <>
           <div className="rounded-2xl bg-secondary-container px-4 py-6 text-center text-lg font-semibold text-on-secondary-container">
             お疲れさまでした！調理完了です
           </div>
-        ) : null}
-
-        {showAll ? (
-          <ol className="space-y-3">
-            {steps.map((step, index) => (
-              <li key={step.id}>
-                <label className="flex items-start gap-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-                  <input
-                    type="checkbox"
-                    checked={checked[index] === true}
-                    onChange={() => toggleCheck(index)}
-                    className="mt-1 h-6 w-6 accent-primary"
-                  />
-                  <span className="text-lg leading-relaxed">
-                    <span className="mr-2 font-bold text-primary">
-                      {index + 1}.
-                    </span>
-                    {step.text}
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ol>
-        ) : current ? (
-          <div className="space-y-4 rounded-2xl bg-surface-container-lowest p-5 ring-1 ring-outline-variant">
-            <p className="text-sm font-medium text-primary">
-              手順 {stepIndex + 1} / {steps.length}
-            </p>
-            <p className="text-2xl leading-relaxed font-medium">{current.text}</p>
-            <label className="flex items-center gap-3 text-lg">
-              <input
-                type="checkbox"
-                checked={checked[stepIndex] === true}
-                onChange={() => toggleCheck(stepIndex)}
-                className="h-7 w-7 accent-primary"
-              />
-              この手順を完了
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+          <PostCookFeedbackPanel
+            recipeId={recipe.id}
+            householdId="local"
+            defaultServings={servings}
+            defaultCookMinutes={recipe.cookingTimeMinutes}
+            onSaved={() => setRecorded(true)}
+          />
+          {recorded && matchedLeftovers.length > 0 ? (
+            <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
+              <p className="text-sm font-medium">使った余り食材</p>
+              <ul className="space-y-2">
+                {matchedLeftovers.map((match) => (
+                  <li key={match.leftover.id}>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeftoverIds.includes(match.leftover.id)}
+                        onChange={() =>
+                          setSelectedLeftoverIds((ids) =>
+                            ids.includes(match.leftover.id)
+                              ? ids.filter((id) => id !== match.leftover.id)
+                              : [...ids, match.leftover.id],
+                          )
+                        }
+                      />
+                      {match.leftover.name}
+                    </label>
+                  </li>
+                ))}
+              </ul>
               <button
                 type="button"
-                disabled={stepIndex === 0}
-                onClick={() => setStepIndex((value) => Math.max(0, value - 1))}
-                className="rounded-2xl px-4 py-4 text-lg font-semibold ring-1 ring-outline-variant disabled:opacity-40"
+                disabled={selectedLeftoverIds.length === 0}
+                onClick={() => {
+                  markLeftoversUsed(selectedLeftoverIds);
+                  setSelectedLeftoverIds([]);
+                }}
+                className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-primary ring-1 ring-outline-variant disabled:opacity-50"
               >
-                前へ
+                選択した食材を使用済みにする
               </button>
-              <button
-                type="button"
-                disabled={stepIndex >= steps.length - 1}
-                onClick={() =>
-                  setStepIndex((value) =>
-                    Math.min(steps.length - 1, value + 1),
-                  )
-                }
-                className="rounded-2xl bg-primary px-4 py-4 text-lg font-semibold text-on-primary disabled:opacity-40"
-              >
-                次へ
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm text-on-surface-variant">手順がありません</p>
-        )}
-      </section>
+            </section>
+          ) : null}
+        </>
+      )}
 
-      <section className="space-y-2">
-        <button
-          type="button"
-          onClick={() => void toggleWakeLock(!wakeLockOn)}
-          className="w-full rounded-xl px-4 py-3 text-sm font-medium ring-1 ring-outline-variant"
-        >
-          {wakeLockOn ? "画面点灯を解除" : "画面をつけたままにする"}
-        </button>
-        <button
-          type="button"
-          onClick={resetChecks}
-          className="w-full rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant"
-        >
-          最初からやり直す
-        </button>
-      </section>
+      <button
+        type="button"
+        onClick={resetCook}
+        className="w-full rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant"
+      >
+        最初からやり直す
+      </button>
     </div>
   );
 }
@@ -369,22 +381,44 @@ export function CookModePage({ recipeId }: CookModePageProps) {
   const isClient = useIsClient();
   const recipe = useRecipe(recipeId);
   const searchParams = useSearchParams();
-  const date = searchParams.get("date");
+  const dateParam = searchParams.get("date");
   const mealItemId = searchParams.get("mealItemId");
+  const cookDate = dateParam ?? getToday();
+  const weekStart = getWeekStartFromDate(cookDate);
+  const defaultMealServings = loadDefaultMealServings();
 
-  const servingsOverrideFromMeal = useMemo(() => {
-    if (!date || !mealItemId || typeof window === "undefined") {
-      return null;
+  const dayServings = useMemo(() => {
+    if (typeof window === "undefined") {
+      return {
+        servings: defaultMealServings,
+        isCustom: false,
+        linkedToMealPlan: false,
+      };
     }
     try {
-      const plan = getOrCreateMealPlan(getWeekStartFromDate(date));
-      const day = plan.days.find((entry) => entry.date === date);
-      const item = day?.items.find((entry) => entry.id === mealItemId);
-      return item?.servingsOverride ?? null;
+      const plan = getOrCreateMealPlan(weekStart);
+      const day = plan.days.find((entry) => entry.date === cookDate);
+      if (!day) {
+        return {
+          servings: defaultMealServings,
+          isCustom: false,
+          linkedToMealPlan: Boolean(dateParam && mealItemId),
+        };
+      }
+      const resolved = resolveDayServings(day, defaultMealServings);
+      return {
+        servings: resolved.servings,
+        isCustom: resolved.isCustom,
+        linkedToMealPlan: Boolean(dateParam),
+      };
     } catch {
-      return null;
+      return {
+        servings: defaultMealServings,
+        isCustom: false,
+        linkedToMealPlan: false,
+      };
     }
-  }, [date, mealItemId]);
+  }, [weekStart, cookDate, defaultMealServings, dateParam, mealItemId]);
 
   if (!isClient) {
     return <p className="text-sm text-on-surface-variant">読み込み中…</p>;
@@ -401,18 +435,22 @@ export function CookModePage({ recipeId }: CookModePageProps) {
     );
   }
 
-  const initialServings =
-    servingsOverrideFromMeal && servingsOverrideFromMeal > 0
-      ? servingsOverrideFromMeal
-      : recipe.servings;
-  const storageKey = `meal-planner:cook-checks:${recipeId}`;
+  const recipeServingsKnown =
+    typeof recipe.servings === "number" && recipe.servings > 0;
+  const storageKey = `meal-planner:cook-progress:${recipeId}`;
 
   return (
     <CookModeInner
-      key={`${recipe.id}-${initialServings}-${recipe.steps.length}`}
+      key={`${recipe.id}-${dayServings.servings}-${recipe.steps.length}`}
       recipe={recipe}
-      initialServings={initialServings}
+      plannedServings={dayServings.servings}
+      servingsIsCustom={dayServings.isCustom}
+      defaultMealServings={defaultMealServings}
+      recipeServingsKnown={recipeServingsKnown}
       storageKey={storageKey}
+      cookDate={cookDate}
+      weekStart={weekStart}
+      linkedToMealPlan={dayServings.linkedToMealPlan}
     />
   );
 }

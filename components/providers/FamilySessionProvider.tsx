@@ -14,10 +14,15 @@ import { createSupabaseHouseholdRepository } from "@/lib/repositories/supabase/h
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getAppDataMode, type AppDataMode } from "@/lib/supabase/env";
 import { toUserFacingError } from "@/lib/supabase/errors";
-import { LOCAL_DATA_CHANGED_EVENT, STORAGE_KEYS } from "@/lib/storage";
+import {
+  getLastSyncableLocalWriteAt,
+  LOCAL_DATA_CHANGED_EVENT,
+  STORAGE_KEYS,
+} from "@/lib/storage";
 import {
   detectUnresolvedSyncConflict,
   ensureMigrationGate,
+  getLastSyncedAt,
   isLocalPushSuppressed,
   isMigrationCompleted,
   markMigrationCompleted,
@@ -50,6 +55,9 @@ type FamilySessionContextValue = {
   syncing: boolean;
   lastSyncError: string | null;
   lastPulledAt: string | null;
+  /** 同期成功時の短い通知（数秒で消える） */
+  lastSyncMessage: string | null;
+  clearSyncMessage: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -57,14 +65,20 @@ type FamilySessionContextValue = {
   joinHousehold: (code: string, displayName?: string) => Promise<void>;
   createInvite: () => Promise<HouseholdInvite>;
   refreshFamily: () => Promise<void>;
-  pullLatest: () => Promise<PullResult | null>;
+  pullLatest: (options?: {
+    force?: boolean;
+    skipConflictCheck?: boolean;
+    notify?: boolean;
+  }) => Promise<PullResult | null>;
   migrateLocalToCloud: () => Promise<PushResult | null>;
   /** 初回参加時のみ true（local データあり & migrationCompleted=false） */
   needsMigrationPrompt: boolean;
   /** 端末データを破棄して共有データを使う */
   discardLocalMigration: () => Promise<void>;
   syncConflict: SyncConflictInfo | null;
-  resolveSyncConflict: (choice: "local" | "cloud") => Promise<void>;
+  resolveSyncConflict: (
+    choice: "local" | "cloud" | "merge",
+  ) => Promise<void>;
   dismissSyncConflict: () => void;
 };
 
@@ -87,7 +101,20 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
   const [syncConflict, setSyncConflict] = useState<SyncConflictInfo | null>(
     null,
   );
+  const [lastSyncMessage, setLastSyncMessage] = useState<string | null>(null);
+  const syncMessageTimerRef = useRef<number | null>(null);
   const syncingCountRef = useRef(0);
+
+  const showSyncMessage = useCallback((message: string) => {
+    if (syncMessageTimerRef.current !== null) {
+      window.clearTimeout(syncMessageTimerRef.current);
+    }
+    setLastSyncMessage(message);
+    syncMessageTimerRef.current = window.setTimeout(() => {
+      setLastSyncMessage(null);
+      syncMessageTimerRef.current = null;
+    }, 4000);
+  }, []);
 
   const beginSync = useCallback(() => {
     syncingCountRef.current += 1;
@@ -116,10 +143,26 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
     setProfile(nextProfile);
     setHousehold(nextHousehold);
     setMembers(nextMembers);
+    if (
+      nextHousehold?.defaultMealServings != null &&
+      nextHousehold.defaultMealServings >= 1
+    ) {
+      const { saveHouseholdPreferences } = await import(
+        "@/lib/meal-preferences"
+      );
+      saveHouseholdPreferences({
+        defaultMealServings: nextHousehold.defaultMealServings,
+      });
+    }
   }, [mode]);
 
   const pullLatest = useCallback(
-    async (options?: { force?: boolean; skipConflictCheck?: boolean }) => {
+    async (options?: {
+      force?: boolean;
+      skipConflictCheck?: boolean;
+      /** true のとき完了通知を出す（手動同期向け） */
+      notify?: boolean;
+    }) => {
       if (mode !== "supabase" || !household) {
         return null;
       }
@@ -146,16 +189,33 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
             return null;
           }
         } catch {
-          // 競合判定失敗時は通常 pull を続行
+          // 競合判定失敗時は通常の自動マージへ続行
         }
       }
+
+      const hadLocalChanges =
+        getLastSyncableLocalWriteAt() > getLastSyncedAt(household.id);
 
       beginSync();
       setLastSyncError(null);
       try {
         const result = await pullCloudToLocal(client, household.id);
+        // 端末だけの追加・更新をクラウドへ送って項目単位で揃える
+        if (session?.user && isMigrationCompleted(household.id)) {
+          const pushResult = await pushLocalToCloud(
+            client,
+            household.id,
+            session.user.id,
+          );
+          if (pushResult.errors.length > 0) {
+            setLastSyncError(pushResult.errors.join(" / "));
+          }
+        }
         setLastPulledAt(new Date().toISOString());
         setLastSyncedAt(household.id);
+        if (options?.notify || hadLocalChanges) {
+          showSyncMessage("最新のデータを同期しました");
+        }
         return result;
       } catch (error) {
         setLastSyncError(toUserFacingError(error));
@@ -164,7 +224,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         endSync();
       }
     },
-    [household, mode, syncConflict, beginSync, endSync],
+    [household, mode, session, syncConflict, beginSync, endSync, showSyncMessage],
   );
 
   // 初回のみ: mode 判定と session 取得（render 中に browser API / env 差分を出さない）
@@ -363,6 +423,8 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
       syncing,
       lastSyncError,
       lastPulledAt,
+      lastSyncMessage,
+      clearSyncMessage: () => setLastSyncMessage(null),
       needsMigrationPrompt,
       syncConflict,
       dismissSyncConflict: () => setSyncConflict(null),
@@ -504,6 +566,9 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         beginSync();
         setLastSyncError(null);
         try {
+          const preferCloudIds = new Set(
+            (conflict?.items ?? []).map((item) => item.id),
+          );
           if (choice === "local") {
             const result = await pushLocalToCloud(
               client,
@@ -516,11 +581,33 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
               return;
             }
             await pullCloudToLocal(client, household.id);
+          } else if (choice === "cloud") {
+            await pullCloudToLocal(client, household.id, {
+              preferCloudIds,
+            });
+            const pushResult = await pushLocalToCloud(
+              client,
+              household.id,
+              session.user.id,
+            );
+            if (pushResult.errors.length > 0) {
+              setLastSyncError(pushResult.errors.join(" / "));
+            }
           } else {
+            // merge: 項目単位で自動結合（通常の同期と同じ）
             await pullCloudToLocal(client, household.id);
+            const pushResult = await pushLocalToCloud(
+              client,
+              household.id,
+              session.user.id,
+            );
+            if (pushResult.errors.length > 0) {
+              setLastSyncError(pushResult.errors.join(" / "));
+            }
           }
           setLastPulledAt(new Date().toISOString());
           setLastSyncedAt(household.id);
+          showSyncMessage("最新のデータを同期しました");
         } catch (error) {
           setLastSyncError(toUserFacingError(error));
           if (conflict) setSyncConflict(conflict);
@@ -539,12 +626,14 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
     syncing,
     lastSyncError,
     lastPulledAt,
+    lastSyncMessage,
     needsMigrationPrompt,
     syncConflict,
     refreshFamily,
     pullLatest,
     beginSync,
     endSync,
+    showSyncMessage,
   ]);
 
   return (

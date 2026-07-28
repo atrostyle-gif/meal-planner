@@ -37,6 +37,10 @@ export const STORAGE_KEYS = {
   foodExpenseTransactions: "meal-planner:foodExpenseTransactions",
   cookingFeedbacks: "meal-planner:cookingFeedbacks",
   recipeVariants: "meal-planner:recipeVariants",
+  /** 家庭ごとの献立学習プロファイル（端末ローカル） */
+  familyLearningProfile: "meal-planner:familyLearningProfile",
+  /** 料理変更履歴（学習用・端末ローカル） */
+  mealChangeEvents: "meal-planner:mealChangeEvents",
   /** サンプルレシピを一度でも投入（または初期化判定）したか */
   sampleRecipesInitialized: "meal-planner:sampleRecipesInitialized",
   /** ユーザーがサンプルを削除したか（自動再投入・同期での復活を禁止） */

@@ -1,257 +1,258 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import {
   deleteLeftoverIngredient,
-  markLeftoversUsed,
-  migrateInventoryToLeftovers,
+  getPreviousLeftoverNameSuggestions,
   saveLeftoverIngredient,
   updateLeftoverIngredient,
 } from "@/lib/leftover-ingredients";
 import { useLeftoverIngredients } from "@/lib/use-leftover-ingredients";
-import type {
-  LeftoverIngredient,
-  LeftoverPriority,
-} from "@/types/leftover-ingredient";
+import type { LeftoverIngredient, LeftoverUsageSummary } from "@/types/leftover-ingredient";
 
 type LeftoverIngredientsPanelProps = {
   householdId: string;
+  weekStart: string;
+  usageSummary?: LeftoverUsageSummary | null;
 };
-
-type FormState = {
-  name: string;
-  quantity: string;
-  unit: string;
-  priority: LeftoverPriority;
-  notes: string;
-};
-
-const INITIAL_FORM: FormState = {
-  name: "",
-  quantity: "",
-  unit: "",
-  priority: "normal",
-  notes: "",
-};
-
-const PRIORITY_OPTIONS: { value: LeftoverPriority; label: string }[] = [
-  { value: "normal", label: "できれば" },
-  { value: "soon", label: "早めに" },
-  { value: "must_use", label: "優先して" },
-];
-
-function toForm(item: LeftoverIngredient): FormState {
-  return {
-    name: item.name,
-    quantity: item.quantity?.toString() ?? "",
-    unit: item.unit ?? "",
-    priority: item.priority,
-    notes: item.notes ?? "",
-  };
-}
-
-function toQuantity(value: string): number | null {
-  if (value.trim() === "") return null;
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : null;
-}
 
 export function LeftoverIngredientsPanel({
   householdId,
+  weekStart,
+  usageSummary = null,
 }: LeftoverIngredientsPanelProps) {
-  const items = useLeftoverIngredients();
-  const [open, setOpen] = useState(false);
-  const [adding, setAdding] = useState(false);
+  const allItems = useLeftoverIngredients();
+  const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [quantityDraft, setQuantityDraft] = useState("");
+  const [showUsageDetail, setShowUsageDetail] = useState(false);
 
-  useEffect(() => {
-    migrateInventoryToLeftovers(householdId);
-  }, [householdId]);
-
-  const visibleItems = items.filter(
-    (item) =>
-      item.householdId === householdId ||
-      (householdId !== "local" && item.householdId === "local"),
+  const items = useMemo(
+    () =>
+      allItems.filter(
+        (item) =>
+          item.weekStart === weekStart &&
+          (item.householdId === householdId || item.householdId === "local") &&
+          item.status !== "dismissed",
+      ),
+    [allItems, householdId, weekStart],
   );
 
-  function resetForm(): void {
-    setForm(INITIAL_FORM);
-    setAdding(false);
-    setEditingId(null);
+  const suggestions = useMemo(() => {
+    return getPreviousLeftoverNameSuggestions(weekStart, 6).filter(
+      (name) => !items.some((item) => item.name === name),
+    );
+  }, [items, weekStart]);
+
+  function addName(name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const exists = items.some(
+      (item) =>
+        item.name === trimmed ||
+        item.rawName === trimmed ||
+        item.normalizedName === trimmed.toLowerCase(),
+    );
+    if (exists) {
+      setDraft("");
+      return;
+    }
+    saveLeftoverIngredient({
+      name: trimmed,
+      rawName: trimmed,
+      householdId,
+      weekStart,
+      source: "manual_meal_plan",
+      quantityText: null,
+      includeInProposal: true,
+    });
+    setDraft("");
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (form.name.trim() === "") return;
-    const input = {
-      name: form.name,
-      quantity: toQuantity(form.quantity),
-      unit: form.unit,
-      priority: form.priority,
-      notes: form.notes,
-    };
-    if (editingId) {
-      updateLeftoverIngredient(editingId, input);
-    } else {
-      saveLeftoverIngredient({ ...input, householdId });
+    addName(draft);
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addName(draft);
     }
-    resetForm();
+  }
+
+  function openEdit(item: LeftoverIngredient): void {
+    setEditingId(item.id);
+    setQuantityDraft(item.quantityText ?? "");
   }
 
   return (
-    <section className="rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between gap-3 text-left"
-        aria-expanded={open}
-      >
-        <span>
-          <span className="block text-base font-semibold">余っている食材</span>
-          <span className="mt-1 block text-xs text-on-surface-variant">
-            余り食材を献立に活かします
-          </span>
-        </span>
-        <span className="text-sm text-primary">{open ? "閉じる" : "開く"}</span>
-      </button>
+    <section className="space-y-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="text-sm font-semibold">余っている食材</h2>
+        <span className="text-xs text-on-surface-variant">今週使い切り</span>
+      </div>
 
-      {open ? (
-        <div className="mt-4 space-y-4">
-          {visibleItems.length === 0 ? (
-            <p className="text-sm text-on-surface-variant">
-              まだ余り食材はありません
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {visibleItems.map((item) => (
-                <li key={item.id} className="rounded-xl bg-surface-container p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium">
-                        {item.name}
-                        {item.quantity != null
-                          ? ` ${item.quantity}${item.unit ?? ""}`
-                          : ""}
-                      </p>
-                      <p className="text-xs text-on-surface-variant">
-                        {PRIORITY_OPTIONS.find(
-                          (option) => option.value === item.priority,
-                        )?.label ?? "できれば"}
-                        {item.notes ? ` ・${item.notes}` : ""}
-                        {item.status === "used" ? " ・使用済み" : ""}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(item.id);
-                        setForm(toForm(item));
-                        setAdding(false);
-                      }}
-                      className="text-sm text-primary"
-                    >
-                      編集
-                    </button>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateLeftoverIngredient(item.id, {
-                          includeInProposal: !item.includeInProposal,
-                        })
-                      }
-                      className="rounded-lg px-2.5 py-1.5 ring-1 ring-outline-variant"
-                    >
-                      {item.includeInProposal
-                        ? "提案に使わない"
-                        : "提案に使う"}
-                    </button>
-                    {item.status !== "used" ? (
-                      <button
-                        type="button"
-                        onClick={() => markLeftoversUsed([item.id])}
-                        className="rounded-lg px-2.5 py-1.5 text-primary ring-1 ring-outline-variant"
-                      >
-                        使用済みにする
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => deleteLeftoverIngredient(item.id)}
-                      className="rounded-lg px-2.5 py-1.5 text-error"
-                    >
-                      削除
-                    </button>
-                  </div>
+      {items.length > 0 ? (
+        <ul className="flex flex-wrap gap-2">
+          {items.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                onClick={() => openEdit(item)}
+                className="inline-flex max-w-full items-center gap-1 rounded-full bg-secondary-container px-3 py-1.5 text-sm text-on-secondary-container"
+              >
+                <span className="truncate">
+                  {item.name}
+                  {item.quantityText ? ` ${item.quantityText}` : ""}
+                </span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${item.name}を削除`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    deleteLeftoverIngredient(item.id);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      deleteLeftoverIngredient(item.id);
+                    }
+                  }}
+                  className="ml-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-xs opacity-80"
+                >
+                  ×
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="食材名を入力"
+          autoComplete="off"
+          enterKeyHint="done"
+          className="min-h-11 min-w-0 flex-1 rounded-xl bg-surface-container-lowest px-3 py-2 text-base ring-1 ring-outline-variant"
+          list="leftover-suggestions"
+        />
+        <datalist id="leftover-suggestions">
+          {suggestions.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+        <button
+          type="submit"
+          className="shrink-0 rounded-xl bg-secondary-container px-3 py-2 text-sm font-semibold text-on-secondary-container"
+        >
+          ＋追加
+        </button>
+      </form>
+
+      {suggestions.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          <span className="w-full text-xs text-on-surface-variant">
+            前回の食材（選んだものだけ使う）
+          </span>
+          {suggestions.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => addName(name)}
+              className="rounded-full px-2.5 py-1 text-xs ring-1 ring-outline-variant"
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {editingId ? (
+        <div className="rounded-xl bg-surface-container p-3 space-y-2">
+          <p className="text-sm font-medium">
+            {items.find((item) => item.id === editingId)?.name}
+          </p>
+          <label className="block space-y-1 text-sm">
+            <span className="text-on-surface-variant">数量（任意）</span>
+            <input
+              value={quantityDraft}
+              onChange={(event) => setQuantityDraft(event.target.value)}
+              placeholder="例: 1/2玉、200g"
+              className="min-h-11 w-full rounded-xl px-3 py-2 ring-1 ring-outline-variant"
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                updateLeftoverIngredient(editingId, {
+                  quantityText: quantityDraft.trim() || null,
+                });
+                setEditingId(null);
+              }}
+              className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-on-primary"
+            >
+              保存
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                deleteLeftoverIngredient(editingId);
+                setEditingId(null);
+              }}
+              className="rounded-xl px-3 py-2 text-sm text-error"
+            >
+              削除
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingId(null)}
+              className="rounded-xl px-3 py-2 text-sm ring-1 ring-outline-variant"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {usageSummary &&
+      (usageSummary.used.length > 0 || usageSummary.unused.length > 0) ? (
+        <div className="rounded-xl bg-surface-container-lowest px-3 py-2 ring-1 ring-outline-variant">
+          <button
+            type="button"
+            onClick={() => setShowUsageDetail((value) => !value)}
+            className="flex w-full items-center justify-between text-left text-sm"
+          >
+            <span className="font-medium">余り食材の活用</span>
+            <span className="text-xs text-primary">
+              {showUsageDetail ? "閉じる" : "詳細"}
+            </span>
+          </button>
+          <ul className="mt-1 space-y-0.5 text-sm text-on-surface-variant">
+            {usageSummary.used.map((line) => (
+              <li key={line.id}>
+                {line.name}　{line.recipeCount}品で使用
+              </li>
+            ))}
+            {usageSummary.unused.map((line) => (
+              <li key={line.id}>{line.name}　未使用</li>
+            ))}
+          </ul>
+          {showUsageDetail && usageSummary.unused.length > 0 ? (
+            <ul className="mt-2 space-y-1 text-xs text-on-surface-variant">
+              {usageSummary.unused.map((line) => (
+                <li key={`detail-${line.id}`}>
+                  {line.name}を使える候補が見つかりませんでした
                 </li>
               ))}
             </ul>
-          )}
-
-          {adding || editingId ? (
-            <form onSubmit={handleSubmit} className="space-y-3 border-t border-outline-variant pt-4">
-              <input
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-                placeholder="食材名"
-                className="w-full rounded-xl bg-surface-container px-3 py-2.5 text-base"
-                required
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  value={form.quantity}
-                  onChange={(event) => setForm({ ...form, quantity: event.target.value })}
-                  placeholder="数量（任意）"
-                  className="min-w-0 rounded-xl bg-surface-container px-3 py-2.5 text-sm"
-                />
-                <input
-                  value={form.unit}
-                  onChange={(event) => setForm({ ...form, unit: event.target.value })}
-                  placeholder="単位（任意）"
-                  className="min-w-0 rounded-xl bg-surface-container px-3 py-2.5 text-sm"
-                />
-              </div>
-              <select
-                value={form.priority}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    priority: event.target.value as LeftoverPriority,
-                  })
-                }
-                className="w-full rounded-xl bg-surface-container px-3 py-2.5 text-sm"
-              >
-                {PRIORITY_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <input
-                value={form.notes}
-                onChange={(event) => setForm({ ...form, notes: event.target.value })}
-                placeholder="メモ（任意）"
-                className="w-full rounded-xl bg-surface-container px-3 py-2.5 text-sm"
-              />
-              <div className="flex gap-2">
-                <button type="button" onClick={resetForm} className="flex-1 rounded-xl px-3 py-2.5 text-sm ring-1 ring-outline-variant">
-                  キャンセル
-                </button>
-                <button type="submit" className="flex-1 rounded-xl bg-primary px-3 py-2.5 text-sm font-semibold text-on-primary">
-                  保存
-                </button>
-              </div>
-            </form>
-          ) : (
-            <button type="button" onClick={() => setAdding(true)} className="w-full rounded-xl bg-secondary-container px-3 py-2.5 text-sm font-semibold text-on-secondary-container">
-              食材を追加
-            </button>
-          )}
+          ) : null}
         </div>
       ) : null}
     </section>

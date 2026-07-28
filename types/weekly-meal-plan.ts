@@ -17,6 +17,7 @@ export const SELECTION_REASON_BADGES = [
   "家族のお気に入り",
   "作り置き活用",
   "食材使い切り",
+  "余り食材活用",
   "まとめ買い向き",
   "予算内",
   "ロピアで購入済み",
@@ -24,6 +25,7 @@ export const SELECTION_REASON_BADGES = [
   "普段より安く購入",
   "冷凍在庫を活用",
   "週間予算内",
+  "旬の食材",
 ] as const;
 
 export type SelectionReasonBadge = (typeof SELECTION_REASON_BADGES)[number];
