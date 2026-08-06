@@ -178,7 +178,10 @@ function migrateRecipe(value: unknown): Recipe | null {
         ? item.cookingProfile as Recipe["cookingProfile"]
         : null,
     importMethod:
-      item.importMethod === "manual" || item.importMethod === "url" || item.importMethod === "photo"
+      item.importMethod === "manual" ||
+      item.importMethod === "url" ||
+      item.importMethod === "photo" ||
+      item.importMethod === "youtube"
         ? item.importMethod
         : null,
     source:

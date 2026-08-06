@@ -24,6 +24,10 @@ import {
 } from "@/lib/leftover-ingredients";
 import { markCookDone } from "@/lib/today/cook-done";
 import {
+  getYoutubeWatchUrl,
+  isYoutubeRecipe,
+} from "@/lib/recipe-import/youtube-recipe";
+import {
   getServingScale,
   loadDefaultMealServings,
   resolveDayServings,
@@ -137,12 +141,14 @@ function CookModeInner({
   );
 
   const steps = recipe.steps;
+  const youtubeMode = isYoutubeRecipe(recipe);
+  const youtubeUrl = getYoutubeWatchUrl(recipe.source?.url);
   const stepIndex = Math.min(
     progress.stepIndex,
     Math.max(0, steps.length - 1),
   );
   const current = steps[stepIndex];
-  const finished = progress.finished || steps.length === 0;
+  const finished = progress.finished || (!youtubeMode && steps.length === 0);
   const isLastStep = steps.length > 0 && stepIndex >= steps.length - 1;
   const scaleInfo = getServingScale({
     recipeServings: recipe.servings,
@@ -274,6 +280,35 @@ function CookModeInner({
       </section>
 
       {!finished ? (
+        youtubeMode ? (
+          <section className="space-y-4 rounded-2xl bg-surface-container-lowest p-5 ring-1 ring-outline-variant">
+            <h2 className="text-lg font-semibold">作り方</h2>
+            <p className="text-base leading-relaxed text-on-surface">
+              このレシピはYouTube動画を見ながら調理します
+            </p>
+            {youtubeUrl ? (
+              <a
+                href={youtubeUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-4 py-4 text-lg font-semibold text-on-primary"
+              >
+                ▶ 動画を開く
+              </a>
+            ) : (
+              <p className="text-sm text-on-surface-variant">
+                動画URLが保存されていません
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={goNext}
+              className="w-full rounded-2xl px-4 py-4 text-lg font-semibold ring-1 ring-outline-variant"
+            >
+              調理完了
+            </button>
+          </section>
+        ) : (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">手順</h2>
           {current ? (
@@ -315,6 +350,7 @@ function CookModeInner({
             </div>
           )}
         </section>
+        )
       ) : (
         <>
           <div className="rounded-2xl bg-secondary-container px-4 py-6 text-center text-lg font-semibold text-on-secondary-container">

@@ -11,6 +11,7 @@ import type {
   RecipeDraft,
   RecipeDraftIngredient,
   RecipeDraftStep,
+  RecipeImportMethod,
 } from "@/types/recipe-import";
 
 const LIMITS = {
@@ -52,9 +53,20 @@ export type ValidatedExtraction = {
   };
 };
 
+export type ValidateAiExtractionOptions = {
+  importMethod?: RecipeImportMethod;
+  importSource?: RecipeDraft["importSource"];
+  sourceAuthor?: string | null;
+  imageUrl?: string | null;
+  extraWarnings?: string[];
+  /** YouTube取込: 工程不要。材料があればOK */
+  ingredientsOnly?: boolean;
+};
+
 export function validateAiExtraction(
   raw: unknown,
   sourceUrl: string,
+  options: ValidateAiExtractionOptions = {},
 ): ValidatedExtraction {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -208,49 +220,72 @@ export function validateAiExtraction(
   const mealRole =
     data.mealRole === "unknown" ? null : (data.mealRole as ImportMealRole);
 
+  const ingredientsOnly = options.ingredientsOnly === true;
+  const draftSteps = ingredientsOnly ? [] : steps;
+
   const draft: RecipeDraft = {
     title: title || undefined,
     description: data.description ? clampText(data.description, 1000) : undefined,
     servings: data.servings,
     servingsText: data.servingsText ? clampText(data.servingsText, 40) : null,
-    prepTimeMinutes: data.prepTimeMinutes,
-    cookTimeMinutes: data.cookTimeMinutes,
-    totalTimeMinutes: data.totalTimeMinutes,
+    prepTimeMinutes: ingredientsOnly ? null : data.prepTimeMinutes,
+    cookTimeMinutes: ingredientsOnly ? null : data.cookTimeMinutes,
+    totalTimeMinutes: ingredientsOnly ? null : data.totalTimeMinutes,
     ingredients,
-    steps,
+    steps: draftSteps,
     cuisine: data.cuisine as ImportCuisine,
     mealRole,
     stapleType: data.stapleType as ImportStapleType,
     mealStyle: data.mealStyle as ImportMealStyle,
     tags: data.tags.slice(0, 20).map((t) => clampText(t, 40)),
     sourceTitle: data.sourceTitle ? clampText(data.sourceTitle, 200) : title,
-    sourceAuthor: data.sourceAuthor ? clampText(data.sourceAuthor, 100) : null,
+    sourceAuthor: options.sourceAuthor
+      ? clampText(options.sourceAuthor, 100)
+      : data.sourceAuthor
+        ? clampText(data.sourceAuthor, 100)
+        : null,
     sourceUrl, // 入力URL固定
-    importMethod: "url",
+    imageUrl: options.imageUrl ?? null,
+    importMethod: options.importMethod ?? "url",
     importedAt: new Date().toISOString(),
-    importSource: "ai_html",
+    importSource: options.importSource ?? "ai_html",
     documentType: data.documentType,
-    warnings: [...data.warnings, ...warnings],
-    confidence:
-      ingredients.length >= 2 && steps.length >= 1 ? "medium" : "low",
+    warnings: [...data.warnings, ...warnings, ...(options.extraWarnings ?? [])],
+    confidence: ingredientsOnly
+      ? ingredients.length >= 2
+        ? "medium"
+        : "low"
+      : ingredients.length >= 2 && steps.length >= 1
+        ? "medium"
+        : "low",
     fieldSources: {
       title: "ai_html",
       ingredients: "ai_html",
-      steps: "ai_html",
+      steps: ingredientsOnly ? undefined : "ai_html",
       servings: data.servings != null ? "ai_html" : undefined,
+      imageUrl: options.imageUrl ? "open_graph" : undefined,
     },
   };
 
-  const ok =
-    Boolean(draft.title) && (ingredients.length >= 1 || steps.length >= 1);
+  const ok = ingredientsOnly
+    ? Boolean(draft.title) && ingredients.length >= 1
+    : Boolean(draft.title) && (ingredients.length >= 1 || steps.length >= 1);
 
   if (!ok) {
-    errors.push("タイトルと材料または作り方が不足しています");
+    errors.push(
+      ingredientsOnly
+        ? "料理名と材料が不足しています"
+        : "タイトルと材料または作り方が不足しています",
+    );
   }
 
   return {
     ok,
-    draft: ok ? draft : draft.title || ingredients.length || steps.length ? draft : null,
+    draft: ok
+      ? draft
+      : draft.title || ingredients.length || draftSteps.length
+        ? draft
+        : null,
     documentType: data.documentType,
     errors,
     warnings: draft.warnings ?? [],

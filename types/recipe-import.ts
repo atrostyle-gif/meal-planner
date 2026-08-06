@@ -2,7 +2,7 @@
  * レシピ取り込み用の中間型（未保存）
  */
 
-export const RECIPE_IMPORT_METHODS = ["manual", "url", "photo"] as const;
+export const RECIPE_IMPORT_METHODS = ["manual", "url", "photo", "youtube"] as const;
 export type RecipeImportMethod = (typeof RECIPE_IMPORT_METHODS)[number];
 
 export const IMPORT_CONFIDENCES = ["high", "medium", "low", "unknown"] as const;
@@ -110,7 +110,10 @@ export type RecipeSource = {
   type: RecipeImportMethod;
   title?: string | null;
   url?: string | null;
+  /** チャンネル名など（YouTube） */
   author?: string | null;
+  /** サムネイルURL（YouTubeなど。既存データでは未設定可） */
+  thumbnail?: string | null;
   importedAt?: string | null;
   note?: string | null;
 };
@@ -157,6 +160,7 @@ export type RecipeDraft = {
     | "html_rules"
     | "ai_html"
     | "hybrid"
+    | "youtube_description"
     | "failed"
     | null;
   /** フィールド単位の出典 */

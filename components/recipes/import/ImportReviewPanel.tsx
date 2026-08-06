@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveImportDraft } from "@/lib/recipe-import/draft-session";
 import { findDuplicateCandidates } from "@/lib/recipe-import/duplicate";
+import { isYoutubeDraft } from "@/lib/recipe-import/youtube-recipe";
 import { useRecipes } from "@/lib/use-recipes";
 import type { RecipeDraft, RecipeDraftIngredient } from "@/types/recipe-import";
 
@@ -46,6 +47,7 @@ export function ImportReviewPanel({ draft, onConfirm }: ImportReviewPanelProps) 
   const router = useRouter();
   const recipes = useRecipes();
   const [editableDraft, setEditableDraft] = useState(draft);
+  const youtubeMode = isYoutubeDraft(editableDraft);
   const duplicates = findDuplicateCandidates(editableDraft, recipes);
   const ingredientGroups = useMemo(
     () => groupIngredients(editableDraft.ingredients),
@@ -121,11 +123,45 @@ export function ImportReviewPanel({ draft, onConfirm }: ImportReviewPanelProps) 
           className="w-full rounded-xl bg-surface-container px-3 py-2 ring-1 ring-outline-variant"
         />
       </label>
-      {editableDraft.servings != null ? (
-        <p className="text-sm text-on-surface-variant">
-          人数: {editableDraft.servings}
-          {editableDraft.servingsText ? `（${editableDraft.servingsText}）` : "人分"}
-        </p>
+      <label className="block space-y-1">
+        <span className="text-sm font-medium">人数</span>
+        <input
+          type="number"
+          min={1}
+          inputMode="numeric"
+          value={editableDraft.servings ?? ""}
+          onChange={(event) => {
+            const value = event.target.value.trim();
+            setEditableDraft((current) => ({
+              ...current,
+              servings: value === "" ? null : Number(value),
+              servingsText:
+                value === ""
+                  ? null
+                  : `${value}人分`,
+            }));
+          }}
+          className="w-full rounded-xl bg-surface-container px-3 py-2 ring-1 ring-outline-variant"
+          placeholder="例: 2"
+        />
+      </label>
+      {youtubeMode && editableDraft.sourceUrl ? (
+        <div className="space-y-2 rounded-xl bg-surface-container px-3 py-3">
+          <p className="text-sm font-medium">工程は動画を見ながら調理します</p>
+          <a
+            href={editableDraft.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary"
+          >
+            ▶ YouTubeで作り方を見る
+          </a>
+          {editableDraft.sourceAuthor ? (
+            <p className="text-xs text-on-surface-variant">
+              チャンネル: {editableDraft.sourceAuthor}
+            </p>
+          ) : null}
+        </div>
       ) : null}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">材料</h3>
@@ -193,30 +229,32 @@ export function ImportReviewPanel({ draft, onConfirm }: ImportReviewPanelProps) 
           </div>
         ))}
       </div>
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium">手順</h3>
-        {editableDraft.steps.length === 0 ? (
-          <p className="text-sm text-on-surface-variant">手順は読み取れていません。</p>
-        ) : null}
-        {editableDraft.steps.map((step, index) => (
-          <textarea
-            key={`${step.order}-${index}`}
-            value={step.text}
-            onChange={(event) =>
-              setEditableDraft((current) => ({
-                ...current,
-                steps: current.steps.map((item, itemIndex) =>
-                  itemIndex === index
-                    ? { ...item, text: event.target.value }
-                    : item,
-                ),
-              }))
-            }
-            rows={2}
-            className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm ring-1 ring-outline-variant"
-          />
-        ))}
-      </div>
+      {!youtubeMode ? (
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">手順</h3>
+          {editableDraft.steps.length === 0 ? (
+            <p className="text-sm text-on-surface-variant">手順は読み取れていません。</p>
+          ) : null}
+          {editableDraft.steps.map((step, index) => (
+            <textarea
+              key={`${step.order}-${index}`}
+              value={step.text}
+              onChange={(event) =>
+                setEditableDraft((current) => ({
+                  ...current,
+                  steps: current.steps.map((item, itemIndex) =>
+                    itemIndex === index
+                      ? { ...item, text: event.target.value }
+                      : item,
+                  ),
+                }))
+              }
+              rows={2}
+              className="w-full rounded-xl bg-surface-container px-3 py-2 text-sm ring-1 ring-outline-variant"
+            />
+          ))}
+        </div>
+      ) : null}
       <button
         type="button"
         onClick={continueToForm}

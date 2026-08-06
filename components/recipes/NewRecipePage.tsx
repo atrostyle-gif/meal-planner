@@ -6,12 +6,15 @@ import { useState } from "react";
 import { RecipeForm } from "@/components/recipes/RecipeForm";
 import { PhotoImportPanel } from "@/components/recipes/import/PhotoImportPanel";
 import { UrlImportPanel } from "@/components/recipes/import/UrlImportPanel";
+import { YoutubeImportPanel } from "@/components/recipes/import/YoutubeImportPanel";
 import { createRecipe } from "@/lib/recipes";
 import type { RecipeInput } from "@/types/recipe";
 
+type ImportMethodChoice = "manual" | "url" | "photo" | "youtube";
+
 export function NewRecipePage() {
   const router = useRouter();
-  const [method, setMethod] = useState<"manual" | "url" | "photo">("manual");
+  const [method, setMethod] = useState<ImportMethodChoice>("manual");
 
   function handleSubmit(input: RecipeInput): void {
     const recipe = createRecipe(input);
@@ -27,12 +30,15 @@ export function NewRecipePage() {
         </Link>
         <h1 className="text-2xl font-bold tracking-tight">レシピを登録</h1>
       </header>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {([
-          ["manual", "手入力", "材料・手順を入力"],
-          ["url", "URLから取り込み", "公開レシピページを読む"],
-          ["photo", "写真から取り込み", "レシピ本やメモを読む"],
-        ] as const).map(([value, title, description]) => (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {(
+          [
+            ["manual", "手入力", "材料・手順を入力"],
+            ["url", "URLから取り込み", "公開レシピページを読む"],
+            ["photo", "写真から取り込み", "レシピ本やメモを読む"],
+            ["youtube", "YouTubeから取り込む", "動画の説明文から読む"],
+          ] as const
+        ).map(([value, title, description]) => (
           <button
             key={value}
             type="button"
@@ -40,13 +46,18 @@ export function NewRecipePage() {
             className={`rounded-2xl p-4 text-left ring-1 ${method === value ? "bg-primary-container ring-primary" : "bg-surface-container-lowest ring-outline-variant"}`}
           >
             <span className="block font-semibold">{title}</span>
-            <span className="mt-1 block text-xs text-on-surface-variant">{description}</span>
+            <span className="mt-1 block text-xs text-on-surface-variant">
+              {description}
+            </span>
           </button>
         ))}
       </div>
-      {method === "manual" ? <RecipeForm submitLabel="保存する" onSubmit={handleSubmit} /> : null}
+      {method === "manual" ? (
+        <RecipeForm submitLabel="保存する" onSubmit={handleSubmit} />
+      ) : null}
       {method === "url" ? <UrlImportPanel /> : null}
       {method === "photo" ? <PhotoImportPanel /> : null}
+      {method === "youtube" ? <YoutubeImportPanel /> : null}
     </div>
   );
 }

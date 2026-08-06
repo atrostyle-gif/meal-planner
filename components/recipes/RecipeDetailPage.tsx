@@ -12,6 +12,10 @@ import {
   nutritionSourceLabel,
 } from "@/lib/nutrition/calculate";
 import { formatStars } from "@/lib/recipe-nutrition";
+import {
+  getYoutubeWatchUrl,
+  isYoutubeRecipe,
+} from "@/lib/recipe-import/youtube-recipe";
 import { useIsClient } from "@/lib/use-is-client";
 import { useRecipe } from "@/lib/use-recipes";
 import { formatCourseLabel } from "@/types/recipe";
@@ -132,7 +136,27 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
               ))}
             </ul>
           ) : null}
-          {recipe.source?.url ? (
+          {isYoutubeRecipe(recipe) && getYoutubeWatchUrl(recipe.source?.url) ? (
+            <div className="space-y-2 rounded-2xl bg-primary-container p-4">
+              <p className="text-sm font-medium text-on-primary-container">
+                このレシピの作り方はYouTube動画です
+              </p>
+              <a
+                href={getYoutubeWatchUrl(recipe.source?.url) ?? "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-4 py-3.5 text-base font-semibold text-on-primary"
+              >
+                ▶ YouTubeで作り方を見る
+              </a>
+              {recipe.source?.author ? (
+                <p className="text-xs text-on-primary-container/80">
+                  {recipe.source.author}
+                  {recipe.source.title ? ` ・ ${recipe.source.title}` : ""}
+                </p>
+              ) : null}
+            </div>
+          ) : recipe.source?.url ? (
             <p className="text-sm text-on-surface-variant">
               出典{recipe.source.title ? `：${recipe.source.title}` : ""}
               {" "}
@@ -245,7 +269,26 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
           </section>
 
           <IngredientList ingredients={recipe.ingredients} />
-          <StepList steps={recipe.steps} />
+          {isYoutubeRecipe(recipe) ? (
+            <section className="space-y-3 rounded-2xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
+              <h2 className="text-lg font-semibold">作り方</h2>
+              <p className="text-sm text-on-surface-variant">
+                工程は動画を見ながら調理します。
+              </p>
+              {getYoutubeWatchUrl(recipe.source?.url) ? (
+                <a
+                  href={getYoutubeWatchUrl(recipe.source?.url) ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-on-primary"
+                >
+                  ▶ YouTubeで作り方を見る
+                </a>
+              ) : null}
+            </section>
+          ) : (
+            <StepList steps={recipe.steps} />
+          )}
           {recipe.memo ? (
             <section>
               <h2 className="text-lg font-semibold">メモ</h2>

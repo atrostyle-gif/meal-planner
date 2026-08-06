@@ -244,8 +244,12 @@ export function buildSourceFromDraft(draft: RecipeDraft): RecipeSource {
     title: draft.sourceTitle ?? draft.title ?? null,
     url: draft.sourceUrl ?? null,
     author: draft.sourceAuthor ?? null,
+    thumbnail: draft.imageUrl ?? null,
     importedAt: draft.importedAt ?? new Date().toISOString(),
-    note: null,
+    note:
+      draft.importMethod === "youtube"
+        ? "工程は動画を見ながら調理します"
+        : null,
   };
 }
 
