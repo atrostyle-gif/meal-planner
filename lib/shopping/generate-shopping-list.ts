@@ -13,6 +13,9 @@ import {
   loadDefaultMealServings,
   resolveDayServings,
 } from "@/lib/servings/resolve";
+import {
+  findMatchingRecurringPurchases,
+} from "@/lib/recurring-purchase-match";
 import { getPantryStockStatus } from "@/lib/pantry-stock";
 import {
   DEFAULT_INGREDIENT_TYPE,
@@ -23,6 +26,7 @@ import type { FoodIngredientMaster } from "@/types/food-master";
 import type { MealPlan } from "@/types/meal-plan";
 import type { Recipe } from "@/types/recipe";
 import type { LeftoverIngredient } from "@/types/leftover-ingredient";
+import type { RecurringPurchaseIngredient } from "@/types/recurring-purchase-ingredient";
 import type {
   AggregatedIngredientGroup,
   ShoppingList,
@@ -228,6 +232,97 @@ function applyLeftoverToQuantities(
   };
 }
 
+function applyRecurringPurchaseToQuantities(
+  quantities: ShoppingQuantity[],
+  items: RecurringPurchaseIngredient[],
+): { quantities: ShoppingQuantity[]; recurringNote: string | null; skipBuy: boolean } {
+  if (items.length === 0) {
+    return { quantities, recurringNote: null, skipBuy: false };
+  }
+
+  const withQty = items.filter((item) => item.quantity != null && item.quantity > 0);
+  const storeLabel = items
+    .map((item) => item.storeName)
+    .filter((name): name is string => Boolean(name?.trim()))
+    .join("・");
+
+  if (withQty.length === 0) {
+    const note = storeLabel
+      ? `定期購入で届く予定（${storeLabel}）\n購入が必要か確認`
+      : "定期購入で届く予定\n購入が必要か確認";
+    return { quantities, recurringNote: note, skipBuy: false };
+  }
+
+  let remainingHomeGrams = 0;
+  for (const item of withQty) {
+    const grams = toGramsEquivalent(item.quantity, item.unit ?? "g");
+    if (grams != null) remainingHomeGrams += grams;
+  }
+
+  if (remainingHomeGrams <= 0) {
+    const qtyText = withQty
+      .map((item) => `${item.quantity}${item.unit ?? ""}`)
+      .join("・");
+    const note = storeLabel
+      ? `定期購入で届く予定（${storeLabel}・${qtyText}）\n数量を確認`
+      : `定期購入で届く予定（${qtyText}）\n数量を確認`;
+    return { quantities, recurringNote: note, skipBuy: false };
+  }
+
+  const nextQuantities: ShoppingQuantity[] = [];
+  let deducted = false;
+  for (const line of quantities) {
+    if (line.quantity == null || remainingHomeGrams <= 0) {
+      nextQuantities.push(line);
+      continue;
+    }
+    const needGrams = toGramsEquivalent(line.quantity, line.unit);
+    if (needGrams == null) {
+      nextQuantities.push(line);
+      continue;
+    }
+    if (remainingHomeGrams >= needGrams) {
+      remainingHomeGrams -= needGrams;
+      deducted = true;
+      continue;
+    }
+    const stillNeed = needGrams - remainingHomeGrams;
+    remainingHomeGrams = 0;
+    deducted = true;
+    if (/^g$/i.test(line.unit.trim())) {
+      nextQuantities.push({ ...line, quantity: stillNeed });
+    } else if (/^kg$/i.test(line.unit.trim())) {
+      nextQuantities.push({ ...line, quantity: stillNeed / 1000 });
+    } else {
+      nextQuantities.push(line);
+    }
+  }
+
+  const baseNote = storeLabel
+    ? `定期購入で届く予定（${storeLabel}）`
+    : "定期購入で届く予定";
+
+  return {
+    quantities: nextQuantities,
+    recurringNote: deducted ? baseNote : `${baseNote}\n数量を確認`,
+    skipBuy:
+      deducted &&
+      nextQuantities.every(
+        (line) => line.quantity == null || line.quantity <= 0,
+      ),
+  };
+}
+
+function combineShoppingNotes(
+  leftoverNote: string | null,
+  recurringNote: string | null,
+): string | null {
+  const parts = [leftoverNote, recurringNote].filter(
+    (note): note is string => Boolean(note?.trim()),
+  );
+  return parts.length > 0 ? parts.join("\n") : null;
+}
+
 function toShoppingListItem(
   group: AggregatedIngredientGroup,
   listKind: ShoppingListKind,
@@ -272,6 +367,7 @@ export function generateShoppingListFromMealPlan(
   recipes: Recipe[],
   existing: ShoppingList | null = null,
   leftovers: LeftoverIngredient[] = [],
+  recurringPurchases: RecurringPurchaseIngredient[] = [],
 ): ShoppingList {
   const aggregated = generateAggregatedIngredientsFromMealPlan(mealPlan, recipes);
   const now = new Date().toISOString();
@@ -297,9 +393,20 @@ export function generateShoppingListFromMealPlan(
     }
 
     const matchedLeftovers = findMatchingLeftovers(group, leftovers, masters);
-    const applied = applyLeftoverToQuantities(group.quantities, matchedLeftovers);
-    if (applied.skipBuy) {
-      // 家にある分で足りる場合は購入リストから除外（チェック済み維持はしない）
+    const appliedLeftover = applyLeftoverToQuantities(
+      group.quantities,
+      matchedLeftovers,
+    );
+    const matchedRecurring = findMatchingRecurringPurchases(
+      group,
+      recurringPurchases,
+      masters,
+    );
+    const appliedRecurring = applyRecurringPurchaseToQuantities(
+      appliedLeftover.quantities,
+      matchedRecurring,
+    );
+    if (appliedLeftover.skipBuy || appliedRecurring.skipBuy) {
       continue;
     }
 
@@ -311,8 +418,11 @@ export function generateShoppingListFromMealPlan(
         group,
         listKind,
         previousByKey.get(key),
-        applied.leftoverNote,
-        applied.quantities,
+        combineShoppingNotes(
+          appliedLeftover.leftoverNote,
+          appliedRecurring.recurringNote,
+        ),
+        appliedRecurring.quantities,
       ),
     );
   }

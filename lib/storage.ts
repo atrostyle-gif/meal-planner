@@ -16,6 +16,8 @@ export const STORAGE_KEYS = {
   dailyCookingOverrides: "meal-planner:dailyCookingOverrides",
   cookingHistory: "meal-planner:cookingHistory",
   leftoverIngredients: "meal-planner:leftoverIngredients",
+  /** 定期購入食材（家族同期対象） */
+  recurringPurchaseIngredients: "meal-planner:recurringPurchaseIngredients",
   diabetesMealSupport: "meal-planner:diabetesMealSupport",
   /** 食費予算・買い物先（端末ローカル） */
   foodBudgetSettings: "meal-planner:foodBudgetSettings",
@@ -86,6 +88,7 @@ const SYNCABLE_STORAGE_KEYS = new Set<string>([
   STORAGE_KEYS.dailyCookingOverrides,
   STORAGE_KEYS.cookingHistory,
   STORAGE_KEYS.leftoverIngredients,
+  STORAGE_KEYS.recurringPurchaseIngredients,
   STORAGE_KEYS.ingredientPrices,
   STORAGE_KEYS.stores,
   STORAGE_KEYS.receipts,

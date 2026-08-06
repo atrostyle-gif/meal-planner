@@ -9,8 +9,10 @@ import {
 import { loadDiabetesMealSupportSettings } from "@/lib/diabetes-meal-support/settings";
 import { loadFoodBudgetSettings } from "@/lib/food-budget/settings";
 import { getActiveLeftoversForProposal } from "@/lib/leftover-ingredients";
+import { loadRecurringPurchaseIngredients } from "@/lib/recurring-purchase-ingredients";
 import type { InventoryItem } from "@/types/inventory";
 import type { LeftoverIngredient } from "@/types/leftover-ingredient";
+import type { RecurringPurchaseIngredient } from "@/types/recurring-purchase-ingredient";
 import type { MealPlanTagId } from "@/types/meal-plan-tags";
 import type { Recipe } from "@/types/recipe";
 import type { WeeklyAutoScope, WeeklyMealPlan } from "@/types/weekly-meal-plan";
@@ -22,6 +24,7 @@ export type ApplyWeeklyAutoPlanInput = {
   recipes: Recipe[];
   inventory?: InventoryItem[];
   leftovers?: LeftoverIngredient[];
+  recurringPurchases?: RecurringPurchaseIngredient[];
   householdId?: string;
   scope?: WeeklyAutoScope;
   diabetesSettings?: DiabetesMealSupportSettings;
@@ -50,6 +53,8 @@ export function applyWeeklyAutoPlan(
       input.householdId ?? "local",
       input.weekStart,
     );
+  const recurringPurchases =
+    input.recurringPurchases ?? loadRecurringPurchaseIngredients();
   const familyHints = collectFamilyLearningHints(loadFamilyMemberProfiles());
   const generated = generateWeeklyMealPlan({
     weekStart: input.weekStart,
@@ -57,6 +62,7 @@ export function applyWeeklyAutoPlan(
     recipes: input.recipes,
     inventory: input.inventory ?? [],
     leftovers,
+    recurringPurchases,
     recentRecipeIds,
     scope: input.scope,
     diabetesSettings,

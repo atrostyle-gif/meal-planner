@@ -16,6 +16,10 @@ import {
   summarizeLeftoverUsage,
 } from "@/lib/leftover-match";
 import {
+  evaluateRecurringPurchaseUsage,
+  getRecurringForMealPlanningOnDate,
+} from "@/lib/recurring-purchase-match";
+import {
   getGenreKey,
   getMainIngredientKey,
   isFishRecipe,
@@ -41,6 +45,7 @@ import type { FoodAliasMapping, FoodIngredientMaster } from "@/types/food-master
 import type { IngredientPriceRecord } from "@/types/ingredient-price";
 import type { InventoryItem } from "@/types/inventory";
 import type { LeftoverIngredient, LeftoverUsageSummary } from "@/types/leftover-ingredient";
+import type { RecurringPurchaseIngredient } from "@/types/recurring-purchase-ingredient";
 import type { DayMeal, MealDishItem, MealPlan } from "@/types/meal-plan";
 import type { Recipe } from "@/types/recipe";
 import {
@@ -56,6 +61,8 @@ export type GenerateWeeklyPlanInput = {
   inventory?: InventoryItem[];
   /** 今週使い切りたい余り食材（空なら従来どおり） */
   leftovers?: LeftoverIngredient[];
+  /** 定期購入食材（空なら従来どおり） */
+  recurringPurchases?: RecurringPurchaseIngredient[];
   foodMasters?: FoodIngredientMaster[];
   foodAliasMappings?: FoodAliasMapping[];
   recentRecipeIds?: string[];
@@ -212,6 +219,7 @@ function buildContextForDay(
   budgetContext: ScoreContext["budgetContext"],
   leftovers: LeftoverIngredient[],
   leftoverUsageCounts: Record<string, number>,
+  recurringPurchases: RecurringPurchaseIngredient[],
   foodMasters: FoodIngredientMaster[],
   foodAliasMappings: FoodAliasMapping[],
   planTags?: readonly import("@/types/meal-plan-tags").MealPlanTagId[],
@@ -244,6 +252,12 @@ function buildContextForDay(
     }
   }
 
+  const dayDate = days[dayIndex]?.date ?? "";
+  const recurringForDay = getRecurringForMealPlanningOnDate(
+    recurringPurchases,
+    dayDate,
+  );
+
   return {
     dayIndex,
     usedRecipeIds,
@@ -258,6 +272,7 @@ function buildContextForDay(
     inventory,
     leftovers,
     leftoverUsageCounts,
+    recurringPurchases: recurringForDay,
     foodMasters,
     foodAliasMappings,
     diabetesSettings,
@@ -286,6 +301,7 @@ export function generateWeeklyMealPlan(
   const scope: WeeklyAutoScope = input.scope ?? { type: "week" };
   const inventory = input.inventory ?? [];
   const leftovers = input.leftovers ?? [];
+  const recurringPurchases = input.recurringPurchases ?? [];
   const foodMasters =
     input.foodMasters ??
     (typeof window === "undefined"
@@ -416,6 +432,7 @@ export function generateWeeklyMealPlan(
         budgetContext,
         leftovers,
         { ...leftoverUsageCounts },
+        recurringPurchases,
         foodMasters,
         foodAliasMappings,
         input.planTags,
@@ -440,6 +457,7 @@ export function generateWeeklyMealPlan(
       runningPurchaseCostYen += added.addedPurchaseCostYen;
       selectedRecipes.push(best.recipe);
       let leftoverMatchedNames: string[] = [];
+      let recurringMatchedNames: string[] = [];
       if (leftovers.length > 0) {
         const used = evaluateLeftoverIngredientUsage(
           best.recipe,
@@ -455,6 +473,21 @@ export function generateWeeklyMealPlan(
           .filter((item) => used.matchedIds.includes(item.id))
           .map((item) => item.name);
       }
+      const recurringForDay = getRecurringForMealPlanningOnDate(
+        recurringPurchases,
+        day.date,
+      );
+      if (recurringForDay.length > 0) {
+        const usedRecurring = evaluateRecurringPurchaseUsage(
+          best.recipe,
+          recurringForDay,
+          foodMasters,
+          foodAliasMappings,
+        );
+        recurringMatchedNames = recurringForDay
+          .filter((item) => usedRecurring.matchedIds.includes(item.id))
+          .map((item) => item.name);
+      }
       const inventoryMatched = recipeUsesInventory(
         best.recipe,
         inventory,
@@ -468,6 +501,7 @@ export function generateWeeklyMealPlan(
         planTags: input.planTags,
         inventoryMatched,
         leftoverMatched: leftoverMatchedNames,
+        recurringMatched: recurringMatchedNames,
         cookMember,
         familyProfiles,
         householdHealthGoal: householdPrefs?.healthGoal ?? null,

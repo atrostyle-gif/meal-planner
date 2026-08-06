@@ -1,5 +1,9 @@
 import { generateShoppingListFromMealPlan } from "@/lib/shopping/generate-shopping-list";
 import { getActiveLeftoversForProposal } from "@/lib/leftover-ingredients";
+import {
+  loadRecurringPurchaseIngredients,
+} from "@/lib/recurring-purchase-ingredients";
+import { getRecurringForShoppingDeduction } from "@/lib/recurring-purchase-match";
 import { normalizeIngredientName } from "@/lib/shopping/normalize-ingredient-name";
 import { hasStorageKey, readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
 import {
@@ -330,6 +334,7 @@ export function createOrRegenerateShoppingList(
     recipes,
     existing,
     getActiveLeftoversForProposal("local", mealPlan.weekStart),
+    getRecurringForShoppingDeduction(loadRecurringPurchaseIngredients(), "local"),
   );
   return saveList(generated);
 }

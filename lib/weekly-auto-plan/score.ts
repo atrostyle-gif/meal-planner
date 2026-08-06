@@ -22,12 +22,14 @@ import {
   evaluateLeftoverIngredientUsage,
   evaluateRepeatedIngredientPenalty,
 } from "@/lib/leftover-match";
+import { evaluateRecurringPurchaseUsage } from "@/lib/recurring-purchase-match";
 import type { DiabetesMealSupportSettings } from "@/types/diabetes-meal-support";
 import {
   DEFAULT_DIABETES_MEAL_SUPPORT_SETTINGS,
 } from "@/types/diabetes-meal-support";
 import type { FoodAliasMapping, FoodIngredientMaster } from "@/types/food-master";
 import type { LeftoverIngredient } from "@/types/leftover-ingredient";
+import type { RecurringPurchaseIngredient } from "@/types/recurring-purchase-ingredient";
 import type { MealPlanTagId } from "@/types/meal-plan-tags";
 import type { RecipeCourse } from "@/types/recipe";
 import { scoreMealPlanTags } from "@/lib/weekly-auto-plan/plan-tags-score";
@@ -44,6 +46,8 @@ export type ScoreContext = {
   recentRecipeIds: Set<string>;
   inventory: InventoryItem[];
   /** 今週使い切りたい余り食材（空なら影響なし） */
+  /** その日の到着済み定期購入食材（空なら影響なし） */
+  recurringPurchases?: RecurringPurchaseIngredient[];
   leftovers?: LeftoverIngredient[];
   leftoverUsageCounts?: Record<string, number>;
   foodMasters?: FoodIngredientMaster[];
@@ -324,6 +328,29 @@ export function scoreRecipeForSlot(
         badge === "余り食材活用" ||
         badge === "食材使い切り"
       ) {
+        badges.push(badge);
+      }
+    }
+  }
+
+  // 定期購入食材（到着日以降のみ在庫相当）
+  const recurringPurchases = ctx.recurringPurchases ?? [];
+  if (recurringPurchases.length > 0) {
+    const recurringScore = evaluateRecurringPurchaseUsage(
+      recipe,
+      recurringPurchases,
+      ctx.foodMasters ?? [],
+      ctx.foodAliasMappings ?? [],
+    );
+    score += recurringScore.points;
+    for (const detail of recurringScore.reasons) {
+      const badge = recurringScore.badges.includes("定期購入食材を活用")
+        ? ("定期購入食材を活用" as const)
+        : undefined;
+      reasons.push({ detail, badge });
+    }
+    for (const badge of recurringScore.badges) {
+      if (badge === "定期購入食材を活用") {
         badges.push(badge);
       }
     }

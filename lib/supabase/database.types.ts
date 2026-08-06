@@ -260,6 +260,46 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["leftover_ingredients"]["Insert"]>;
         Relationships: [];
       };
+      recurring_purchase_ingredients: {
+        Row: {
+          id: string;
+          household_id: string;
+          name: string;
+          raw_name: string | null;
+          food_master_id: string | null;
+          food_code: string | null;
+          quantity: number | null;
+          unit: string | null;
+          store_id: string | null;
+          store_name: string | null;
+          arrival_day_of_week: string;
+          frequency: string;
+          active: boolean;
+          prefer_in_meal_plan: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          household_id: string;
+          name: string;
+          raw_name?: string | null;
+          food_master_id?: string | null;
+          food_code?: string | null;
+          quantity?: number | null;
+          unit?: string | null;
+          store_id?: string | null;
+          store_name?: string | null;
+          arrival_day_of_week?: string;
+          frequency?: string;
+          active?: boolean;
+          prefer_in_meal_plan?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["recurring_purchase_ingredients"]["Insert"]>;
+        Relationships: [];
+      };
       pantry_items: {
         Row: {
           key: string;

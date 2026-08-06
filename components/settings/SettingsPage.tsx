@@ -179,6 +179,11 @@ export function SettingsPage() {
           title="買い物先・食費予算"
         />
         <SettingsLinkRow
+          href="/settings/recurring-purchase"
+          title="定期購入食材"
+          description="コープ等の毎週届く食材"
+        />
+        <SettingsLinkRow
           href="/settings/ingredient-prices"
           title="食材価格"
         />

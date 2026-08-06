@@ -26,6 +26,7 @@ export type ExplainContext = {
   planTags?: readonly MealPlanTagId[];
   inventoryMatched?: string[];
   leftoverMatched?: string[];
+  recurringMatched?: string[];
   cookMember?: { id: string; displayName: string } | null;
   familyProfiles?: FamilyMemberProfile[];
   householdHealthGoal?: HealthGoal | string | null;
@@ -53,7 +54,7 @@ function classifyDetail(detail: string): {
   positive: boolean;
 } {
   const d = detail;
-  if (/冷蔵|余り|在庫|消費|使い切|ピーマン|キャベツ|玉ねぎ|じゃがいも/.test(d)) {
+  if (/冷蔵|余り|在庫|消費|使い切|ピーマン|キャベツ|玉ねぎ|じゃがいも|定期購入/.test(d)) {
     return { type: "inventory", priority: 95, weight: 12, positive: !/避け|減点/.test(d) };
   }
   if (/糖尿|血糖|健康|減塩希望|減塩の希望|インスリン/.test(d)) {
@@ -157,6 +158,20 @@ export function buildMealSelectionReason(
     inventoryInfluence.push(message);
     positiveFactors.push(message);
     if (!structured.inventory) structured.inventory = `${name}を消費`;
+  }
+  for (const name of input.recurringMatched ?? []) {
+    const message = shorten(`定期購入${name}を活用`);
+    pushUnique(explanations, {
+      reasonType: "inventory",
+      priority: 95,
+      message,
+      source: `recurring:${name}`,
+      weight: 13,
+      detail: `定期購入で届く${name}を優先しました`,
+    });
+    inventoryInfluence.push(message);
+    positiveFactors.push(message);
+    if (!structured.inventory) structured.inventory = `${name}を活用`;
   }
   for (const name of (input.inventoryMatched ?? []).slice(0, 2)) {
     const message = shorten(`冷蔵の${name}を活用`);

@@ -12,6 +12,10 @@ import { cookingMemberProfileFromRow, cookingMemberProfileToUpsert } from "@/lib
 import { dailyCookingOverrideFromRow, dailyCookingOverrideToUpsert } from "@/lib/mappers/daily-cooking-override-mapper";
 import { cookingHistoryFromRow, cookingHistoryToInsert } from "@/lib/mappers/cooking-history-mapper";
 import { leftoverIngredientFromRow, leftoverIngredientToUpsert } from "@/lib/mappers/leftover-ingredient-mapper";
+import {
+  recurringPurchaseIngredientFromRow,
+  recurringPurchaseIngredientToUpsert,
+} from "@/lib/mappers/recurring-purchase-ingredient-mapper";
 import { mealPlanFromRow, mealPlanToUpsert } from "@/lib/mappers/meal-plan-mapper";
 import { pantryFromRow, pantryToUpsert } from "@/lib/mappers/pantry-mapper";
 import { recipeFromRow, recipeToInsert } from "@/lib/mappers/recipe-mapper";
@@ -21,6 +25,10 @@ import {
 } from "@/lib/mappers/shopping-list-mapper";
 import { replaceInventory } from "@/lib/inventory";
 import { loadLeftoverIngredients, replaceLeftoverIngredients } from "@/lib/leftover-ingredients";
+import {
+  loadRecurringPurchaseIngredients,
+  replaceRecurringPurchaseIngredients,
+} from "@/lib/recurring-purchase-ingredients";
 import { replaceMealPlans } from "@/lib/meal-plans";
 import { replacePantryStock } from "@/lib/pantry-stock";
 import {
@@ -63,6 +71,7 @@ import {
   type MergeByUpdatedAtOptions,
 } from "@/lib/sync/merge-by-updated-at";
 import { getSyncMergeMode } from "@/lib/sync/sync-preferences";
+import { isOptionalSyncInfrastructureError } from "@/lib/sync/sync-errors";
 import { loadCookingFeedbacks } from "@/lib/recipe-learning/cooking-feedbacks";
 import type { Database } from "@/lib/supabase/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -105,6 +114,7 @@ export type PullResult = {
   dailyCookingOverrides: number;
   cookingHistory: number;
   leftovers: number;
+  recurringPurchases: number;
 };
 
 export type PushResult = {
@@ -122,6 +132,7 @@ export type PushResult = {
   dailyCookingOverrides: number;
   cookingHistory: number;
   leftovers: number;
+  recurringPurchases: number;
   errors: string[];
 };
 
@@ -147,12 +158,13 @@ export async function pullCloudToLocal(
       dailyCookingOverrides: loadDailyCookingOverrides().length,
       cookingHistory: loadCookingHistory().length,
       leftovers: loadLeftoverIngredients().length,
+      recurringPurchases: loadRecurringPurchaseIngredients().length,
     };
   }
 
   suppressLocalPush = true;
   try {
-    const [recipesRes, mealsRes, shoppingRes, inventoryRes, pantryRes, familyProfilesRes, nutritionPreferencesRes, dailyConditionsRes, foodAliasesRes, weeklySchedulesRes, cookingProfilesRes, dailyOverridesRes, cookingHistoryRes, leftoversRes] =
+    const [recipesRes, mealsRes, shoppingRes, inventoryRes, pantryRes, familyProfilesRes, nutritionPreferencesRes, dailyConditionsRes, foodAliasesRes, weeklySchedulesRes, cookingProfilesRes, dailyOverridesRes, cookingHistoryRes, leftoversRes, recurringRes] =
       await Promise.all([
         client.from("recipes").select("*").eq("household_id", householdId),
         client.from("meal_plans").select("*").eq("household_id", householdId),
@@ -174,6 +186,7 @@ export async function pullCloudToLocal(
         client.from("daily_cooking_overrides").select("*").eq("household_id", householdId),
         client.from("cooking_history").select("*").eq("household_id", householdId),
         client.from("leftover_ingredients").select("*").eq("household_id", householdId),
+        client.from("recurring_purchase_ingredients").select("*").eq("household_id", householdId),
       ]);
 
     if (recipesRes.error) throw recipesRes.error;
@@ -190,6 +203,12 @@ export async function pullCloudToLocal(
     if (dailyOverridesRes.error) throw dailyOverridesRes.error;
     if (cookingHistoryRes.error) throw cookingHistoryRes.error;
     if (leftoversRes.error) throw leftoversRes.error;
+    if (
+      recurringRes.error &&
+      !isOptionalSyncInfrastructureError(recurringRes.error.message)
+    ) {
+      throw recurringRes.error;
+    }
 
     // ユーザーがサンプルを削除済みなら、クラウドのサンプルで上書き復活させない
     const remoteRecipes = (recipesRes.data ?? [])
@@ -276,6 +295,13 @@ export async function pullCloudToLocal(
       (leftoversRes.data ?? []).map(leftoverIngredientFromRow),
       mergeOptions,
     );
+    const recurringPurchases = mergeByUpdatedAt(
+      loadRecurringPurchaseIngredients(),
+      (recurringRes.error ? [] : (recurringRes.data ?? [])).map(
+        recurringPurchaseIngredientFromRow,
+      ),
+      mergeOptions,
+    );
 
     replaceRecipes(recipes);
     replaceMealPlans(mealPlans);
@@ -300,6 +326,7 @@ export async function pullCloudToLocal(
     replaceDailyCookingOverrides(dailyCookingOverrides);
     replaceCookingHistory(cookingHistory);
     replaceLeftoverIngredients(leftovers);
+    replaceRecurringPurchaseIngredients(recurringPurchases);
     await pullReceiptDomain(client, householdId);
     await pullFoodExpenseDomain(client, householdId);
     await pullRecipeLearningDomain(client, householdId);
@@ -319,6 +346,7 @@ export async function pullCloudToLocal(
       dailyCookingOverrides: dailyCookingOverrides.length,
       cookingHistory: cookingHistory.length,
       leftovers: leftovers.length,
+      recurringPurchases: recurringPurchases.length,
     };
   } finally {
     suppressLocalPush = false;
@@ -346,6 +374,7 @@ export async function pushLocalToCloud(
   let dailyCookingOverrides = 0;
   let cookingHistory = 0;
   let leftovers = 0;
+  let recurringPurchases = 0;
 
   try {
     const localRecipes = loadRecipes();
@@ -597,6 +626,22 @@ export async function pushLocalToCloud(
   }
 
   try {
+    const items = loadRecurringPurchaseIngredients();
+    if (items.length > 0) {
+      const { error } = await client.from("recurring_purchase_ingredients").upsert(
+        items.map((item) => recurringPurchaseIngredientToUpsert(item, householdId)),
+        { onConflict: "id" },
+      );
+      if (error) errors.push(`recurring_purchase_ingredients: ${error.message}`);
+      else recurringPurchases = items.length;
+    }
+  } catch (error) {
+    errors.push(
+      `recurring_purchase_ingredients: ${error instanceof Error ? error.message : "失敗"}`,
+    );
+  }
+
+  try {
     const receiptSync = await pushReceiptDomain(client, householdId);
     errors.push(...receiptSync.errors);
   } catch (error) {
@@ -629,6 +674,7 @@ export async function pushLocalToCloud(
     weeklyCookingSchedules, cookingMemberProfiles, dailyCookingOverrides,
     cookingHistory, errors,
     leftovers,
+    recurringPurchases,
   };
 }
 
