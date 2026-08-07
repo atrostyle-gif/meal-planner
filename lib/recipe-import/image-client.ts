@@ -1,5 +1,5 @@
 const MAX_ORIGINAL_BYTES = 10 * 1024 * 1024;
-export const MAX_IMPORT_IMAGES = 5;
+export const MAX_IMPORT_IMAGES = 10;
 
 export type CompressedImage = {
   mimeType: string;

@@ -58,7 +58,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const images = parseImages(body.images, photoKindHint);
     if (!images) {
       return NextResponse.json(
-        { code: "invalid_images", error: "JPEG、PNG、WebP画像を1〜5枚送信してください。" },
+        { code: "invalid_images", error: `JPEG、PNG、WebP画像を1〜${MAX_IMPORT_IMAGES}枚送信してください。` },
         { status: 400 },
       );
     }
