@@ -344,7 +344,7 @@ export function SettingsPage() {
                 すべてのデータを初期化する
               </button>
             </div>
-            <p className="text-xs text-on-surface-variant">v{APP_VERSION}</p>
+            <p className="text-xs text-on-surface-variant">MogNote v{APP_VERSION}</p>
           </div>
         ) : null}
       </section>
