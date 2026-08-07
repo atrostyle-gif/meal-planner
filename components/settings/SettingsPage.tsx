@@ -52,7 +52,6 @@ export function SettingsPage() {
     household,
     user,
     syncing,
-    lastSyncError,
     lastPulledAt,
     pullLatest,
     signOut,
@@ -129,20 +128,11 @@ export function SettingsPage() {
                   同期 {new Date(lastPulledAt).toLocaleString("ja-JP")}
                 </p>
               ) : null}
-              {lastSyncError ? (
-                <p className="text-sm text-error">{lastSyncError}</p>
-              ) : null}
               <button
                 type="button"
                 disabled={syncing}
                 onClick={() => {
-                  void pullLatest({ notify: true }).then((result) => {
-                    setMessage(
-                      result
-                        ? "最新のデータを同期しました"
-                        : "同期できませんでした",
-                    );
-                  });
+                  void pullLatest({ notify: true });
                 }}
                 className="w-full rounded-xl bg-secondary-container px-3 py-2.5 text-sm font-semibold text-on-secondary-container disabled:opacity-50"
               >

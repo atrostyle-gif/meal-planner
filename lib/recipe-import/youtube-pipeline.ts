@@ -7,6 +7,7 @@ import {
   extractRecipeFromYoutubeSnippet,
 } from "@/lib/recipe-import/youtube-provider";
 import { validateAiExtraction } from "@/lib/recipe-import/validate-draft";
+import { ensureYoutubeRecipeNamePrefix } from "@/lib/recipe-import/youtube-recipe";
 import { extractYoutubeVideoId } from "@/lib/recipe-import/youtube-url";
 import type { RecipeDraft, RecipeDraftIngredient } from "@/types/recipe-import";
 
@@ -188,6 +189,8 @@ export async function runYoutubeImportPipeline(
   if (!draft.title) {
     draft.title = snippet.title;
   }
+  // 確認画面・保存名の先頭に【YouTube】を付ける（二重付与なし）
+  draft.title = ensureYoutubeRecipeNamePrefix(draft.title ?? snippet.title);
 
   const quantityMissing = draft.ingredients.some(
     (item) => item.quantity == null && !item.quantityText,

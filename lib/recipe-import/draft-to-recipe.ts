@@ -25,6 +25,7 @@ import type {
   RecipeSource,
 } from "@/types/recipe-import";
 import { emptyRecipeCookingProfile } from "@/lib/cooking-suitability";
+import { ensureYoutubeRecipeNamePrefix } from "@/lib/recipe-import/youtube-recipe";
 
 function cuisineToCategory(cuisine: ImportCuisine | null | undefined): RecipeCategory {
   switch (cuisine) {
@@ -189,8 +190,14 @@ export function recipeDraftToRecipeInput(draft: RecipeDraft): RecipeInput {
   const affinity = buildMealAffinityFromDraft(draft);
   const source = buildSourceFromDraft(draft);
 
+  const rawName = (draft.title ?? "").trim() || "無題のレシピ";
+  const name =
+    draft.importMethod === "youtube"
+      ? ensureYoutubeRecipeNamePrefix(rawName)
+      : rawName;
+
   const baseInput: RecipeInput = {
-    name: (draft.title ?? "").trim() || "無題のレシピ",
+    name,
     ingredients,
     steps,
     memo: [draft.description, draft.warnings?.length ? `読み取り注意: ${draft.warnings.join(" / ")}` : null]

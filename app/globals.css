@@ -62,3 +62,25 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), "Hiragino Sans", "Noto Sans JP", sans-serif;
 }
+
+/* 同期成功トースト（固定表示・レイアウト非干渉） */
+@keyframes sync-toast-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-sync-toast-fade {
+  animation: sync-toast-fade 1.8s ease-in-out forwards;
+}

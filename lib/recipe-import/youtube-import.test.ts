@@ -6,11 +6,44 @@ import {
   filterLikelyPromotionalIngredients,
 } from "@/lib/recipe-import/youtube-pipeline";
 import {
+  ensureYoutubeRecipeNamePrefix,
+  hasYoutubeRecipeNamePrefix,
   isYoutubeRecipe,
   isYoutubeRecipeSource,
+  YOUTUBE_RECIPE_NAME_PREFIX,
 } from "@/lib/recipe-import/youtube-recipe";
 import { recipeDraftToRecipeInput } from "@/lib/recipe-import/draft-to-recipe";
 import type { RecipeDraft } from "@/types/recipe-import";
+
+describe("YouTube recipe name prefix", () => {
+  it("未付与の名前に【YouTube】を付ける", () => {
+    expect(ensureYoutubeRecipeNamePrefix("暗殺者のパスタ")).toBe(
+      "【YouTube】暗殺者のパスタ",
+    );
+  });
+
+  it("すでに付いている場合は二重に付けない", () => {
+    expect(ensureYoutubeRecipeNamePrefix("【YouTube】暗殺者のパスタ")).toBe(
+      "【YouTube】暗殺者のパスタ",
+    );
+    expect(
+      ensureYoutubeRecipeNamePrefix("【YouTube】【YouTube】暗殺者のパスタ"),
+    ).toBe("【YouTube】暗殺者のパスタ");
+  });
+
+  it("空名は無題のレシピにする", () => {
+    expect(ensureYoutubeRecipeNamePrefix("")).toBe("【YouTube】無題のレシピ");
+    expect(ensureYoutubeRecipeNamePrefix("【YouTube】")).toBe(
+      "【YouTube】無題のレシピ",
+    );
+  });
+
+  it("hasYoutubeRecipeNamePrefix が判定できる", () => {
+    expect(hasYoutubeRecipeNamePrefix("【YouTube】テスト")).toBe(true);
+    expect(hasYoutubeRecipeNamePrefix("テスト")).toBe(false);
+    expect(YOUTUBE_RECIPE_NAME_PREFIX).toBe("【YouTube】");
+  });
+});
 
 describe("extractYoutubeVideoId", () => {
   it("youtube.com/watch?v= から抽出する", () => {
@@ -231,7 +264,40 @@ describe("youtube draft save without steps", () => {
     expect(input.source?.url).toContain("youtube.com");
     expect(input.source?.thumbnail).toContain("ytimg");
     expect(input.source?.author).toBe("デザートch");
-    expect(input.name).toBe("牛乳プリン");
+    expect(input.name).toBe("【YouTube】牛乳プリン");
+  });
+
+  it("手入力・URL取込には【YouTube】を付けない", () => {
+    const urlDraft: RecipeDraft = {
+      title: "カレー",
+      servings: 2,
+      ingredients: [{ rawText: "肉", name: "肉", quantity: 1, unit: "枚" }],
+      steps: [{ order: 1, text: "炒める" }],
+      importMethod: "url",
+      sourceUrl: "https://example.com/curry",
+    };
+    expect(recipeDraftToRecipeInput(urlDraft).name).toBe("カレー");
+
+    const manualDraft: RecipeDraft = {
+      ...urlDraft,
+      importMethod: "manual",
+      sourceUrl: null,
+    };
+    expect(recipeDraftToRecipeInput(manualDraft).name).toBe("カレー");
+  });
+
+  it("確認画面でプレフィックスを消しても保存入力で復元する", () => {
+    const draft: RecipeDraft = {
+      title: "暗殺者のパスタ",
+      servings: 2,
+      ingredients: [{ rawText: "麺", name: "麺", quantity: 1, unit: "玉" }],
+      steps: [],
+      importMethod: "youtube",
+      sourceUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    };
+    expect(recipeDraftToRecipeInput(draft).name).toBe(
+      "【YouTube】暗殺者のパスタ",
+    );
   });
 });
 

@@ -51,9 +51,9 @@ function AppShellFrame({ children }: { children: ReactNode }) {
       >
         {!hideChrome ? <MigrationPrompt /> : null}
         {!hideChrome ? <SyncConflictDialog /> : null}
-        {!hideChrome ? <SyncStatusBanner /> : null}
         {children}
       </main>
+      {!hideChrome ? <SyncStatusBanner /> : null}
       {!hideChrome ? <BottomNav /> : null}
     </div>
   );

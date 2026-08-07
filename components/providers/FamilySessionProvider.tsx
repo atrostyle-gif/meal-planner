@@ -15,14 +15,12 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getAppDataMode, type AppDataMode } from "@/lib/supabase/env";
 import { toUserFacingError } from "@/lib/supabase/errors";
 import {
-  getLastSyncableLocalWriteAt,
   LOCAL_DATA_CHANGED_EVENT,
   STORAGE_KEYS,
 } from "@/lib/storage";
 import {
   detectUnresolvedSyncConflict,
   ensureMigrationGate,
-  getLastSyncedAt,
   isLocalPushSuppressed,
   isMigrationCompleted,
   markMigrationCompleted,
@@ -61,9 +59,10 @@ type FamilySessionContextValue = {
   syncing: boolean;
   lastSyncError: string | null;
   lastPulledAt: string | null;
-  /** 同期成功時の短い通知（数秒で消える） */
+  /** 同期成功時の短い通知（手動同期など。数秒で消える） */
   lastSyncMessage: string | null;
   clearSyncMessage: () => void;
+  clearSyncError: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -116,10 +115,23 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
       window.clearTimeout(syncMessageTimerRef.current);
     }
     setLastSyncMessage(message);
+    // トースト側でも消す。保険として長めにクリアする
     syncMessageTimerRef.current = window.setTimeout(() => {
       setLastSyncMessage(null);
       syncMessageTimerRef.current = null;
-    }, 4000);
+    }, 5000);
+  }, []);
+
+  const clearSyncMessage = useCallback(() => {
+    if (syncMessageTimerRef.current !== null) {
+      window.clearTimeout(syncMessageTimerRef.current);
+      syncMessageTimerRef.current = null;
+    }
+    setLastSyncMessage(null);
+  }, []);
+
+  const clearSyncError = useCallback(() => {
+    setLastSyncError(null);
   }, []);
 
   const beginSync = useCallback(() => {
@@ -199,9 +211,6 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      const hadLocalChanges =
-        getLastSyncableLocalWriteAt() > getLastSyncedAt(household.id);
-
       beginSync();
       setLastSyncError(null);
       try {
@@ -219,8 +228,9 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
         }
         setLastPulledAt(new Date().toISOString());
         setLastSyncedAt(household.id);
-        if (options?.notify || hadLocalChanges) {
-          showSyncMessage("最新のデータを同期しました");
+        // 自動同期では成功トーストを出さない（手動同期のみ）
+        if (options?.notify) {
+          showSyncMessage("保存済み ✓");
         }
         return result;
       } catch (error) {
@@ -432,7 +442,8 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
       lastSyncError,
       lastPulledAt,
       lastSyncMessage,
-      clearSyncMessage: () => setLastSyncMessage(null),
+      clearSyncMessage,
+      clearSyncError,
       needsMigrationPrompt,
       syncConflict,
       dismissSyncConflict: () => setSyncConflict(null),
@@ -615,7 +626,7 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
           }
           setLastPulledAt(new Date().toISOString());
           setLastSyncedAt(household.id);
-          showSyncMessage("最新のデータを同期しました");
+          showSyncMessage("保存済み ✓");
         } catch (error) {
           setLastSyncError(toUserFacingError(error));
           if (conflict) setSyncConflict(conflict);
@@ -642,6 +653,8 @@ export function FamilySessionProvider({ children }: { children: ReactNode }) {
     beginSync,
     endSync,
     showSyncMessage,
+    clearSyncMessage,
+    clearSyncError,
   ]);
 
   return (

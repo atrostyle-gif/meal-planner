@@ -7,6 +7,10 @@ import {
 import { resolveNutritionFields } from "@/lib/recipe-nutrition";
 import { createSampleRecipes } from "@/lib/sample-recipes";
 import {
+  applyYoutubeRecipeNamePrefixIfNeeded,
+  isYoutubeRecipe,
+} from "@/lib/recipe-import/youtube-recipe";
+import {
   hasStorageKey,
   readStorage,
   STORAGE_KEYS,
@@ -155,15 +159,31 @@ function migrateRecipe(value: unknown): Recipe | null {
     ? item.category
     : DEFAULT_RECIPE_CATEGORY;
   const tags = normalizeTags(item.tags);
+  const importMethod =
+    item.importMethod === "manual" ||
+    item.importMethod === "url" ||
+    item.importMethod === "photo" ||
+    item.importMethod === "youtube"
+      ? item.importMethod
+      : null;
+  const source =
+    typeof item.source === "object" && item.source !== null
+      ? (item.source as Recipe["source"])
+      : null;
+  const name = applyYoutubeRecipeNamePrefixIfNeeded(
+    item.name,
+    source,
+    importMethod,
+  );
   const nutrition = resolveNutritionFields(item, {
-    name: item.name,
+    name,
     tags,
     category,
   });
 
   return {
     id: item.id,
-    name: item.name,
+    name,
     ingredients,
     steps: migrateSteps(item.steps, item.instructions),
     memo: typeof item.memo === "string" ? item.memo : undefined,
@@ -177,17 +197,8 @@ function migrateRecipe(value: unknown): Recipe | null {
       typeof item.cookingProfile === "object" && item.cookingProfile !== null
         ? item.cookingProfile as Recipe["cookingProfile"]
         : null,
-    importMethod:
-      item.importMethod === "manual" ||
-      item.importMethod === "url" ||
-      item.importMethod === "photo" ||
-      item.importMethod === "youtube"
-        ? item.importMethod
-        : null,
-    source:
-      typeof item.source === "object" && item.source !== null
-        ? item.source as Recipe["source"]
-        : null,
+    importMethod,
+    source,
     mealAffinity:
       typeof item.mealAffinity === "object" && item.mealAffinity !== null
         ? item.mealAffinity as Recipe["mealAffinity"]
@@ -329,6 +340,15 @@ function needsMigration(raw: unknown, migrated: Recipe): boolean {
     }
   }
 
+  // YouTubeレシピ名の【YouTube】プレフィックス補完
+  if (
+    isYoutubeRecipe(migrated) &&
+    typeof item.name === "string" &&
+    item.name !== migrated.name
+  ) {
+    return true;
+  }
+
   return false;
 }
 
@@ -467,7 +487,11 @@ function buildRecipeFields(input: RecipeInput): Omit<
       : DEFAULT_SERVINGS;
 
   return {
-    name: input.name.trim(),
+    name: applyYoutubeRecipeNamePrefixIfNeeded(
+      input.name.trim(),
+      input.source,
+      input.importMethod,
+    ),
     ingredients: input.ingredients
       .filter((item) => item.name.trim() !== "")
       .map((item) => toIngredient(item)),

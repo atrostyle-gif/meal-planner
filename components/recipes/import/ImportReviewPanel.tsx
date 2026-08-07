@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveImportDraft } from "@/lib/recipe-import/draft-session";
 import { findDuplicateCandidates } from "@/lib/recipe-import/duplicate";
-import { isYoutubeDraft } from "@/lib/recipe-import/youtube-recipe";
+import {
+  ensureYoutubeRecipeNamePrefix,
+  isYoutubeDraft,
+} from "@/lib/recipe-import/youtube-recipe";
 import { useRecipes } from "@/lib/use-recipes";
 import type { RecipeDraft, RecipeDraftIngredient } from "@/types/recipe-import";
 
@@ -46,7 +49,15 @@ function formatAmount(ingredient: RecipeDraftIngredient): string {
 export function ImportReviewPanel({ draft, onConfirm }: ImportReviewPanelProps) {
   const router = useRouter();
   const recipes = useRecipes();
-  const [editableDraft, setEditableDraft] = useState(draft);
+  const [editableDraft, setEditableDraft] = useState(() => {
+    if (!isYoutubeDraft(draft)) {
+      return draft;
+    }
+    return {
+      ...draft,
+      title: ensureYoutubeRecipeNamePrefix(draft.title ?? ""),
+    };
+  });
   const youtubeMode = isYoutubeDraft(editableDraft);
   const duplicates = findDuplicateCandidates(editableDraft, recipes);
   const ingredientGroups = useMemo(
@@ -55,11 +66,17 @@ export function ImportReviewPanel({ draft, onConfirm }: ImportReviewPanelProps) 
   );
 
   function continueToForm(): void {
+    const draftToSave = youtubeMode
+      ? {
+          ...editableDraft,
+          title: ensureYoutubeRecipeNamePrefix(editableDraft.title ?? ""),
+        }
+      : editableDraft;
     if (onConfirm) {
-      onConfirm(editableDraft);
+      onConfirm(draftToSave);
       return;
     }
-    saveImportDraft(editableDraft);
+    saveImportDraft(draftToSave);
     router.push("/recipes/import/confirm");
   }
 
